@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -43,6 +44,20 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getAuthPassword(): string
     {
         return $this->password_hash;
+    }
+
+    /**
+     * Override reset URL to point to the React frontend instead of a Laravel web route.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        ResetPassword::createUrlUsing(function ($notifiable, $token) {
+            return config('app.frontend_url')
+                . '/reset-password?token=' . $token
+                . '&email=' . urlencode($notifiable->email);
+        });
+
+        $this->notify(new ResetPassword($token));
     }
 
     public function clientProfile()

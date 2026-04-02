@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\Auth\SocialAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,9 +22,14 @@ Route::prefix('auth')->group(function () {
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
 
+    // Password reset
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
+    Route::post('/reset-password',  [PasswordResetController::class, 'resetPassword']);
+
     // Google OAuth
-    Route::get('/google',          [SocialAuthController::class, 'redirectToGoogle']);
-    Route::get('/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
+    Route::get('/google',                   [SocialAuthController::class, 'redirectToGoogle']);
+    Route::get('/google/callback',          [SocialAuthController::class, 'handleGoogleCallback']);
+    Route::post('/google/complete',         [SocialAuthController::class, 'completeGoogleRegistration']);
 });
 
 // Protected routes (require Sanctum token)

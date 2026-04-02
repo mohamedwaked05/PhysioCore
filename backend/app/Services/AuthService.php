@@ -6,7 +6,9 @@ use App\Models\ClientProfile;
 use App\Models\Clinic;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 
@@ -63,8 +65,20 @@ class AuthService
     {
         $user = User::where('email', $data['email'])->first();
 
-        // Wrong email or wrong password
-        if (! $user || ! Hash::check($data['password'], $user->password_hash)) {
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'email' => ['The provided credentials are incorrect.'],
+            ]);
+        }
+
+        // Google-only account (no password set)
+        if (! $user->password_hash) {
+            throw ValidationException::withMessages([
+                'email' => ['This account was created with Google. Please sign in with Google or set a password first.'],
+            ]);
+        }
+
+        if (! Hash::check($data['password'], $user->password_hash)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
@@ -84,55 +98,90 @@ class AuthService
             ]);
         }
 
+        $remember  = $data['remember'] ?? false;
+        $expiresAt = $remember ? null : now()->addDay();
+
+        $token = $user->createToken('auth_token', ['*'], $expiresAt)->plainTextToken;
+
+        return ['user' => $user, 'token' => $token];
+    }
+
+    /**
+     * Handle an existing Google user login.
+     * Returns a Sanctum token if the user already has an account.
+     * Returns null if the user is new (needs to complete registration).
+     */
+    public function handleExistingGoogleUser(SocialiteUser $googleUser): ?array
+    {
+        $user = User::where('google_id', $googleUser->getId())
+            ->orWhere('email', $googleUser->getEmail())
+            ->first();
+
+        if (! $user) {
+            return null;
+        }
+
+        if (! $user->google_id) {
+            $user->update([
+                'google_id' => $googleUser->getId(),
+                'provider'  => 'google',
+            ]);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return ['user' => $user, 'token' => $token];
     }
 
     /**
-     * Find or create a user from a Google OAuth response,
-     * auto-verify their email, and return a Sanctum token.
+     * Store Google user data in cache and return a short-lived setup token.
+     * Used when a new Google user needs to complete registration (pick a role).
      */
-    public function handleGoogleUser(SocialiteUser $googleUser): array
+    public function initiateGoogleRegistration(SocialiteUser $googleUser): string
     {
-        $user = User::where('google_id', $googleUser->getId())
-            ->orWhere('email', $googleUser->getEmail())
-            ->first();
+        $setupToken = Str::random(40);
 
-        if ($user) {
-            // Existing user: attach google_id if missing (e.g. registered via email first)
-            if (! $user->google_id) {
-                $user->update([
-                    'google_id' => $googleUser->getId(),
-                    'provider'  => 'google',
-                ]);
-            }
-        } else {
-            // New user: create account, Google users skip email verification
-            $nameParts = explode(' ', $googleUser->getName(), 2);
+        Cache::put('google_setup_' . $setupToken, [
+            'google_id' => $googleUser->getId(),
+            'email'     => $googleUser->getEmail(),
+            'name'      => $googleUser->getName(),
+        ], now()->addMinutes(15));
 
-            $user = User::create([
-                'first_name'        => $nameParts[0],
-                'last_name'         => $nameParts[1] ?? '',
-                'email'             => $googleUser->getEmail(),
-                'password_hash'     => null,
-                'role'              => 'client',
-                'status'            => 'active',
-                'provider'          => 'google',
-                'google_id'         => $googleUser->getId(),
-                'email_verified_at' => now(),
-            ]);
+        return $setupToken;
+    }
 
-            $this->initializeProfile($user);
+    /**
+     * Complete Google registration: retrieve cached Google data, create the user
+     * with the chosen role, and fire the Registered event (sends verification email).
+     */
+    public function completeGoogleRegistration(string $setupToken, string $role, ?string $password = null): User
+    {
+        $googleData = Cache::get('google_setup_' . $setupToken);
+
+        if (! $googleData) {
+            throw new \RuntimeException('Invalid or expired setup token.');
         }
 
-        // Ensure email is verified for Google users
-        if (! $user->hasVerifiedEmail()) {
-            $user->markEmailAsVerified();
-        }
+        Cache::forget('google_setup_' . $setupToken);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $nameParts = explode(' ', $googleData['name'], 2);
 
-        return ['user' => $user, 'token' => $token];
+        $user = User::create([
+            'first_name'    => $nameParts[0],
+            'last_name'     => $nameParts[1] ?? '',
+            'email'         => $googleData['email'],
+            'password_hash' => $password,
+            'role'          => $role,
+            'status'        => 'active',
+            'provider'      => 'google',
+            'google_id'     => $googleData['google_id'],
+        ]);
+
+        $this->initializeProfile($user);
+
+        // Send verification email just like email/password registration
+        event(new Registered($user));
+
+        return $user;
     }
 }
