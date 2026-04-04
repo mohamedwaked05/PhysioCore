@@ -26,7 +26,7 @@ export default function GoogleCallbackPage() {
                 .then(({ data }) => {
                     login(data, token);
                     if (role === 'client') navigate('/client/dashboard');
-                    else if (role === 'clinic') navigate('/setup');
+                    else if (role === 'clinic') navigate('/clinic/dashboard');
                     else navigate('/dashboard');
                 })
                 .catch(() => {

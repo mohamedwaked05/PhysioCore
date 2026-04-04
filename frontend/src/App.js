@@ -16,6 +16,10 @@ import ClientDashboardPage from './pages/client/ClientDashboardPage';
 import ClientProfilePage from './pages/client/ClientProfilePage';
 import ClinicListingPage from './pages/client/ClinicListingPage';
 
+// Clinic pages
+import ClinicDashboardPage from './pages/clinic/ClinicDashboardPage';
+import ClinicProfilePage from './pages/clinic/ClinicProfilePage';
+
 function App() {
     return (
         <AuthProvider>
@@ -47,9 +51,19 @@ function App() {
                     {/* Legacy redirect from Sprint 1 placeholder */}
                     <Route path="/onboarding" element={<Navigate to="/client/dashboard" replace />} />
 
-                    {/* Placeholder routes for future sprints */}
-                    <Route path="/setup" element={<h1>Clinic Setup (Sprint 3)</h1>} />
-                    <Route path="/dashboard" element={<h1>Admin Dashboard (Sprint 3)</h1>} />
+                    {/* Clinic routes */}
+                    <Route path="/clinic/dashboard" element={
+                        <ProtectedRoute role="clinic"><ClinicDashboardPage /></ProtectedRoute>
+                    } />
+                    <Route path="/clinic/profile" element={
+                        <ProtectedRoute role="clinic"><ClinicProfilePage /></ProtectedRoute>
+                    } />
+
+                    {/* Legacy redirect from Sprint 1 placeholder */}
+                    <Route path="/setup" element={<Navigate to="/clinic/dashboard" replace />} />
+
+                    {/* Placeholder route for future sprint */}
+                    <Route path="/dashboard" element={<h1>Admin Dashboard (Sprint 4)</h1>} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

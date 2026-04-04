@@ -60,7 +60,7 @@ export default function LoginPage() {
             } else if (user.role === 'client') {
                 navigate('/client/dashboard');
             } else if (user.role === 'clinic') {
-                navigate('/setup');
+                navigate('/clinic/dashboard');
             } else {
                 navigate('/dashboard');
             }
