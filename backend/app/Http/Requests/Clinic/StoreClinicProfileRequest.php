@@ -24,6 +24,13 @@ class StoreClinicProfileRequest extends FormRequest
             'tax_id'          => ['nullable', 'string', 'max:100'],
             'license_number'  => ['nullable', 'string', 'max:100'],
             'license_file'    => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'profile_photo'   => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'certifications'  => ['nullable', 'string', 'max:2000'],
+            'experience'      => ['nullable', 'string', 'max:255'],
+            'payment_methods' => ['nullable', 'string', 'max:255'],
+            'services'        => ['nullable', 'string', 'max:2000'],
+            'working_hours'   => ['nullable', 'string', 'max:255'],
+            'social_media_link' => ['nullable', 'url', 'max:255'],
         ];
     }
 }

@@ -8,10 +8,15 @@ class ClientProfile extends Model
 {
     protected $fillable = [
         'user_id',
+        'nickname',
         'date_of_birth',
         'gender',
+        'language',
+        'country',
+        'timezone',
         'phone',
         'address',
+        'profile_photo_url',
         'condition_summary',
         'injury_details',
         'medical_history',

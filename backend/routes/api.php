@@ -47,20 +47,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Client Routes
-|--------------------------------------------------------------------------
-*/
-
-/*
-|--------------------------------------------------------------------------
 | Clinic Routes
 |--------------------------------------------------------------------------
 */
 
 Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(function () {
-    Route::get('/profile',  [ClinicProfileController::class, 'show']);
-    Route::post('/profile', [ClinicProfileController::class, 'store']);
-    Route::put('/profile',  [ClinicProfileController::class, 'update']);
+    Route::get('/profile',          [ClinicProfileController::class, 'show']);
+    Route::post('/profile',         [ClinicProfileController::class, 'store']);
+    Route::post('/profile/update',  [ClinicProfileController::class, 'update']);
 });
 
 /*
@@ -71,8 +65,8 @@ Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(func
 
 Route::middleware(['auth:sanctum', 'role:client'])->prefix('client')->group(function () {
     // Profile
-    Route::get('/profile', [ClientProfileController::class, 'show']);
-    Route::put('/profile', [ClientProfileController::class, 'update']);
+    Route::get('/profile',          [ClientProfileController::class, 'show']);
+    Route::post('/profile/update',  [ClientProfileController::class, 'update']);
 
     // Clinic listing
     Route::get('/clinics', [ClinicController::class, 'index']);

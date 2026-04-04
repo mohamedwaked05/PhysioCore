@@ -30,37 +30,56 @@ class ClinicProfileController extends Controller
         $data['verification_status'] = 'pending';
 
         if ($request->hasFile('license_file')) {
-            $data['license_file_url'] = $this->storeLicenseFile($request);
+            $data['license_file_url'] = $this->storeFile($request, 'license_file', 'licenses');
         }
 
+        if ($request->hasFile('profile_photo')) {
+            $data['profile_photo_url'] = $this->storeFile($request, 'profile_photo', 'clinic-photos');
+        }
+
+        unset($data['license_file'], $data['profile_photo']);
         $clinic->update($data);
 
-        return response()->json($clinic, 201);
+        return response()->json($clinic->fresh(), 201);
     }
 
     public function update(UpdateClinicProfileRequest $request)
     {
         $clinic = $request->user()->clinic;
-
-        $data = $request->validated();
+        $data   = $request->validated();
 
         if ($request->hasFile('license_file')) {
             if ($clinic->license_file_url) {
-                Storage::disk('public')->delete($clinic->license_file_url);
+                $this->deleteStoredFile($clinic->license_file_url);
             }
-            $data['license_file_url'] = $this->storeLicenseFile($request);
+            $data['license_file_url'] = $this->storeFile($request, 'license_file', 'licenses');
         }
 
+        if ($request->hasFile('profile_photo')) {
+            if ($clinic->profile_photo_url) {
+                $this->deleteStoredFile($clinic->profile_photo_url);
+            }
+            $data['profile_photo_url'] = $this->storeFile($request, 'profile_photo', 'clinic-photos');
+        }
+
+        unset($data['license_file'], $data['profile_photo']);
         $clinic->update($data);
 
-        return response()->json($clinic);
+        return response()->json($clinic->fresh());
     }
 
-    private function storeLicenseFile(Request $request): string
+    private function storeFile(Request $request, string $field, string $folder): string
     {
-        $file     = $request->file('license_file');
+        $file     = $request->file($field);
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $path     = $file->storeAs($folder, $filename, 'public');
 
-        return $file->storeAs('licenses', $filename, 'public');
+        return Storage::disk('public')->url($path);
+    }
+
+    private function deleteStoredFile(string $url): void
+    {
+        $relativePath = ltrim(parse_url($url, PHP_URL_PATH), '/storage/');
+        Storage::disk('public')->delete($relativePath);
     }
 }

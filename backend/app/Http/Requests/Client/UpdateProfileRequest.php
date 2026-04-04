@@ -14,10 +14,15 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'nickname'            => ['nullable', 'string', 'max:100'],
             'date_of_birth'       => ['nullable', 'date', 'before:today'],
             'gender'              => ['nullable', 'in:male,female,other'],
+            'language'            => ['nullable', 'string', 'max:100'],
+            'country'             => ['nullable', 'string', 'max:100'],
+            'timezone'            => ['nullable', 'string', 'max:100'],
             'phone'               => ['nullable', 'string', 'max:20'],
             'address'             => ['nullable', 'string', 'max:255'],
+            'profile_photo'       => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
             'condition_summary'   => ['nullable', 'string', 'max:500'],
             'injury_details'      => ['nullable', 'string', 'max:2000'],
             'medical_history'     => ['nullable', 'string', 'max:2000'],
