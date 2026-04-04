@@ -7,9 +7,7 @@ export const createClinicProfile = (formData) =>
         headers: { 'Content-Type': 'multipart/form-data' },
     });
 
-export const updateClinicProfile = (formData) => {
-    formData.append('_method', 'PUT');
-    return api.post('/clinic/profile', formData, {
+export const updateClinicProfile = (formData) =>
+    api.post('/clinic/profile/update', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
-};

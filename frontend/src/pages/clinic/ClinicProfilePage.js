@@ -1,33 +1,43 @@
 import { useEffect, useRef, useState } from 'react';
 import { getClinicProfile, createClinicProfile, updateClinicProfile } from '../../api/clinic';
 import ClinicLayout from '../../components/ClinicLayout';
-import Spinner from '../../components/Spinner';
+import Avatar from '../../components/ui/Avatar';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
+import SectionHeader from '../../components/ui/SectionHeader';
+import { Field, Label, Input, Textarea, FieldError } from '../../components/ui/Input';
+import '../../styles/ui.css';
 import '../../styles/clinic.css';
 
 const INITIAL_FORM = {
-    legal_name:      '',
-    commercial_name: '',
-    clinic_email:    '',
-    clinic_mobile:   '',
-    address:         '',
-    description:     '',
-    specialty_text:  '',
-    tax_id:          '',
-    license_number:  '',
+    legal_name:       '',
+    commercial_name:  '',
+    clinic_email:     '',
+    clinic_mobile:    '',
+    address:          '',
+    description:      '',
+    specialty_text:   '',
+    tax_id:           '',
+    license_number:   '',
+    certifications:   '',
+    experience:       '',
+    payment_methods:  '',
+    services:         '',
+    working_hours:    '',
+    social_media_link: '',
 };
 
 const MAX_FILE_SIZE_MB = 5;
-const ALLOWED_TYPES    = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-const ALLOWED_LABEL    = 'PDF, JPG, PNG';
+const LICENSE_TYPES    = ['application/pdf', 'image/jpeg', 'image/png'];
+const PHOTO_TYPES      = ['image/jpeg', 'image/png'];
 
-function FileUpload({ file, currentUrl, onChange, error }) {
+function LicenseUpload({ file, currentUrl, onChange, error }) {
     const inputRef = useRef();
 
     const handleChange = (e) => {
         const selected = e.target.files[0];
         if (!selected) return;
         onChange(selected);
-        // reset input so same file can be re-selected after error
         e.target.value = '';
     };
 
@@ -36,7 +46,6 @@ function FileUpload({ file, currentUrl, onChange, error }) {
             <input
                 ref={inputRef}
                 type="file"
-                id="license_file"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={handleChange}
                 style={{ display: 'none' }}
@@ -52,7 +61,7 @@ function FileUpload({ file, currentUrl, onChange, error }) {
                     <line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
                 <span className="file-upload-name">
-                    {file ? file.name : `Choose license file (${ALLOWED_LABEL} — max ${MAX_FILE_SIZE_MB}MB)`}
+                    {file ? file.name : 'Choose license file (PDF, JPG, PNG — max 5MB)'}
                 </span>
             </button>
 
@@ -65,61 +74,85 @@ function FileUpload({ file, currentUrl, onChange, error }) {
                     View current license file
                 </a>
             )}
-
             {!file && !currentUrl && (
                 <span className="file-upload-hint">Upload your official clinic license for verification.</span>
             )}
-
-            {error && <span className="profile-field-error">{error}</span>}
+            {error && <span className="ui-field-error">{error}</span>}
         </div>
     );
 }
 
 export default function ClinicProfilePage() {
-    const [form, setForm]           = useState(INITIAL_FORM);
+    const [form, setForm]               = useState(INITIAL_FORM);
     const [licenseFile, setLicenseFile] = useState(null);
-    const [currentFileUrl, setCurrentFileUrl] = useState('');
+    const [licenseUrl, setLicenseUrl]   = useState('');
+    const [photoFile, setPhotoFile]     = useState(null);
+    const [photoPreview, setPhotoPreview] = useState('');
     const [isRegistered, setIsRegistered] = useState(false);
-    const [errors, setErrors]       = useState({});
-    const [loading, setLoading]     = useState(true);
-    const [saving, setSaving]       = useState(false);
-    const [success, setSuccess]     = useState(false);
-    const [error, setError]         = useState('');
+    const [errors, setErrors]           = useState({});
+    const [loading, setLoading]         = useState(true);
+    const [saving, setSaving]           = useState(false);
+    const [editing, setEditing]         = useState(false);
+    const [success, setSuccess]         = useState(false);
+    const [errorMsg, setErrorMsg]       = useState('');
 
     useEffect(() => {
         getClinicProfile()
             .then(res => {
-                const data = res.data ?? {};
+                const d = res.data ?? {};
                 setForm({
-                    legal_name:      data.legal_name      ?? '',
-                    commercial_name: data.commercial_name ?? '',
-                    clinic_email:    data.clinic_email    ?? '',
-                    clinic_mobile:   data.clinic_mobile   ?? '',
-                    address:         data.address         ?? '',
-                    description:     data.description     ?? '',
-                    specialty_text:  data.specialty_text  ?? '',
-                    tax_id:          data.tax_id          ?? '',
-                    license_number:  data.license_number  ?? '',
+                    legal_name:        d.legal_name        ?? '',
+                    commercial_name:   d.commercial_name   ?? '',
+                    clinic_email:      d.clinic_email      ?? '',
+                    clinic_mobile:     d.clinic_mobile     ?? '',
+                    address:           d.address           ?? '',
+                    description:       d.description       ?? '',
+                    specialty_text:    d.specialty_text    ?? '',
+                    tax_id:            d.tax_id            ?? '',
+                    license_number:    d.license_number    ?? '',
+                    certifications:    d.certifications    ?? '',
+                    experience:        d.experience        ?? '',
+                    payment_methods:   d.payment_methods   ?? '',
+                    services:          d.services          ?? '',
+                    working_hours:     d.working_hours     ?? '',
+                    social_media_link: d.social_media_link ?? '',
                 });
-                setCurrentFileUrl(data.license_file_url ?? '');
-                setIsRegistered(!!data.clinic_email);
+                setLicenseUrl(d.license_file_url ?? '');
+                setPhotoPreview(d.profile_photo_url ?? '');
+                setIsRegistered(!!d.clinic_email);
+                // New clinic starts in edit mode
+                if (!d.clinic_email) setEditing(true);
             })
-            .catch(() => {})
+            .catch(() => { setEditing(true); })
             .finally(() => setLoading(false));
     }, []);
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-        if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: null });
+        setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        if (errors[e.target.name]) setErrors(prev => ({ ...prev, [e.target.name]: null }));
     };
 
-    const handleFileChange = (file) => {
-        if (!ALLOWED_TYPES.includes(file.type)) {
-            setErrors(prev => ({ ...prev, license_file: `Invalid file type. Allowed: ${ALLOWED_LABEL}.` }));
+    const handlePhotoChange = (file) => {
+        if (!PHOTO_TYPES.includes(file.type)) {
+            setErrors(prev => ({ ...prev, profile_photo: 'Only JPG and PNG are allowed.' }));
             return;
         }
         if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-            setErrors(prev => ({ ...prev, license_file: `File too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.` }));
+            setErrors(prev => ({ ...prev, profile_photo: `Max file size is ${MAX_FILE_SIZE_MB}MB.` }));
+            return;
+        }
+        setPhotoFile(file);
+        setPhotoPreview(URL.createObjectURL(file));
+        setErrors(prev => ({ ...prev, profile_photo: null }));
+    };
+
+    const handleLicenseChange = (file) => {
+        if (!LICENSE_TYPES.includes(file.type)) {
+            setErrors(prev => ({ ...prev, license_file: 'Invalid file type. Allowed: PDF, JPG, PNG.' }));
+            return;
+        }
+        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+            setErrors(prev => ({ ...prev, license_file: `Max file size is ${MAX_FILE_SIZE_MB}MB.` }));
             return;
         }
         setLicenseFile(file);
@@ -131,15 +164,23 @@ export default function ClinicProfilePage() {
         if (!form.legal_name.trim())      errs.legal_name      = 'Legal name is required.';
         if (!form.commercial_name.trim()) errs.commercial_name = 'Commercial name is required.';
         if (!form.clinic_email.trim())    errs.clinic_email    = 'Clinic email is required.';
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.clinic_email)) errs.clinic_email = 'Enter a valid email address.';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.clinic_email)) errs.clinic_email = 'Enter a valid email.';
         if (!form.clinic_mobile.trim())   errs.clinic_mobile   = 'Phone number is required.';
         if (!form.address.trim())         errs.address         = 'Address is required.';
         return errs;
     };
 
+    const handleCancel = () => {
+        setEditing(false);
+        setErrors({});
+        setErrorMsg('');
+        if (photoFile) setPhotoFile(null);
+        if (licenseFile) setLicenseFile(null);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
+        setErrorMsg('');
         setSuccess(false);
 
         const clientErrors = validate();
@@ -151,17 +192,22 @@ export default function ClinicProfilePage() {
         setSaving(true);
 
         const formData = new FormData();
-        Object.entries(form).forEach(([key, value]) => {
-            if (value !== null && value !== undefined) formData.append(key, value);
+        Object.entries(form).forEach(([k, v]) => {
+            if (v !== null && v !== undefined && v !== '') formData.append(k, v);
         });
         if (licenseFile) formData.append('license_file', licenseFile);
+        if (photoFile)   formData.append('profile_photo', photoFile);
 
         try {
-            const fn   = isRegistered ? updateClinicProfile : createClinicProfile;
-            const res  = await fn(formData);
-            setCurrentFileUrl(res.data?.license_file_url ?? currentFileUrl);
+            const fn  = isRegistered ? updateClinicProfile : createClinicProfile;
+            const res = await fn(formData);
+            const d   = res.data ?? {};
+            setLicenseUrl(d.license_file_url ?? licenseUrl);
+            setPhotoPreview(d.profile_photo_url ?? photoPreview);
             setIsRegistered(true);
             setLicenseFile(null);
+            setPhotoFile(null);
+            setEditing(false);
             setSuccess(true);
             setTimeout(() => setSuccess(false), 3500);
         } catch (err) {
@@ -171,7 +217,7 @@ export default function ClinicProfilePage() {
                 Object.entries(serverErrors).forEach(([k, v]) => { flat[k] = v[0]; });
                 setErrors(flat);
             } else {
-                setError(err.response?.data?.message ?? 'Failed to save. Please try again.');
+                setErrorMsg(err.response?.data?.message ?? 'Failed to save. Please try again.');
             }
         } finally {
             setSaving(false);
@@ -186,179 +232,290 @@ export default function ClinicProfilePage() {
         );
     }
 
+    const displayName = form.commercial_name || form.legal_name || 'Clinic Profile';
+
     return (
         <ClinicLayout>
-            <div className="client-page-header">
-                <h1 className="client-page-title">
-                    {isRegistered ? 'Edit Registration' : 'Complete Registration'}
-                </h1>
-                <p className="client-page-subtitle">
-                    {isRegistered
-                        ? 'Update your clinic details. Changes will be reviewed by our team.'
-                        : 'Fill in your clinic details to submit for verification.'}
-                </p>
+            {success  && <div className="ui-alert ui-alert--success">Clinic profile saved successfully.</div>}
+            {errorMsg && <div className="ui-alert ui-alert--error">{errorMsg}</div>}
+
+            {/* Profile Header */}
+            <div className="ui-profile-header" style={{ marginBottom: '1.25rem' }}>
+                <Avatar
+                    src={photoPreview}
+                    name={displayName}
+                    size="xl"
+                    editable={editing}
+                    onFileChange={handlePhotoChange}
+                />
+                <div className="ui-profile-header-info">
+                    <h1 className="ui-profile-header-name">{displayName}</h1>
+                    <p className="ui-profile-header-sub">
+                        {form.specialty_text
+                            ? form.specialty_text
+                            : isRegistered ? form.address || '' : 'Complete your clinic registration'}
+                    </p>
+                    {errors.profile_photo && (
+                        <span className="ui-field-error" style={{ marginTop: '0.25rem', display: 'block' }}>
+                            {errors.profile_photo}
+                        </span>
+                    )}
+                </div>
+                <div className="ui-profile-header-actions">
+                    {editing
+                        ? <>
+                            {isRegistered && (
+                                <Button variant="ghost" size="sm" onClick={handleCancel} disabled={saving}>Cancel</Button>
+                            )}
+                            <Button variant="primary" size="sm" type="submit" form="clinic-form" loading={saving}>
+                                {isRegistered ? 'Save Changes' : 'Submit Registration'}
+                            </Button>
+                          </>
+                        : <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>Edit Profile</Button>
+                    }
+                </div>
             </div>
 
-            <form onSubmit={handleSubmit}>
-                {error   && <div className="client-error-banner">{error}</div>}
-                {success && <div className="client-success-banner">Clinic registration saved successfully.</div>}
+            <form id="clinic-form" onSubmit={handleSubmit}>
 
                 {/* Business Information */}
-                <div className="client-card" style={{ marginBottom: '1.25rem' }}>
-                    <p className="profile-section-label">Business Information</p>
-                    <div className="profile-form-grid">
+                <Card style={{ marginBottom: '1.25rem' }}>
+                    <SectionHeader title="Business Information" />
+                    <div className="ui-form-grid">
 
-                        <div className="profile-field">
-                            <label className="profile-label">Legal Name <span style={{ color: '#dc2626' }}>*</span></label>
-                            <input
-                                className="profile-input"
-                                type="text"
+                        <Field>
+                            <Label>Legal Name <span style={{ color: '#dc2626' }}>*</span></Label>
+                            <Input
                                 name="legal_name"
                                 value={form.legal_name}
                                 onChange={handleChange}
                                 placeholder="Registered legal entity name"
+                                disabled={!editing}
+                                error={errors.legal_name}
                             />
-                            {errors.legal_name && <span className="profile-field-error">{errors.legal_name}</span>}
-                        </div>
+                            <FieldError message={errors.legal_name} />
+                        </Field>
 
-                        <div className="profile-field">
-                            <label className="profile-label">Commercial Name <span style={{ color: '#dc2626' }}>*</span></label>
-                            <input
-                                className="profile-input"
-                                type="text"
+                        <Field>
+                            <Label>Commercial Name <span style={{ color: '#dc2626' }}>*</span></Label>
+                            <Input
                                 name="commercial_name"
                                 value={form.commercial_name}
                                 onChange={handleChange}
                                 placeholder="Name clients will see"
+                                disabled={!editing}
+                                error={errors.commercial_name}
                             />
-                            {errors.commercial_name && <span className="profile-field-error">{errors.commercial_name}</span>}
-                        </div>
+                            <FieldError message={errors.commercial_name} />
+                        </Field>
 
-                        <div className="profile-field">
-                            <label className="profile-label">Clinic Email <span style={{ color: '#dc2626' }}>*</span></label>
-                            <input
-                                className="profile-input"
+                        <Field>
+                            <Label>Clinic Email <span style={{ color: '#dc2626' }}>*</span></Label>
+                            <Input
                                 type="email"
                                 name="clinic_email"
                                 value={form.clinic_email}
                                 onChange={handleChange}
                                 placeholder="contact@yourclinic.com"
+                                disabled={!editing}
+                                error={errors.clinic_email}
                             />
-                            {errors.clinic_email && <span className="profile-field-error">{errors.clinic_email}</span>}
-                        </div>
+                            <FieldError message={errors.clinic_email} />
+                        </Field>
 
-                        <div className="profile-field">
-                            <label className="profile-label">Phone Number <span style={{ color: '#dc2626' }}>*</span></label>
-                            <input
-                                className="profile-input"
+                        <Field>
+                            <Label>Phone Number <span style={{ color: '#dc2626' }}>*</span></Label>
+                            <Input
                                 type="tel"
                                 name="clinic_mobile"
                                 value={form.clinic_mobile}
                                 onChange={handleChange}
                                 placeholder="+1 234 567 8900"
+                                disabled={!editing}
+                                error={errors.clinic_mobile}
                             />
-                            {errors.clinic_mobile && <span className="profile-field-error">{errors.clinic_mobile}</span>}
-                        </div>
+                            <FieldError message={errors.clinic_mobile} />
+                        </Field>
 
-                        <div className="profile-field span-2">
-                            <label className="profile-label">Address <span style={{ color: '#dc2626' }}>*</span></label>
-                            <input
-                                className="profile-input"
-                                type="text"
+                        <Field className="span-2">
+                            <Label>Address <span style={{ color: '#dc2626' }}>*</span></Label>
+                            <Input
                                 name="address"
                                 value={form.address}
                                 onChange={handleChange}
                                 placeholder="Street, city, country"
+                                disabled={!editing}
+                                error={errors.address}
                             />
-                            {errors.address && <span className="profile-field-error">{errors.address}</span>}
-                        </div>
+                            <FieldError message={errors.address} />
+                        </Field>
 
-                        <div className="profile-field">
-                            <label className="profile-label">Tax ID <span style={{ color: '#9896a4', fontSize: '0.75rem', fontWeight: 400 }}>(optional)</span></label>
-                            <input
-                                className="profile-input"
-                                type="text"
+                        <Field>
+                            <Label hint="optional">Tax ID</Label>
+                            <Input
                                 name="tax_id"
                                 value={form.tax_id}
                                 onChange={handleChange}
                                 placeholder="e.g. VAT-123456"
+                                disabled={!editing}
+                                error={errors.tax_id}
                             />
-                            {errors.tax_id && <span className="profile-field-error">{errors.tax_id}</span>}
-                        </div>
+                            <FieldError message={errors.tax_id} />
+                        </Field>
+
+                        <Field>
+                            <Label hint="optional">Social Media</Label>
+                            <Input
+                                name="social_media_link"
+                                value={form.social_media_link}
+                                onChange={handleChange}
+                                placeholder="https://instagram.com/yourclinic"
+                                disabled={!editing}
+                                error={errors.social_media_link}
+                            />
+                            <FieldError message={errors.social_media_link} />
+                        </Field>
 
                     </div>
-                </div>
+                </Card>
 
                 {/* Clinic Details */}
-                <div className="client-card" style={{ marginBottom: '1.25rem' }}>
-                    <p className="profile-section-label">Clinic Details</p>
-                    <div className="profile-form-grid">
+                <Card style={{ marginBottom: '1.25rem' }}>
+                    <SectionHeader title="Clinic Details" />
+                    <div className="ui-form-grid">
 
-                        <div className="profile-field">
-                            <label className="profile-label">Specialty</label>
-                            <input
-                                className="profile-input"
-                                type="text"
+                        <Field>
+                            <Label hint="optional">Specialty</Label>
+                            <Input
                                 name="specialty_text"
                                 value={form.specialty_text}
                                 onChange={handleChange}
                                 placeholder="e.g. Sports Rehabilitation"
+                                disabled={!editing}
+                                error={errors.specialty_text}
                             />
-                            {errors.specialty_text && <span className="profile-field-error">{errors.specialty_text}</span>}
-                        </div>
+                            <FieldError message={errors.specialty_text} />
+                        </Field>
 
-                        <div className="profile-field span-2">
-                            <label className="profile-label">Description</label>
-                            <textarea
-                                className="profile-textarea"
+                        <Field>
+                            <Label hint="optional">Experience</Label>
+                            <Input
+                                name="experience"
+                                value={form.experience}
+                                onChange={handleChange}
+                                placeholder="e.g. 10+ years in physiotherapy"
+                                disabled={!editing}
+                                error={errors.experience}
+                            />
+                            <FieldError message={errors.experience} />
+                        </Field>
+
+                        <Field>
+                            <Label hint="optional">Working Hours</Label>
+                            <Input
+                                name="working_hours"
+                                value={form.working_hours}
+                                onChange={handleChange}
+                                placeholder="e.g. Mon–Fri 9am–6pm"
+                                disabled={!editing}
+                                error={errors.working_hours}
+                            />
+                            <FieldError message={errors.working_hours} />
+                        </Field>
+
+                        <Field>
+                            <Label hint="optional">Payment Methods</Label>
+                            <Input
+                                name="payment_methods"
+                                value={form.payment_methods}
+                                onChange={handleChange}
+                                placeholder="e.g. Cash, Visa, Insurance"
+                                disabled={!editing}
+                                error={errors.payment_methods}
+                            />
+                            <FieldError message={errors.payment_methods} />
+                        </Field>
+
+                        <Field className="span-2">
+                            <Label hint="optional">Description</Label>
+                            <Textarea
                                 name="description"
                                 value={form.description}
                                 onChange={handleChange}
                                 placeholder="Describe your clinic, services, and approach"
+                                disabled={!editing}
+                                error={errors.description}
                             />
-                            {errors.description && <span className="profile-field-error">{errors.description}</span>}
-                        </div>
+                            <FieldError message={errors.description} />
+                        </Field>
+
+                        <Field className="span-2">
+                            <Label hint="optional">Services Offered</Label>
+                            <Textarea
+                                name="services"
+                                value={form.services}
+                                onChange={handleChange}
+                                placeholder="e.g. Manual therapy, ultrasound, dry needling"
+                                disabled={!editing}
+                                error={errors.services}
+                            />
+                            <FieldError message={errors.services} />
+                        </Field>
+
+                        <Field className="span-2">
+                            <Label hint="optional">Certifications</Label>
+                            <Textarea
+                                name="certifications"
+                                value={form.certifications}
+                                onChange={handleChange}
+                                placeholder="e.g. ISO 9001, Ministry of Health licensed"
+                                disabled={!editing}
+                                error={errors.certifications}
+                            />
+                            <FieldError message={errors.certifications} />
+                        </Field>
 
                     </div>
-                </div>
+                </Card>
 
                 {/* License Information */}
-                <div className="client-card">
-                    <p className="profile-section-label">License Information</p>
-                    <div className="profile-form-grid">
+                <Card>
+                    <SectionHeader title="License Information" />
+                    <div className="ui-form-grid">
 
-                        <div className="profile-field">
-                            <label className="profile-label">License Number</label>
-                            <input
-                                className="profile-input"
-                                type="text"
+                        <Field>
+                            <Label hint="optional">License Number</Label>
+                            <Input
                                 name="license_number"
                                 value={form.license_number}
                                 onChange={handleChange}
                                 placeholder="e.g. MED-2024-001234"
+                                disabled={!editing}
+                                error={errors.license_number}
                             />
-                            {errors.license_number && <span className="profile-field-error">{errors.license_number}</span>}
-                        </div>
+                            <FieldError message={errors.license_number} />
+                        </Field>
 
-                        <div className="profile-field span-2">
-                            <label className="profile-label">License Document</label>
-                            <FileUpload
-                                file={licenseFile}
-                                currentUrl={currentFileUrl}
-                                onChange={handleFileChange}
-                                error={errors.license_file}
-                            />
-                        </div>
+                        <Field className="span-2">
+                            <Label hint="optional">License Document</Label>
+                            {editing
+                                ? <LicenseUpload
+                                    file={licenseFile}
+                                    currentUrl={licenseUrl}
+                                    onChange={handleLicenseChange}
+                                    error={errors.license_file}
+                                  />
+                                : licenseUrl
+                                    ? <a href={licenseUrl} target="_blank" rel="noopener noreferrer" className="file-current-link">
+                                        View license file
+                                      </a>
+                                    : <span style={{ fontSize: '0.875rem', color: '#9896a4' }}>No license uploaded</span>
+                            }
+                        </Field>
 
                     </div>
+                </Card>
 
-                    <div className="profile-form-footer">
-                        <button className="profile-save-btn" type="submit" disabled={saving}>
-                            {saving && <Spinner />}
-                            {saving ? 'Saving...' : isRegistered ? 'Save Changes' : 'Submit Registration'}
-                        </button>
-                    </div>
-                </div>
             </form>
         </ClinicLayout>
     );

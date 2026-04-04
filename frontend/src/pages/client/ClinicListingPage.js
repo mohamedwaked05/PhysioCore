@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react';
 import { getClinics, createAccessRequest, getAccessRequests } from '../../api/client';
 import ClientLayout from '../../components/ClientLayout';
-import Spinner from '../../components/Spinner';
+import Avatar from '../../components/ui/Avatar';
+import Button from '../../components/ui/Button';
+import '../../styles/ui.css';
+import '../../styles/client.css';
 
 export default function ClinicListingPage() {
-    const [clinics, setClinics] = useState([]);
+    const [clinics, setClinics]         = useState([]);
     const [activeRequests, setActiveRequests] = useState(new Set());
-    const [loading, setLoading] = useState(true);
-    const [requesting, setRequesting] = useState(null);
-    const [feedback, setFeedback] = useState({ id: null, type: '', message: '' });
+    const [loading, setLoading]         = useState(true);
+    const [requesting, setRequesting]   = useState(null);
+    const [feedback, setFeedback]       = useState({ id: null, type: '', message: '' });
 
     useEffect(() => {
         Promise.all([getClinics(), getAccessRequests()])
             .then(([clinicsRes, requestsRes]) => {
                 setClinics(clinicsRes.data);
-
                 const active = new Set(
                     requestsRes.data
                         .filter(r => r.status === 'pending' || r.status === 'approved')
@@ -66,31 +68,64 @@ export default function ClinicListingPage() {
             ) : (
                 <div className="clinic-grid">
                     {clinics.map(clinic => {
-                        const hasActive = activeRequests.has(clinic.id);
+                        const hasActive   = activeRequests.has(clinic.id);
                         const isRequesting = requesting === clinic.id;
+                        const name        = clinic.commercial_name || clinic.legal_name;
 
                         return (
                             <div key={clinic.id} className="clinic-card">
-                                <span className="clinic-card-name">{clinic.name}</span>
+                                {/* Card header with photo */}
+                                <div className="clinic-card-header">
+                                    <Avatar
+                                        src={clinic.profile_photo_url}
+                                        name={name}
+                                        size="md"
+                                    />
+                                    <div className="clinic-card-header-info">
+                                        <span className="clinic-card-name">{name}</span>
+                                        {clinic.specialty_text && (
+                                            <span className="clinic-card-specialty">{clinic.specialty_text}</span>
+                                        )}
+                                    </div>
+                                </div>
 
-                                {clinic.specialty && (
-                                    <span className="clinic-card-specialty">{clinic.specialty}</span>
-                                )}
-
+                                {/* Description */}
                                 <p className="clinic-card-desc">
                                     {clinic.description ?? 'No description provided.'}
                                 </p>
 
-                                {clinic.address && (
-                                    <span className="clinic-card-address">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                                            <circle cx="12" cy="10" r="3"/>
-                                        </svg>
-                                        {clinic.address}
-                                    </span>
+                                {/* Meta info */}
+                                <div className="clinic-card-meta">
+                                    {clinic.address && (
+                                        <span className="clinic-card-meta-item">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                                                <circle cx="12" cy="10" r="3"/>
+                                            </svg>
+                                            {clinic.address}
+                                        </span>
+                                    )}
+                                    {clinic.working_hours && (
+                                        <span className="clinic-card-meta-item">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                <circle cx="12" cy="12" r="10"/>
+                                                <polyline points="12 6 12 12 16 14"/>
+                                            </svg>
+                                            {clinic.working_hours}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Services tags */}
+                                {clinic.services && (
+                                    <div className="clinic-card-tags">
+                                        {clinic.services.split(',').slice(0, 3).map((s, i) => (
+                                            <span key={i} className="clinic-card-tag">{s.trim()}</span>
+                                        ))}
+                                    </div>
                                 )}
 
+                                {/* Footer */}
                                 <div className="clinic-card-footer">
                                     {feedback.id === clinic.id && (
                                         <div
@@ -101,14 +136,16 @@ export default function ClinicListingPage() {
                                         </div>
                                     )}
 
-                                    <button
-                                        className={`clinic-request-btn${hasActive ? ' requested' : ''}`}
+                                    <Button
+                                        variant={hasActive ? 'secondary' : 'primary'}
+                                        size="sm"
                                         onClick={() => handleRequest(clinic.id)}
-                                        disabled={hasActive || isRequesting}
+                                        disabled={hasActive}
+                                        loading={isRequesting}
+                                        style={{ width: '100%' }}
                                     >
-                                        {isRequesting && <Spinner />}
-                                        {hasActive ? 'Request Sent' : isRequesting ? 'Sending...' : 'Request Access'}
-                                    </button>
+                                        {hasActive ? 'Request Sent' : 'Request Access'}
+                                    </Button>
                                 </div>
                             </div>
                         );

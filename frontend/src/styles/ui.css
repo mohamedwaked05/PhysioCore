@@ -1,0 +1,324 @@
+/* ============================================================
+   PhysioCore UI Design System
+   ============================================================ */
+
+/* --- Avatar ------------------------------------------------ */
+.ui-avatar {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #3E4772;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.ui-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.ui-avatar--sm  { width: 40px;  height: 40px;  font-size: 0.875rem; }
+.ui-avatar--md  { width: 64px;  height: 64px;  font-size: 1.25rem; }
+.ui-avatar--lg  { width: 88px;  height: 88px;  font-size: 1.75rem; }
+.ui-avatar--xl  { width: 112px; height: 112px; font-size: 2.25rem; }
+
+.ui-avatar-upload {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    cursor: pointer;
+    color: #fff;
+}
+
+.ui-avatar:hover .ui-avatar-upload {
+    opacity: 1;
+}
+
+/* --- Card -------------------------------------------------- */
+.ui-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #E8E6E3;
+    padding: 1.5rem;
+}
+
+.ui-card--flush {
+    padding: 0;
+}
+
+/* --- Section Header --------------------------------------- */
+.ui-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.ui-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9896a4;
+}
+
+/* --- Input ------------------------------------------------ */
+.ui-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.ui-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #3E4772;
+    font-family: 'Inter', sans-serif;
+}
+
+.ui-label-hint {
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: #9896a4;
+    margin-left: 0.25rem;
+}
+
+.ui-input,
+.ui-textarea,
+.ui-select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.625rem 0.875rem;
+    border: 1.5px solid #E8E6E3;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    color: #1a1a2e;
+    background: #FAFAF9;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    outline: none;
+}
+
+.ui-input:focus,
+.ui-textarea:focus,
+.ui-select:focus {
+    border-color: #3E4772;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(62, 71, 114, 0.08);
+}
+
+.ui-input::placeholder,
+.ui-textarea::placeholder {
+    color: #c5c3ce;
+}
+
+.ui-input--error,
+.ui-textarea--error {
+    border-color: #dc2626;
+}
+
+.ui-textarea {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.55;
+}
+
+.ui-field-error {
+    font-size: 0.76rem;
+    color: #dc2626;
+    font-family: 'Inter', sans-serif;
+}
+
+/* --- Button ----------------------------------------------- */
+.ui-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ui-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ui-btn--primary {
+    background: #3E4772;
+    color: #fff;
+}
+
+.ui-btn--primary:hover:not(:disabled) {
+    background: #323a5e;
+    box-shadow: 0 4px 12px rgba(62, 71, 114, 0.25);
+}
+
+.ui-btn--secondary {
+    background: #EFECEA;
+    color: #3E4772;
+}
+
+.ui-btn--secondary:hover:not(:disabled) {
+    background: #e3e0dd;
+}
+
+.ui-btn--ghost {
+    background: transparent;
+    color: #3E4772;
+    border: 1.5px solid #E8E6E3;
+}
+
+.ui-btn--ghost:hover:not(:disabled) {
+    background: #EFECEA;
+}
+
+.ui-btn--danger {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.ui-btn--danger:hover:not(:disabled) {
+    background: #fecaca;
+}
+
+.ui-btn--sm {
+    padding: 0.4rem 0.875rem;
+    font-size: 0.8125rem;
+    border-radius: 8px;
+}
+
+.ui-btn--lg {
+    padding: 0.75rem 1.75rem;
+    font-size: 1rem;
+    border-radius: 12px;
+}
+
+/* --- Status Badge ----------------------------------------- */
+.ui-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.03em;
+}
+
+.ui-badge--pending  { background: #fef3c7; color: #92400e; }
+.ui-badge--approved { background: #d1fae5; color: #065f46; }
+.ui-badge--rejected { background: #fee2e2; color: #991b1b; }
+.ui-badge--verified { background: #d1fae5; color: #065f46; }
+.ui-badge--info     { background: #dbeafe; color: #1e40af; }
+.ui-badge--neutral  { background: #f1f0ef; color: #4b5563; }
+
+/* --- Form grid -------------------------------------------- */
+.ui-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.25rem;
+}
+
+.ui-form-grid .span-2 {
+    grid-column: span 2;
+}
+
+@media (max-width: 640px) {
+    .ui-form-grid {
+        grid-template-columns: 1fr;
+    }
+    .ui-form-grid .span-2 {
+        grid-column: span 1;
+    }
+}
+
+/* --- Divider ---------------------------------------------- */
+.ui-divider {
+    height: 1px;
+    background: #E8E6E3;
+    margin: 1.25rem 0;
+}
+
+/* --- Alert banners ---------------------------------------- */
+.ui-alert {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 1rem;
+}
+
+.ui-alert--error   { background: #fee2e2; color: #991b1b; }
+.ui-alert--success { background: #d1fae5; color: #065f46; }
+.ui-alert--info    { background: #dbeafe; color: #1e40af; }
+.ui-alert--warning { background: #fef3c7; color: #92400e; }
+
+/* --- Profile page header ---------------------------------- */
+.ui-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #E8E6E3;
+    margin-bottom: 1.25rem;
+}
+
+.ui-profile-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.ui-profile-header-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ui-profile-header-sub {
+    font-size: 0.85rem;
+    color: #9896a4;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+.ui-profile-header-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* --- Edit/View toggle ------------------------------------- */
+.ui-edit-toggle {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}

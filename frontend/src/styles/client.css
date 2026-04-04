@@ -342,12 +342,56 @@
   flex: 1;
 }
 
+.clinic-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.clinic-card-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.clinic-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.clinic-card-meta-item {
+  font-size: 0.78rem;
+  color: #9896a4;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .clinic-card-address {
   font-size: 0.78rem;
   color: #9896a4;
   display: flex;
   align-items: center;
   gap: 0.35rem;
+}
+
+.clinic-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.clinic-card-tag {
+  background: #f0f0f8;
+  color: #3E4772;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
 }
 
 .clinic-card-footer {
