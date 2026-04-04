@@ -13,7 +13,7 @@ class AccessRequestController extends Controller
         $requests = $request->user()
             ->clientProfile
             ->accessRequests()
-            ->with('clinic:id,name,specialty,address')
+            ->with('clinic:id,legal_name,commercial_name,specialty_text,address')
             ->latest()
             ->get();
 

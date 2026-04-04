@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Client\AccessRequestController;
 use App\Http\Controllers\Client\ClientProfileController;
 use App\Http\Controllers\Client\ClinicController;
+use App\Http\Controllers\Clinic\ClinicProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,6 +43,24 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Authenticated user info (used for token verification / debugging)
     Route::get('/user', fn () => response()->json(auth()->user()));
+});
+
+/*
+|--------------------------------------------------------------------------
+| Client Routes
+|--------------------------------------------------------------------------
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Clinic Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(function () {
+    Route::get('/profile',  [ClinicProfileController::class, 'show']);
+    Route::post('/profile', [ClinicProfileController::class, 'store']);
+    Route::put('/profile',  [ClinicProfileController::class, 'update']);
 });
 
 /*

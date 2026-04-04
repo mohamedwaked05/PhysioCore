@@ -49,9 +49,9 @@ class AuthService
             ClientProfile::create(['user_id' => $user->id]);
         } elseif ($user->role === 'clinic') {
             Clinic::create([
-                'user_id' => $user->id,
-                'name'    => $user->first_name . ' ' . $user->last_name,
-                'status'  => 'pending',
+                'user_id'             => $user->id,
+                'legal_name'          => $user->first_name . ' ' . $user->last_name,
+                'verification_status' => 'pending',
             ]);
         }
     }

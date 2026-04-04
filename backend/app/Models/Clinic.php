@@ -8,13 +8,17 @@ class Clinic extends Model
 {
     protected $fillable = [
         'user_id',
-        'name',
-        'description',
-        'specialty',
-        'phone',
+        'legal_name',
+        'commercial_name',
+        'clinic_email',
+        'clinic_mobile',
         'address',
+        'tax_id',
+        'description',
+        'specialty_text',
         'license_number',
-        'status',
+        'license_file_url',
+        'verification_status',
         'rejection_reason',
     ];
 

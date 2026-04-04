@@ -9,8 +9,8 @@ class ClinicController extends Controller
 {
     public function index()
     {
-        $clinics = Clinic::where('status', 'verified')
-            ->select(['id', 'name', 'description', 'specialty', 'address', 'phone'])
+        $clinics = Clinic::where('verification_status', 'approved')
+            ->select(['id', 'legal_name', 'commercial_name', 'description', 'specialty_text', 'address', 'clinic_mobile'])
             ->get();
 
         return response()->json($clinics);
