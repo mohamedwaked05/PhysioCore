@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import AuthSidebar from '../components/AuthSidebar';
@@ -34,6 +34,8 @@ function GoogleIcon() {
 export default function LoginPage() {
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname;
 
     const [form, setForm] = useState({ email: '', password: '', remember: false });
     const [showPassword, setShowPassword] = useState(false);
@@ -53,9 +55,15 @@ export default function LoginPage() {
             const res = await api.post('/auth/login', form);
             const { user, token } = res.data;
             login(user, token);
-            if (user.role === 'client') navigate('/onboarding');
-            else if (user.role === 'clinic') navigate('/setup');
-            else navigate('/dashboard');
+            if (from) {
+                navigate(from, { replace: true });
+            } else if (user.role === 'client') {
+                navigate('/client/dashboard');
+            } else if (user.role === 'clinic') {
+                navigate('/setup');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (err) {
             const msg = err.response?.data?.errors?.email?.[0]
                 || err.response?.data?.message

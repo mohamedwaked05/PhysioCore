@@ -9,6 +9,8 @@ class Clinic extends Model
     protected $fillable = [
         'user_id',
         'name',
+        'description',
+        'specialty',
         'phone',
         'address',
         'license_number',

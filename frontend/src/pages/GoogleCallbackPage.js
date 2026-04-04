@@ -25,7 +25,7 @@ export default function GoogleCallbackPage() {
             api.get('/user')
                 .then(({ data }) => {
                     login(data, token);
-                    if (role === 'client') navigate('/onboarding');
+                    if (role === 'client') navigate('/client/dashboard');
                     else if (role === 'clinic') navigate('/setup');
                     else navigate('/dashboard');
                 })
