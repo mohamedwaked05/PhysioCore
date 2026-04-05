@@ -21,10 +21,13 @@ const INITIAL_FORM = {
     license_number:   '',
     certifications:   '',
     experience:       '',
-    payment_methods:  '',
-    services:         '',
-    working_hours:    '',
-    social_media_link: '',
+    payment_methods:          '',
+    services:                 '',
+    working_hours:            '',
+    social_media_link:        '',
+    min_price:                '',
+    max_price:                '',
+    estimated_response_time:  '',
 };
 
 const MAX_FILE_SIZE_MB = 5;
@@ -112,10 +115,13 @@ export default function ClinicProfilePage() {
                     license_number:    d.license_number    ?? '',
                     certifications:    d.certifications    ?? '',
                     experience:        d.experience        ?? '',
-                    payment_methods:   d.payment_methods   ?? '',
-                    services:          d.services          ?? '',
-                    working_hours:     d.working_hours     ?? '',
-                    social_media_link: d.social_media_link ?? '',
+                    payment_methods:         d.payment_methods         ?? '',
+                    services:                d.services                ?? '',
+                    working_hours:           d.working_hours           ?? '',
+                    social_media_link:       d.social_media_link       ?? '',
+                    min_price:               d.min_price  != null ? String(d.min_price)  : '',
+                    max_price:               d.max_price  != null ? String(d.max_price)  : '',
+                    estimated_response_time: d.estimated_response_time ?? '',
                 });
                 setLicenseUrl(d.license_file_url ?? '');
                 setPhotoPreview(d.profile_photo_url ?? '');
@@ -434,6 +440,47 @@ export default function ClinicProfilePage() {
                                 error={errors.payment_methods}
                             />
                             <FieldError message={errors.payment_methods} />
+                        </Field>
+
+                        <Field>
+                            <Label hint="optional">Min. Session Price (USD)</Label>
+                            <Input
+                                type="number"
+                                name="min_price"
+                                value={form.min_price}
+                                onChange={handleChange}
+                                placeholder="e.g. 50"
+                                disabled={!editing}
+                                error={errors.min_price}
+                            />
+                            <FieldError message={errors.min_price} />
+                        </Field>
+
+                        <Field>
+                            <Label hint="optional">Max. Session Price (USD)</Label>
+                            <Input
+                                type="number"
+                                name="max_price"
+                                value={form.max_price}
+                                onChange={handleChange}
+                                placeholder="e.g. 200"
+                                disabled={!editing}
+                                error={errors.max_price}
+                            />
+                            <FieldError message={errors.max_price} />
+                        </Field>
+
+                        <Field>
+                            <Label hint="optional">Estimated Response Time</Label>
+                            <Input
+                                name="estimated_response_time"
+                                value={form.estimated_response_time}
+                                onChange={handleChange}
+                                placeholder="e.g. Within 24 hours"
+                                disabled={!editing}
+                                error={errors.estimated_response_time}
+                            />
+                            <FieldError message={errors.estimated_response_time} />
                         </Field>
 
                         <Field className="span-2">

@@ -292,6 +292,114 @@
   color: #9896a4;
 }
 
+/* ─── Clinic Filter Bar ───────────────────────────────────── */
+.clinic-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.clinic-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+.clinic-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9896a4;
+  pointer-events: none;
+}
+
+.clinic-search-input {
+  width: 100%;
+  padding: 0.62rem 2.4rem 0.62rem 2.25rem;
+  border: 0.5px solid #E8E3DB;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.clinic-search-input:focus {
+  border-color: #3E4772;
+  box-shadow: 0 0 0 3px rgba(62, 71, 114, 0.08);
+}
+
+.clinic-search-input::placeholder {
+  color: #c5c0bb;
+}
+
+.clinic-search-clear {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #9896a4;
+  cursor: pointer;
+  padding: 0.1rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.clinic-search-clear:hover {
+  color: #1a1a2e;
+}
+
+.clinic-filter-select {
+  padding: 0.62rem 0.9rem;
+  border: 0.5px solid #E8E3DB;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-family: 'Inter', sans-serif;
+  color: #1a1a2e;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  min-width: 155px;
+}
+
+.clinic-filter-select:focus {
+  border-color: #3E4772;
+  box-shadow: 0 0 0 3px rgba(62, 71, 114, 0.08);
+}
+
+.clinic-filter-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.clinic-filter-reset {
+  background: none;
+  border: 0.5px solid #E8E3DB;
+  border-radius: 10px;
+  color: #9896a4;
+  font-size: 0.82rem;
+  font-family: 'Inter', sans-serif;
+  padding: 0.62rem 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.clinic-filter-reset:hover {
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
 /* ─── Clinic Grid ─────────────────────────────────────────── */
 .clinic-grid {
   display: grid;
@@ -392,6 +500,23 @@
   font-weight: 600;
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
+}
+
+.clinic-card-meta-response {
+  color: #15803d;
+}
+
+.clinic-card-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #3E4772;
+  background: #f0f0f8;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  width: fit-content;
 }
 
 .clinic-card-footer {
@@ -611,5 +736,18 @@
 
   .client-nav-links {
     display: none;
+  }
+
+  .clinic-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .clinic-search-wrap {
+    min-width: unset;
+  }
+
+  .clinic-filter-select {
+    min-width: unset;
   }
 }
