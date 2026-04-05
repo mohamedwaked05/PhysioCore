@@ -25,6 +25,9 @@ class Clinic extends Model
         'services',
         'working_hours',
         'social_media_link',
+        'min_price',
+        'max_price',
+        'estimated_response_time',
         'verification_status',
         'rejection_reason',
     ];
