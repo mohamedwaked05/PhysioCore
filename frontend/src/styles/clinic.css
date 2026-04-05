@@ -72,7 +72,7 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.65rem 1rem;
-  background: #fff;
+  background: var(--surface);
   border: 0.5px dashed #c5c0bb;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -87,14 +87,14 @@
 .file-upload-btn:hover {
   border-color: #3E4772;
   background: #f8f7ff;
-  color: #3E4772;
+  color: var(--primary);
 }
 
 .file-upload-btn.has-file {
   border-style: solid;
   border-color: #3E4772;
   background: #f5f4ff;
-  color: #3E4772;
+  color: var(--primary);
 }
 
 .file-upload-name {
@@ -106,7 +106,7 @@
 
 .file-current-link {
   font-size: 0.78rem;
-  color: #3E4772;
+  color: var(--primary);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -120,4 +120,45 @@
 .file-upload-hint {
   font-size: 0.75rem;
   color: #9896a4;
+}
+
+/* ─── Dark Mode ────────────────────────────────────────────── */
+[data-theme="dark"] .verification-banner.approved {
+  background: rgba(21, 128, 61, 0.1);
+  border-color: rgba(21, 128, 61, 0.25);
+}
+[data-theme="dark"] .verification-banner.pending {
+  background: rgba(180, 83, 9, 0.1);
+  border-color: rgba(180, 83, 9, 0.25);
+}
+[data-theme="dark"] .verification-banner.rejected {
+  background: rgba(185, 28, 28, 0.1);
+  border-color: rgba(185, 28, 28, 0.25);
+}
+
+[data-theme="dark"] .verification-banner.approved .verification-banner-icon { background: rgba(21, 128, 61, 0.15); }
+[data-theme="dark"] .verification-banner.pending  .verification-banner-icon { background: rgba(180, 83, 9, 0.15); }
+[data-theme="dark"] .verification-banner.rejected .verification-banner-icon { background: rgba(185, 28, 28, 0.15); }
+
+[data-theme="dark"] .verification-banner.approved .verification-banner-title { color: #4ade80; }
+[data-theme="dark"] .verification-banner.pending  .verification-banner-title { color: #fbbf24; }
+[data-theme="dark"] .verification-banner.rejected .verification-banner-title { color: #f87171; }
+
+[data-theme="dark"] .verification-banner.approved .verification-banner-desc { color: #86efac; }
+[data-theme="dark"] .verification-banner.pending  .verification-banner-desc { color: #fcd34d; }
+[data-theme="dark"] .verification-banner.rejected .verification-banner-desc { color: #fca5a5; }
+
+[data-theme="dark"] .file-upload-btn {
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+[data-theme="dark"] .file-upload-btn:hover {
+  border-color: var(--primary);
+  background: rgba(123, 143, 232, 0.08);
+  color: var(--primary);
+}
+[data-theme="dark"] .file-upload-btn.has-file {
+  border-color: var(--primary);
+  background: rgba(123, 143, 232, 0.1);
+  color: var(--primary);
 }

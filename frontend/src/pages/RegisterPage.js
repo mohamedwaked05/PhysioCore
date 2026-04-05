@@ -77,8 +77,8 @@ export default function RegisterPage() {
                                 <input
                                     className="auth-input"
                                     type="text"
-                                    name="first_name"
-                                    placeholder="John"
+                                    name=""
+                                    placeholder=""
                                     value={form.first_name}
                                     onChange={handleChange}
                                     required
@@ -90,8 +90,8 @@ export default function RegisterPage() {
                                 <input
                                     className="auth-input"
                                     type="text"
-                                    name="last_name"
-                                    placeholder="Doe"
+                                    name=""
+                                    placeholder=""
                                     value={form.last_name}
                                     onChange={handleChange}
                                     required
@@ -106,7 +106,7 @@ export default function RegisterPage() {
                                 className="auth-input"
                                 type="email"
                                 name="email"
-                                placeholder="you@example.com"
+                                placeholder=""
                                 value={form.email}
                                 onChange={handleChange}
                                 required
@@ -120,7 +120,7 @@ export default function RegisterPage() {
                                 className="auth-input"
                                 type="password"
                                 name="password"
-                                placeholder="Min 8 characters"
+                                placeholder=""
                                 value={form.password}
                                 onChange={handleChange}
                                 required
@@ -134,7 +134,7 @@ export default function RegisterPage() {
                                 className="auth-input"
                                 type="password"
                                 name="password_confirmation"
-                                placeholder="Repeat your password"
+                                placeholder=""
                                 value={form.password_confirmation}
                                 onChange={handleChange}
                                 required

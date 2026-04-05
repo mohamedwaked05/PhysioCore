@@ -4,8 +4,77 @@ import { getClinics, createAccessRequest, getAccessRequests } from '../../api/cl
 import ClientLayout from '../../components/ClientLayout';
 import Avatar from '../../components/ui/Avatar';
 import Button from '../../components/ui/Button';
+import Skeleton from '../../components/ui/Skeleton';
+import { useToast } from '../../context/ToastContext';
 import '../../styles/ui.css';
 import '../../styles/client.css';
+
+function EmptyState({ hasFilters, onClear }) {
+    return (
+        <div className="clinic-empty-state">
+            <div className="clinic-empty-icon">
+                {hasFilters ? (
+                    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
+                ) : (
+                    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                        <line x1="9" y1="8" x2="9.01" y2="8"/>
+                        <line x1="15" y1="8" x2="15.01" y2="8"/>
+                    </svg>
+                )}
+            </div>
+            <h3 className="clinic-empty-title">
+                {hasFilters ? 'No results found' : 'No clinics yet'}
+            </h3>
+            <p className="clinic-empty-desc">
+                {hasFilters
+                    ? 'No clinics match your current search or filters. Try adjusting your criteria.'
+                    : 'There are no verified clinics on the platform yet. Check back soon.'}
+            </p>
+            {hasFilters && (
+                <button className="clinic-empty-clear" onClick={onClear}>
+                    Clear all filters
+                </button>
+            )}
+        </div>
+    );
+}
+
+function ClinicCardSkeleton() {
+    return (
+        <div className="clinic-card" style={{ gap: '0.75rem' }}>
+            <div className="clinic-card-header">
+                <Skeleton circle width="64px" height="64px" />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <Skeleton height="14px" width="60%" />
+                    <Skeleton height="12px" width="40%" radius="999px" />
+                </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <Skeleton height="12px" />
+                <Skeleton height="12px" width="90%" />
+                <Skeleton height="12px" width="75%" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                <Skeleton height="11px" width="55%" />
+                <Skeleton height="11px" width="45%" />
+            </div>
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+                <Skeleton height="22px" width="70px" radius="999px" />
+                <Skeleton height="22px" width="80px" radius="999px" />
+                <Skeleton height="22px" width="65px" radius="999px" />
+            </div>
+            <div style={{ paddingTop: '0.9rem', borderTop: '0.5px solid #f0ede8' }}>
+                <Skeleton height="34px" radius="8px" />
+            </div>
+        </div>
+    );
+}
 
 const PRICE_BRACKETS = [
     { label: 'Any Price',    max: null },
@@ -27,8 +96,8 @@ export default function ClinicListingPage() {
     const [activeRequests, setActiveRequests] = useState(new Set());
     const [loading, setLoading]               = useState(true);
     const [requesting, setRequesting]         = useState(null);
-    const [feedback, setFeedback]             = useState({ id: null, type: '', message: '' });
     const navigate = useNavigate();
+    const { addToast } = useToast();
 
     const [search, setSearch]                 = useState('');
     const [paymentFilter, setPaymentFilter]   = useState('');
@@ -97,15 +166,12 @@ export default function ClinicListingPage() {
 
     const handleRequest = async (clinicId) => {
         setRequesting(clinicId);
-        setFeedback({ id: null, type: '', message: '' });
-
         try {
             await createAccessRequest({ clinic_id: clinicId });
             setActiveRequests(prev => new Set([...prev, clinicId]));
-            setFeedback({ id: clinicId, type: 'success', message: 'Access request sent successfully.' });
+            addToast('Access request sent successfully.', 'success');
         } catch (err) {
-            const message = err.response?.data?.message ?? 'Failed to send request.';
-            setFeedback({ id: clinicId, type: 'error', message });
+            addToast(err.response?.data?.message ?? 'Failed to send request.', 'error');
         } finally {
             setRequesting(null);
         }
@@ -114,7 +180,13 @@ export default function ClinicListingPage() {
     if (loading) {
         return (
             <ClientLayout>
-                <div className="client-loading"><div className="client-spinner" /></div>
+                <div className="client-page-header">
+                    <Skeleton height="22px" width="160px" radius="6px" style={{ marginBottom: '0.4rem' }} />
+                    <Skeleton height="13px" width="220px" radius="6px" />
+                </div>
+                <div className="clinic-grid">
+                    {Array.from({ length: 6 }).map((_, i) => <ClinicCardSkeleton key={i} />)}
+                </div>
             </ClientLayout>
         );
     }
@@ -186,16 +258,13 @@ export default function ClinicListingPage() {
             </div>
 
             {filtered.length === 0 ? (
-                <div className="client-card">
-                    <div className="client-empty">
-                        {clinics.length === 0
-                            ? 'No verified clinics are available at this time.'
-                            : 'No clinics match your current filters.'}
-                    </div>
-                </div>
+                <EmptyState
+                    hasFilters={!!(search || priceFilter || paymentFilter)}
+                    onClear={() => { setSearch(''); setPriceFilter(''); setPaymentFilter(''); }}
+                />
             ) : (
                 <div className="clinic-grid">
-                    {filtered.map(clinic => {
+                    {filtered.map((clinic, i) => {
                         const hasActive    = activeRequests.has(clinic.id);
                         const isRequesting = requesting === clinic.id;
                         const name         = clinic.commercial_name || clinic.legal_name;
@@ -205,6 +274,7 @@ export default function ClinicListingPage() {
                             <div
                                 key={clinic.id}
                                 className="clinic-card clinic-card-clickable"
+                                style={{ '--i': i }}
                                 onClick={() => navigate(`/client/clinics/${clinic.id}`)}
                                 role="button"
                                 tabIndex={0}
@@ -286,14 +356,6 @@ export default function ClinicListingPage() {
 
                                 {/* Footer */}
                                 <div className="clinic-card-footer">
-                                    {feedback.id === clinic.id && (
-                                        <div
-                                            className={feedback.type === 'success' ? 'client-success-banner' : 'client-error-banner'}
-                                            style={{ marginBottom: '0.75rem' }}
-                                        >
-                                            {feedback.message}
-                                        </div>
-                                    )}
                                     <Button
                                         variant={hasActive ? 'secondary' : 'primary'}
                                         size="sm"

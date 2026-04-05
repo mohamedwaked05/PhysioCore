@@ -6,8 +6,53 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import SectionHeader from '../../components/ui/SectionHeader';
 import StatusBadge from '../../components/ui/StatusBadge';
+import Skeleton from '../../components/ui/Skeleton';
+import { useToast } from '../../context/ToastContext';
 import '../../styles/ui.css';
 import '../../styles/client.css';
+
+function ClinicDetailSkeleton() {
+    return (
+        <>
+            <Skeleton height="14px" width="120px" radius="6px" style={{ marginBottom: '1.25rem' }} />
+            {/* Hero */}
+            <Card style={{ marginBottom: '1.25rem' }}>
+                <div className="cd-hero">
+                    <Skeleton width="200px" height="200px" radius="14px" style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <Skeleton height="28px" width="55%" radius="6px" />
+                        <Skeleton height="13px" width="70%" />
+                        <Skeleton height="13px" width="40%" />
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <Skeleton height="22px" width="110px" radius="999px" />
+                            <Skeleton height="22px" width="80px" radius="999px" />
+                        </div>
+                        <Skeleton height="12px" />
+                        <Skeleton height="12px" width="85%" />
+                        <Skeleton height="12px" width="70%" />
+                        <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.25rem' }}>
+                            <Skeleton height="22px" width="90px" radius="999px" />
+                            <Skeleton height="22px" width="75px" radius="999px" />
+                            <Skeleton height="22px" width="100px" radius="999px" />
+                        </div>
+                        <Skeleton height="42px" width="160px" radius="10px" style={{ marginTop: '0.25rem' }} />
+                    </div>
+                </div>
+            </Card>
+            {/* Info row */}
+            <div className="cd-info-row" style={{ marginBottom: '1.25rem' }}>
+                <Card><Skeleton height="90px" /></Card>
+                <Card><Skeleton height="90px" /></Card>
+            </div>
+            {/* Lower cards */}
+            {[80, 120, 80].map((h, i) => (
+                <Card key={i} style={{ marginBottom: '1.25rem' }}>
+                    <Skeleton height={`${h}px`} />
+                </Card>
+            ))}
+        </>
+    );
+}
 
 /* ── Helpers ────────────────────────────────────────────────── */
 function formatPrice(min, max) {
@@ -305,7 +350,7 @@ export default function ClinicDetailsPage() {
     const [error, setError]         = useState(false);
     const [hasRequest, setHasRequest] = useState(false);
     const [requesting, setRequesting] = useState(false);
-    const [requestError, setRequestError] = useState('');
+    const { addToast } = useToast();
 
     useEffect(() => {
         Promise.all([getClinic(id), getAccessRequests()])
@@ -323,12 +368,12 @@ export default function ClinicDetailsPage() {
 
     const handleRequest = async () => {
         setRequesting(true);
-        setRequestError('');
         try {
             await createAccessRequest({ clinic_id: clinic.id });
             setHasRequest(true);
+            addToast('Access request sent successfully.', 'success');
         } catch (err) {
-            setRequestError(err.response?.data?.message ?? 'Failed to send request. Please try again.');
+            addToast(err.response?.data?.message ?? 'Failed to send request. Please try again.', 'error');
         } finally {
             setRequesting(false);
         }
@@ -337,7 +382,7 @@ export default function ClinicDetailsPage() {
     if (loading) {
         return (
             <ClientLayout>
-                <div className="client-loading"><div className="client-spinner" /></div>
+                <ClinicDetailSkeleton />
             </ClientLayout>
         );
     }
@@ -367,12 +412,6 @@ export default function ClinicDetailsPage() {
                 </svg>
                 Back to clinics
             </Link>
-
-            {requestError && (
-                <div className="ui-alert ui-alert--error" style={{ marginTop: '1rem' }}>
-                    {requestError}
-                </div>
-            )}
 
             {/* 1. Hero */}
             <HeroCard

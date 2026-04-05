@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Auth pages
@@ -23,6 +25,8 @@ import ClinicProfilePage from './pages/clinic/ClinicProfilePage';
 
 function App() {
     return (
+        <ThemeProvider>
+        <ToastProvider>
         <AuthProvider>
             <BrowserRouter>
                 <Routes>
@@ -71,6 +75,8 @@ function App() {
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
+        </ToastProvider>
+        </ThemeProvider>
     );
 }
 

@@ -2,6 +2,36 @@
    PhysioCore UI Design System
    ============================================================ */
 
+/* --- Design Tokens ---------------------------------------- */
+:root {
+    --primary:        #3E4772;
+    --primary-dark:   #2d3457;
+    --primary-light:  #4d5690;
+
+    --bg:             #EFECEA;
+    --surface:        #ffffff;
+    --surface-dim:    #FAFAF9;
+
+    --border:         #E8E3DB;
+    --border-light:   #f0ede8;
+
+    --text:           #1a1a2e;
+    --text-secondary: #6b6b7b;
+    --text-muted:     #9896a4;
+    --text-disabled:  #c5c0bb;
+
+    --radius-sm:   6px;
+    --radius-md:   10px;
+    --radius-lg:   16px;
+    --radius-pill: 999px;
+
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+
+    --transition: 0.15s ease;
+}
+
 /* --- Avatar ------------------------------------------------ */
 .ui-avatar {
     position: relative;
@@ -9,7 +39,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: #3E4772;
+    background: var(--primary);
     color: #fff;
     font-family: 'Syne', sans-serif;
     font-weight: 700;
@@ -49,9 +79,9 @@
 
 /* --- Card -------------------------------------------------- */
 .ui-card {
-    background: #fff;
+    background: var(--surface);
     border-radius: 16px;
-    border: 1px solid #E8E6E3;
+    border: 1px solid var(--border);
     padding: 1.5rem;
 }
 
@@ -73,7 +103,7 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #9896a4;
+    color: var(--text-muted);
 }
 
 /* --- Input ------------------------------------------------ */
@@ -86,14 +116,14 @@
 .ui-label {
     font-size: 0.8125rem;
     font-weight: 600;
-    color: #3E4772;
+    color: var(--primary);
     font-family: 'Inter', sans-serif;
 }
 
 .ui-label-hint {
     font-weight: 400;
     font-size: 0.75rem;
-    color: #9896a4;
+    color: var(--text-muted);
     margin-left: 0.25rem;
 }
 
@@ -103,12 +133,12 @@
     width: 100%;
     box-sizing: border-box;
     padding: 0.625rem 0.875rem;
-    border: 1.5px solid #E8E6E3;
+    border: 1.5px solid var(--border);
     border-radius: 10px;
     font-size: 0.9rem;
     font-family: 'Inter', sans-serif;
-    color: #1a1a2e;
-    background: #FAFAF9;
+    color: var(--text);
+    background: var(--surface-dim);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
     outline: none;
 }
@@ -116,8 +146,8 @@
 .ui-input:focus,
 .ui-textarea:focus,
 .ui-select:focus {
-    border-color: #3E4772;
-    background: #fff;
+    border-color: var(--primary);
+    background: var(--surface);
     box-shadow: 0 0 0 3px rgba(62, 71, 114, 0.08);
 }
 
@@ -143,6 +173,19 @@
     font-family: 'Inter', sans-serif;
 }
 
+/* --- Skeleton --------------------------------------------- */
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.ui-skeleton {
+    background: linear-gradient(90deg, #ede9e4 25%, #e2ddd8 50%, #ede9e4 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+    display: block;
+}
+
 /* --- Button ----------------------------------------------- */
 .ui-btn {
     display: inline-flex;
@@ -165,18 +208,18 @@
 }
 
 .ui-btn--primary {
-    background: #3E4772;
+    background: linear-gradient(135deg, #4d5690 0%, #3E4772 100%);
     color: #fff;
 }
 
 .ui-btn--primary:hover:not(:disabled) {
-    background: #323a5e;
-    box-shadow: 0 4px 12px rgba(62, 71, 114, 0.25);
+    background: linear-gradient(135deg, #424d84 0%, #323a5e 100%);
+    box-shadow: 0 4px 14px rgba(62, 71, 114, 0.35);
 }
 
 .ui-btn--secondary {
-    background: #EFECEA;
-    color: #3E4772;
+    background: var(--bg);
+    color: var(--primary);
 }
 
 .ui-btn--secondary:hover:not(:disabled) {
@@ -185,12 +228,12 @@
 
 .ui-btn--ghost {
     background: transparent;
-    color: #3E4772;
-    border: 1.5px solid #E8E6E3;
+    color: var(--primary);
+    border: 1.5px solid var(--border);
 }
 
 .ui-btn--ghost:hover:not(:disabled) {
-    background: #EFECEA;
+    background: var(--bg);
 }
 
 .ui-btn--danger {
@@ -281,9 +324,9 @@
     align-items: center;
     gap: 1.5rem;
     padding: 1.5rem;
-    background: #fff;
+    background: var(--surface);
     border-radius: 16px;
-    border: 1px solid #E8E6E3;
+    border: 1px solid var(--border);
     margin-bottom: 1.25rem;
 }
 
@@ -296,7 +339,7 @@
     font-family: 'Syne', sans-serif;
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1a1a2e;
+    color: var(--text);
     margin: 0 0 0.2rem;
     white-space: nowrap;
     overflow: hidden;
@@ -305,7 +348,7 @@
 
 .ui-profile-header-sub {
     font-size: 0.85rem;
-    color: #9896a4;
+    color: var(--text-muted);
     margin: 0;
     font-family: 'Inter', sans-serif;
 }
@@ -321,4 +364,118 @@
     display: flex;
     gap: 0.5rem;
     flex-shrink: 0;
+}
+
+/* --- Toast ------------------------------------------------ */
+@keyframes toastEnter {
+    from { opacity: 0; transform: translateX(110%); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastExit {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(110%); }
+}
+
+.toast-container {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    pointer-events: none;
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    min-width: 280px;
+    max-width: 380px;
+    pointer-events: all;
+    backdrop-filter: blur(4px);
+}
+
+.toast--enter { animation: toastEnter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.toast--exit  { animation: toastExit  0.3s ease forwards; }
+
+.toast--success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+.toast--error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+.toast--warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.toast--info    { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
+
+.toast-icon {
+    flex-shrink: 0;
+    margin-top: 0.05rem;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    opacity: 0.5;
+    color: inherit;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    transition: opacity 0.15s;
+}
+
+.toast-close:hover { opacity: 1; }
+
+/* ============================================================
+   Dark Mode Tokens
+   ============================================================ */
+[data-theme="dark"] {
+    --primary:        #7b8fe8;
+    --primary-dark:   #5a6bc4;
+    --primary-light:  #9aaaf0;
+
+    --bg:             #0d0f1a;
+    --surface:        #161929;
+    --surface-dim:    #111320;
+
+    --border:         #252840;
+    --border-light:   #1e2135;
+
+    --text:           #e6e8f5;
+    --text-secondary: #9fa3c4;
+    --text-muted:     #6b6f8e;
+    --text-disabled:  #3e4160;
+}
+
+/* ── Theme crossfade — only during toggle, not on hover ──── */
+[data-theme-transitioning],
+[data-theme-transitioning] *,
+[data-theme-transitioning] *::before,
+[data-theme-transitioning] *::after {
+    transition:
+        background-color 0.35s ease,
+        border-color     0.35s ease,
+        color            0.3s  ease,
+        box-shadow       0.35s ease !important;
+}
+
+/* ── Button press micro-animation ─────────────────────────── */
+.ui-btn:active:not(:disabled) {
+    transform: scale(0.97);
+    transition: transform 0.08s ease !important;
+}
+
+/* ── Dark mode card glow on hover ─────────────────────────── */
+[data-theme="dark"] .ui-card:hover {
+    box-shadow: 0 8px 32px rgba(123, 143, 232, 0.08), 0 2px 8px rgba(0,0,0,0.3);
 }
