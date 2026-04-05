@@ -6,5 +6,6 @@ export const updateProfile     = (formData) =>
         headers: { 'Content-Type': 'multipart/form-data' },
     });
 export const getClinics        = ()     => api.get('/client/clinics');
+export const getClinic         = (id)   => api.get(`/client/clinics/${id}`);
 export const getAccessRequests = ()     => api.get('/client/access-requests');
 export const createAccessRequest = (data) => api.post('/client/access-request', data);

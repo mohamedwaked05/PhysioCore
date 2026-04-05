@@ -68,8 +68,9 @@ Route::middleware(['auth:sanctum', 'role:client'])->prefix('client')->group(func
     Route::get('/profile',          [ClientProfileController::class, 'show']);
     Route::post('/profile/update',  [ClientProfileController::class, 'update']);
 
-    // Clinic listing
-    Route::get('/clinics', [ClinicController::class, 'index']);
+    // Clinic listing & detail
+    Route::get('/clinics',      [ClinicController::class, 'index']);
+    Route::get('/clinics/{id}', [ClinicController::class, 'show']);
 
     // Access requests
     Route::get('/access-requests',  [AccessRequestController::class, 'index']);

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getClinics, createAccessRequest, getAccessRequests } from '../../api/client';
 import ClientLayout from '../../components/ClientLayout';
 import Avatar from '../../components/ui/Avatar';
@@ -27,6 +28,7 @@ export default function ClinicListingPage() {
     const [loading, setLoading]               = useState(true);
     const [requesting, setRequesting]         = useState(null);
     const [feedback, setFeedback]             = useState({ id: null, type: '', message: '' });
+    const navigate = useNavigate();
 
     const [search, setSearch]                 = useState('');
     const [paymentFilter, setPaymentFilter]   = useState('');
@@ -200,7 +202,14 @@ export default function ClinicListingPage() {
                         const priceLabel   = formatPrice(clinic.min_price, clinic.max_price);
 
                         return (
-                            <div key={clinic.id} className="clinic-card">
+                            <div
+                                key={clinic.id}
+                                className="clinic-card clinic-card-clickable"
+                                onClick={() => navigate(`/client/clinics/${clinic.id}`)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={e => e.key === 'Enter' && navigate(`/client/clinics/${clinic.id}`)}
+                            >
                                 {/* Header */}
                                 <div className="clinic-card-header">
                                     <Avatar src={clinic.profile_photo_url} name={name} size="md" />
@@ -288,7 +297,7 @@ export default function ClinicListingPage() {
                                     <Button
                                         variant={hasActive ? 'secondary' : 'primary'}
                                         size="sm"
-                                        onClick={() => handleRequest(clinic.id)}
+                                        onClick={e => { e.stopPropagation(); handleRequest(clinic.id); }}
                                         disabled={hasActive}
                                         loading={isRequesting}
                                         style={{ width: '100%' }}

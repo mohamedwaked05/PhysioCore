@@ -559,6 +559,328 @@
   cursor: default;
 }
 
+/* ─── Clinic Card Name Link ───────────────────────────────── */
+.clinic-card-clickable {
+  cursor: pointer;
+}
+
+.clinic-card-name-link {
+  color: #1a1a2e;
+  text-decoration: none;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: color 0.15s;
+}
+
+.clinic-card-name-link:hover {
+  color: #3E4772;
+}
+
+/* ─── Clinic Details Page ─────────────────────────────────── */
+.cd-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: #9896a4;
+  text-decoration: none;
+  margin-bottom: 1.25rem;
+  transition: color 0.15s;
+}
+
+.cd-back-link:hover {
+  color: #3E4772;
+}
+
+/* Hero section */
+.cd-hero {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.cd-hero-photo-wrap {
+  flex-shrink: 0;
+}
+
+.cd-hero-photo {
+  width: 200px;
+  height: 200px;
+  border-radius: 14px;
+  object-fit: cover;
+  display: block;
+}
+
+.cd-hero-photo-placeholder {
+  width: 200px;
+  height: 200px;
+  border-radius: 14px;
+  background: #3E4772;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 2.5rem;
+}
+
+.cd-hero-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cd-hero-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #1a1a2e;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.cd-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cd-hero-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.83rem;
+  color: #6b6b7b;
+}
+
+.cd-hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cd-hero-desc {
+  font-size: 0.875rem;
+  color: #6b6b7b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.cd-hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cd-hero-tag {
+  background: #f0f0f8;
+  color: #3E4772;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+}
+
+.cd-hero-action {
+  padding-top: 0.25rem;
+}
+
+/* Info row (2 columns) */
+.cd-info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Budget card */
+.cd-budget-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cd-budget-amount {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.cd-budget-level {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: #6b6b7b;
+}
+
+.cd-budget-note {
+  font-size: 0.78rem;
+  color: #9896a4;
+  line-height: 1.5;
+  margin-top: 0.25rem;
+}
+
+/* Payment list */
+.cd-payment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.cd-payment-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+  color: #1a1a2e;
+  font-weight: 500;
+}
+
+.cd-payment-item svg {
+  color: #3E4772;
+  flex-shrink: 0;
+}
+
+/* Prose text */
+.cd-prose {
+  font-size: 0.875rem;
+  color: #6b6b7b;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* Message section */
+.cd-message-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.cd-message-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cd-message-hint {
+  font-size: 0.78rem;
+  color: #9896a4;
+  flex: 1;
+}
+
+/* Bullet list */
+.cd-bullet-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.cd-bullet-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.875rem;
+  color: #1a1a2e;
+  line-height: 1.5;
+}
+
+.cd-bullet-item svg {
+  color: #15803d;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+/* Getting started steps */
+.cd-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cd-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cd-step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #3E4772;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: 'Syne', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cd-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-top: 0.35rem;
+}
+
+.cd-step-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  font-family: 'Syne', sans-serif;
+}
+
+.cd-step-desc {
+  font-size: 0.82rem;
+  color: #9896a4;
+  line-height: 1.5;
+}
+
+.cd-empty-note {
+  font-size: 0.875rem;
+  color: #9896a4;
+  font-style: italic;
+  margin: 0;
+}
+
+/* ─── Responsive — Details Page ──────────────────────────── */
+@media (max-width: 768px) {
+  .cd-hero {
+    flex-direction: column;
+  }
+
+  .cd-hero-photo,
+  .cd-hero-photo-placeholder {
+    width: 100%;
+    height: 200px;
+  }
+
+  .cd-info-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cd-message-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 /* ─── Profile Form ────────────────────────────────────────── */
 .profile-form-grid {
   display: grid;

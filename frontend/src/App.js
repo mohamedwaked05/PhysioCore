@@ -15,6 +15,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import ClientDashboardPage from './pages/client/ClientDashboardPage';
 import ClientProfilePage from './pages/client/ClientProfilePage';
 import ClinicListingPage from './pages/client/ClinicListingPage';
+import ClinicDetailsPage from './pages/client/ClinicDetailsPage';
 
 // Clinic pages
 import ClinicDashboardPage from './pages/clinic/ClinicDashboardPage';
@@ -46,6 +47,9 @@ function App() {
                     } />
                     <Route path="/client/clinics" element={
                         <ProtectedRoute role="client"><ClinicListingPage /></ProtectedRoute>
+                    } />
+                    <Route path="/client/clinics/:id" element={
+                        <ProtectedRoute role="client"><ClinicDetailsPage /></ProtectedRoute>
                     } />
 
                     {/* Legacy redirect from Sprint 1 placeholder */}
