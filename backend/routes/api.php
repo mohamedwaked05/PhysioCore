@@ -59,6 +59,15 @@ Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(func
 
 /*
 |--------------------------------------------------------------------------
+| Public Routes (no auth required — read-only, approved clinics only)
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/clinics',      [ClinicController::class, 'index']);
+Route::get('/clinics/{id}', [ClinicController::class, 'show']);
+
+/*
+|--------------------------------------------------------------------------
 | Client Routes
 |--------------------------------------------------------------------------
 */
