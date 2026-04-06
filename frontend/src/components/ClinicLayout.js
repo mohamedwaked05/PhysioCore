@@ -1,11 +1,17 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useProfilePhoto } from '../hooks/useProfilePhoto';
+import Avatar from './ui/Avatar';
+import LogoutButton from './ui/LogoutButton';
 import '../styles/client.css';
 
 export default function ClinicLayout({ children }) {
     const { user, logout } = useAuth();
     const { theme, toggle } = useTheme();
+    const photoUrl = useProfilePhoto(user?.role);
+
+    const fullName = `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim();
 
     return (
         <div className="client-shell">
@@ -32,15 +38,17 @@ export default function ClinicLayout({ children }) {
                         to="/clinic/profile"
                         className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}
                     >
-                        Registration
+                        Profile
                     </NavLink>
                 </div>
 
-                {/* User + logout */}
+                {/* Right side — avatar chip + theme toggle + sign out */}
                 <div className="client-nav-right">
-                    <span className="client-nav-user">
-                        {user?.first_name} {user?.last_name}
-                    </span>
+                    <div className="client-nav-user-chip">
+                        <Avatar size="sm" name={fullName} src={photoUrl} />
+                        <span className="client-nav-user">{fullName}</span>
+                    </div>
+
                     <button
                         className="client-theme-toggle"
                         onClick={toggle}
@@ -65,9 +73,8 @@ export default function ClinicLayout({ children }) {
                             </svg>
                         )}
                     </button>
-                    <button className="client-logout-btn" onClick={logout}>
-                        Sign out
-                    </button>
+
+                    <LogoutButton />
                 </div>
             </nav>
 

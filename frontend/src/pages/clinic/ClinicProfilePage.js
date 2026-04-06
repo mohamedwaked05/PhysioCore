@@ -336,7 +336,7 @@ export default function ClinicProfilePage() {
                                 name="clinic_mobile"
                                 value={form.clinic_mobile}
                                 onChange={handleChange}
-                                placeholder="+1 234 567 8900"
+                                placeholder="+961"
                                 disabled={!editing}
                                 error={errors.clinic_mobile}
                             />

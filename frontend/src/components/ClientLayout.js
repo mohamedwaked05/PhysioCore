@@ -1,11 +1,17 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useProfilePhoto } from '../hooks/useProfilePhoto';
+import Avatar from './ui/Avatar';
+import LogoutButton from './ui/LogoutButton';
 import '../styles/client.css';
 
 export default function ClientLayout({ children }) {
     const { user, logout } = useAuth();
     const { theme, toggle } = useTheme();
+    const photoUrl = useProfilePhoto(user?.role);
+
+    const fullName = `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim();
 
     return (
         <div className="client-shell">
@@ -32,21 +38,23 @@ export default function ClientLayout({ children }) {
                         to="/client/profile"
                         className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}
                     >
-                        My Profile
+                        Profile
                     </NavLink>
                     <NavLink
-                        to="/client/clinics"
+                        to="/clinics"
                         className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}
                     >
                         Browse Clinics
                     </NavLink>
                 </div>
 
-                {/* User + logout */}
+                {/* Right side — avatar chip + theme toggle + sign out */}
                 <div className="client-nav-right">
-                    <span className="client-nav-user">
-                        {user?.first_name} {user?.last_name}
-                    </span>
+                    <div className="client-nav-user-chip">
+                        <Avatar size="sm" name={fullName} src={photoUrl} />
+                        <span className="client-nav-user">{fullName}</span>
+                    </div>
+
                     <button
                         className="client-theme-toggle"
                         onClick={toggle}
@@ -54,7 +62,6 @@ export default function ClientLayout({ children }) {
                         title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
                     >
                         {theme === 'dark' ? (
-                            /* Sun icon */
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                                 <circle cx="12" cy="12" r="5"/>
                                 <line x1="12" y1="1" x2="12" y2="3"/>
@@ -67,15 +74,13 @@ export default function ClientLayout({ children }) {
                                 <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
                             </svg>
                         ) : (
-                            /* Moon icon */
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                                 <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
                             </svg>
                         )}
                     </button>
-                    <button className="client-logout-btn" onClick={logout}>
-                        Sign out
-                    </button>
+
+                    <LogoutButton />
                 </div>
             </nav>
 

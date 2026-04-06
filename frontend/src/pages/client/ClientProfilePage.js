@@ -194,7 +194,7 @@ export default function ClientProfilePage() {
                                 name="nickname"
                                 value={form.nickname}
                                 onChange={handleChange}
-                                placeholder="What should we call you?"
+                                placeholder=""
                                 disabled={!editing}
                                 error={errors.nickname}
                             />
@@ -238,7 +238,7 @@ export default function ClientProfilePage() {
                                 name="phone"
                                 value={form.phone}
                                 onChange={handleChange}
-                                placeholder="+1 234 567 8900"
+                                placeholder="+961 "
                                 disabled={!editing}
                                 error={errors.phone}
                             />

@@ -24,6 +24,16 @@ export default function GoogleCallbackPage() {
             localStorage.setItem('token', token);
             api.get('/user')
                 .then(({ data }) => {
+                    // Popup mode: send result back to parent window, then close
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.postMessage(
+                            { type: 'GOOGLE_AUTH_SUCCESS', user: data, token },
+                            window.location.origin
+                        );
+                        window.close();
+                        return;
+                    }
+                    // Normal (full-page) mode
                     login(data, token);
                     if (role === 'client') navigate('/client/dashboard');
                     else if (role === 'clinic') navigate('/clinic/dashboard');
@@ -31,8 +41,26 @@ export default function GoogleCallbackPage() {
                 })
                 .catch(() => {
                     localStorage.removeItem('token');
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.postMessage(
+                            { type: 'GOOGLE_AUTH_ERROR', error: 'auth_failed' },
+                            window.location.origin
+                        );
+                        window.close();
+                        return;
+                    }
                     navigate('/login?error=google_auth_failed');
                 });
+            return;
+        }
+
+        // New user in popup — send setup token back to parent
+        if (setupToken && window.opener && !window.opener.closed) {
+            window.opener.postMessage(
+                { type: 'GOOGLE_AUTH_SETUP', setupToken },
+                window.location.origin
+            );
+            window.close();
             return;
         }
 

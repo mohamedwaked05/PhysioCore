@@ -143,6 +143,27 @@
   margin-bottom: 0.35rem;
 }
 
+/* ─── Back button ─────────────────────────────────────────── */
+.auth-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  color: #9896a4;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  transition: color 0.15s;
+}
+
+.auth-back-btn:hover {
+  color: var(--primary, #3e4772);
+}
+
 .auth-form-subtitle {
   font-size: 0.9rem;
   color: #9896a4;

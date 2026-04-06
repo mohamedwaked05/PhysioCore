@@ -17,14 +17,18 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// If the server returns 401 (expired/invalid token), clear session and redirect to login
+// If the server returns 401, only redirect to login when there was an active session
+// (expired/invalid token). Unauthenticated requests from guests are rejected silently.
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
+            const hadToken = !!localStorage.getItem('token');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/login';
+            if (hadToken) {
+                window.location.href = '/login';
+            }
         }
         return Promise.reject(error);
     }

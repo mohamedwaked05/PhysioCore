@@ -15,16 +15,17 @@ export function AuthProvider({ children }) {
         setUser(userData);
     };
 
-    const logout = async () => {
-        try {
-            await api.post('/auth/logout');
-        } catch {
-            // Token may already be invalid — still clear locally
-        }
+    const logout = () => {
+        // Clear state first so the 401 interceptor won't redirect to /login
+        // if the server rejects an already-expired token.
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('pc-photo');
         setUser(null);
-        window.location.href = '/login';
+        // Fire the server-side token revocation in the background (no-auth header
+        // since we already removed the token, so ignore any response).
+        api.post('/auth/logout').catch(() => {});
+        window.location.href = '/';
     };
 
     return (

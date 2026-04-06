@@ -1,21 +1,26 @@
+
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getClinic, getAccessRequests, createAccessRequest } from '../../api/client';
-import ClientLayout from '../../components/ClientLayout';
+import { useParams, Link } from 'react-router-dom';
+import { getPublicClinic } from '../../api/public';
+import { getAccessRequests, createAccessRequest } from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { useAuthModal } from '../../context/AuthModalContext';
+import GuestLayout from '../../components/GuestLayout';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import SectionHeader from '../../components/ui/SectionHeader';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Skeleton from '../../components/ui/Skeleton';
-import { useToast } from '../../context/ToastContext';
 import '../../styles/ui.css';
 import '../../styles/client.css';
+import '../../styles/guest.css';
 
+/* ── Skeleton ───────────────────────────────────────────────── */
 function ClinicDetailSkeleton() {
     return (
         <>
             <Skeleton height="14px" width="120px" radius="6px" style={{ marginBottom: '1.25rem' }} />
-            {/* Hero */}
             <Card style={{ marginBottom: '1.25rem' }}>
                 <div className="cd-hero">
                     <Skeleton width="200px" height="200px" radius="14px" style={{ flexShrink: 0 }} />
@@ -33,18 +38,15 @@ function ClinicDetailSkeleton() {
                         <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.25rem' }}>
                             <Skeleton height="22px" width="90px" radius="999px" />
                             <Skeleton height="22px" width="75px" radius="999px" />
-                            <Skeleton height="22px" width="100px" radius="999px" />
                         </div>
                         <Skeleton height="42px" width="160px" radius="10px" style={{ marginTop: '0.25rem' }} />
                     </div>
                 </div>
             </Card>
-            {/* Info row */}
             <div className="cd-info-row" style={{ marginBottom: '1.25rem' }}>
                 <Card><Skeleton height="90px" /></Card>
                 <Card><Skeleton height="90px" /></Card>
             </div>
-            {/* Lower cards */}
             {[80, 120, 80].map((h, i) => (
                 <Card key={i} style={{ marginBottom: '1.25rem' }}>
                     <Skeleton height={`${h}px`} />
@@ -84,17 +86,13 @@ function PhotoOrPlaceholder({ src, name }) {
         .map(w => w[0]?.toUpperCase() ?? '')
         .join('');
 
-    if (src) {
-        return <img src={src} alt={name} className="cd-hero-photo" />;
-    }
+    if (src) return <img src={src} alt={name} className="cd-hero-photo" />;
     return (
-        <div className="cd-hero-photo cd-hero-photo-placeholder">
-            {initials}
-        </div>
+        <div className="cd-hero-photo cd-hero-photo-placeholder">{initials}</div>
     );
 }
 
-/* ── Sections ───────────────────────────────────────────────── */
+/* ── Hero card ──────────────────────────────────────────────── */
 function HeroCard({ clinic, hasRequest, requesting, onRequest }) {
     const name       = clinic.commercial_name || clinic.legal_name;
     const services   = parseList(clinic.services);
@@ -135,12 +133,8 @@ function HeroCard({ clinic, hasRequest, requesting, onRequest }) {
                         {clinic.estimated_response_time && (
                             <StatusBadge status="info" label={`Responds ${clinic.estimated_response_time}`} />
                         )}
-                        {priceLevel && (
-                            <StatusBadge status="neutral" label={priceLevel} />
-                        )}
-                        {clinic.working_hours && (
-                            <StatusBadge status="neutral" label={clinic.working_hours} />
-                        )}
+                        {priceLevel && <StatusBadge status="neutral" label={priceLevel} />}
+                        {clinic.working_hours && <StatusBadge status="neutral" label={clinic.working_hours} />}
                     </div>
 
                     {clinic.description && (
@@ -172,6 +166,7 @@ function HeroCard({ clinic, hasRequest, requesting, onRequest }) {
     );
 }
 
+/* ── Info cards ─────────────────────────────────────────────── */
 function BudgetCard({ clinic }) {
     const priceLabel = formatPrice(clinic.min_price, clinic.max_price);
     const priceLevel = getPriceLevel(clinic.min_price, clinic.max_price);
@@ -180,9 +175,7 @@ function BudgetCard({ clinic }) {
         <Card>
             <SectionHeader title="Budget" />
             <div className="cd-budget-body">
-                <div className="cd-budget-amount">
-                    {priceLabel ?? 'Contact for pricing'}
-                </div>
+                <div className="cd-budget-amount">{priceLabel ?? 'Contact for pricing'}</div>
                 {priceLevel && (
                     <div className="cd-budget-level">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -211,7 +204,7 @@ function PaymentCard({ clinic }) {
                     {methods.map((m, i) => (
                         <li key={i} className="cd-payment-item">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <rect x="1" y="4" width="22" height="16" rx="2"/>
                                 <line x1="1" y1="10" x2="23" y2="10"/>
                             </svg>
                             {m}
@@ -230,68 +223,67 @@ function HowPaymentWorksCard() {
         <Card style={{ marginBottom: '1.25rem' }}>
             <SectionHeader title="How Payment Works" />
             <p className="cd-prose">
-                Once your access request is approved, the clinic will contact you to
-                schedule your first session. Payment is handled directly between you and
-                the clinic according to their billing policy. Most clinics accept payment
-                before or on the day of your session. Always confirm the billing process
-                with the clinic after your request is approved.
+                Once your access request is approved, the clinic will contact you to schedule
+                your first session. Payment is handled directly between you and the clinic
+                according to their billing policy. Always confirm the billing process with
+                the clinic after your request is approved.
             </p>
         </Card>
     );
 }
 
-function DiscussCard() {
-    const [message, setMessage]   = useState('');
-    const [sent, setSent]         = useState(false);
+/* ── Discuss card — guest-aware ─────────────────────────────── */
+function DiscussCard({ onGuestAction }) {
+    const { user }              = useAuth();
+    const [message, setMessage] = useState('');
 
     const handleSend = () => {
         if (!message.trim()) return;
-        // Messaging feature — placeholder behavior until messaging module is live
-        setSent(true);
+        if (!user) {
+            onGuestAction();
+            return;
+        }
+        // Messaging sprint — placeholder
     };
 
     return (
         <Card style={{ marginBottom: '1.25rem' }}>
             <SectionHeader title="Discuss Your Case" />
             <p className="cd-prose" style={{ marginBottom: '1rem' }}>
-                Have questions before committing? Send the clinic a brief message to
-                describe your condition and what you're looking for.
+                Have questions before committing? Send the clinic a brief message to describe
+                your condition and what you're looking for.
             </p>
-            {sent ? (
-                <div className="ui-alert ui-alert--success">
-                    Message sent! The clinic will get back to you once your access request is reviewed.
+            <div className="cd-message-wrap">
+                <textarea
+                    className="ui-textarea"
+                    placeholder=""
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    rows={4}
+                />
+                <div className="cd-message-footer">
+                    <span className="cd-message-hint">
+                        {user
+                            ? 'Messages are reviewed once your access request is processed.'
+                            : 'Sign in to send your message to the clinic.'}
+                    </span>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        disabled={!message.trim()}
+                        onClick={handleSend}
+                    >
+                        Send Message
+                    </Button>
                 </div>
-            ) : (
-                <div className="cd-message-wrap">
-                    <textarea
-                        className="ui-textarea"
-                        placeholder="e.g. I have a lower back injury from a sports accident and I'm looking for manual therapy sessions 2–3 times a week…"
-                        value={message}
-                        onChange={e => setMessage(e.target.value)}
-                        rows={4}
-                    />
-                    <div className="cd-message-footer">
-                        <span className="cd-message-hint">
-                            Messages are reviewed once your access request is processed.
-                        </span>
-                        <Button
-                            variant="primary"
-                            size="sm"
-                            disabled={!message.trim()}
-                            onClick={handleSend}
-                        >
-                            Send Message
-                        </Button>
-                    </div>
-                </div>
-            )}
+            </div>
         </Card>
     );
 }
 
 function WhyDiscussCard() {
     const reasons = [
-        'Understand the clinic\'s area of specialization before committing.',
+        "Understand the clinic's area of specialization before committing.",
         'Clarify the treatment approach and what to expect in sessions.',
         'Ask about session pricing, insurance, and payment flexibility.',
         'Make an informed decision that fits your schedule and needs.',
@@ -316,9 +308,9 @@ function WhyDiscussCard() {
 
 function GettingStartedCard() {
     const steps = [
-        { title: 'Request Access',      desc: 'Submit an access request to the clinic from this page.' },
+        { title: 'Request Access',        desc: 'Submit an access request to the clinic from this page.' },
         { title: 'Complete Your Profile', desc: 'Make sure your medical portfolio is up to date for review.' },
-        { title: 'Clinic Approves',     desc: 'The clinic reviews your request and accepts you as a patient.' },
+        { title: 'Clinic Approves',       desc: 'The clinic reviews your request and accepts you as a patient.' },
         { title: 'Start Your Rehab Plan', desc: 'Your physiotherapist creates a personalized rehabilitation plan.' },
     ];
 
@@ -340,33 +332,45 @@ function GettingStartedCard() {
     );
 }
 
-/* ── Main Page ──────────────────────────────────────────────── */
+/* ── Main page ──────────────────────────────────────────────── */
 export default function ClinicDetailsPage() {
-    const { id }         = useParams();
-    const navigate       = useNavigate();
+    const { id }             = useParams();
+    const { user }           = useAuth();
+    const { addToast }       = useToast();
+    const { openAuthModal }  = useAuthModal();
 
-    const [clinic, setClinic]       = useState(null);
-    const [loading, setLoading]     = useState(true);
-    const [error, setError]         = useState(false);
+    const [clinic, setClinic]         = useState(null);
+    const [loading, setLoading]       = useState(true);
+    const [error, setError]           = useState(false);
     const [hasRequest, setHasRequest] = useState(false);
     const [requesting, setRequesting] = useState(false);
-    const { addToast } = useToast();
 
+    // Clinic fetch — only re-runs when id changes, never on auth state change
+    // so logging in via the modal doesn't flash a loading screen
     useEffect(() => {
-        Promise.all([getClinic(id), getAccessRequests()])
-            .then(([clinicRes, requestsRes]) => {
-                setClinic(clinicRes.data);
-                const active = requestsRes.data.some(
-                    r => r.clinic_id === clinicRes.data.id &&
-                         (r.status === 'pending' || r.status === 'approved')
-                );
-                setHasRequest(active);
-            })
+        setLoading(true);
+        getPublicClinic(id)
+            .then(res => setClinic(res.data))
             .catch(() => setError(true))
             .finally(() => setLoading(false));
     }, [id]);
 
-    const handleRequest = async () => {
+    // Access request check — only for authenticated clients
+    useEffect(() => {
+        if (user?.role !== 'client' || !clinic) return;
+        getAccessRequests()
+            .then(res => {
+                const active = res.data.some(
+                    r => r.clinic_id === clinic.id &&
+                         (r.status === 'pending' || r.status === 'approved')
+                );
+                setHasRequest(active);
+            })
+            .catch(() => {});
+    }, [user, clinic]);
+
+    // The actual API call — shared between guest-then-login flow and direct authenticated flow
+    const doRequest = async () => {
         setRequesting(true);
         try {
             await createAccessRequest({ clinic_id: clinic.id });
@@ -379,65 +383,69 @@ export default function ClinicDetailsPage() {
         }
     };
 
+    const handleRequest = () => {
+        if (!user) {
+            openAuthModal(doRequest);
+            return;
+        }
+        doRequest();
+    };
+
     if (loading) {
         return (
-            <ClientLayout>
-                <ClinicDetailSkeleton />
-            </ClientLayout>
+            <GuestLayout>
+                <div className="client-content">
+                    <ClinicDetailSkeleton />
+                </div>
+            </GuestLayout>
         );
     }
 
     if (error || !clinic) {
         return (
-            <ClientLayout>
-                <Link to="/client/clinics" className="cd-back-link">
+            <GuestLayout>
+                <div className="client-content">
+                    <Link to="/clinics" className="cd-back-link">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        Back to clinics
+                    </Link>
+                    <Card style={{ marginTop: '1.5rem' }}>
+                        <div className="client-empty">This clinic could not be found or is no longer available.</div>
+                    </Card>
+                </div>
+            </GuestLayout>
+        );
+    }
+
+    return (
+        <GuestLayout>
+            <div className="client-content">
+                <Link to="/clinics" className="cd-back-link">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                         <polyline points="15 18 9 12 15 6"/>
                     </svg>
                     Back to clinics
                 </Link>
-                <Card style={{ marginTop: '1.5rem' }}>
-                    <div className="client-empty">This clinic could not be found or is no longer available.</div>
-                </Card>
-            </ClientLayout>
-        );
-    }
 
-    return (
-        <ClientLayout>
-            {/* Back link */}
-            <Link to="/client/clinics" className="cd-back-link">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <polyline points="15 18 9 12 15 6"/>
-                </svg>
-                Back to clinics
-            </Link>
+                <HeroCard
+                    clinic={clinic}
+                    hasRequest={hasRequest}
+                    requesting={requesting}
+                    onRequest={handleRequest}
+                />
 
-            {/* 1. Hero */}
-            <HeroCard
-                clinic={clinic}
-                hasRequest={hasRequest}
-                requesting={requesting}
-                onRequest={handleRequest}
-            />
+                <div className="cd-info-row">
+                    <BudgetCard clinic={clinic} />
+                    <PaymentCard clinic={clinic} />
+                </div>
 
-            {/* 2. Info row */}
-            <div className="cd-info-row">
-                <BudgetCard clinic={clinic} />
-                <PaymentCard clinic={clinic} />
+                <HowPaymentWorksCard />
+                <DiscussCard onGuestAction={() => openAuthModal()} />
+                <WhyDiscussCard />
+                <GettingStartedCard />
             </div>
-
-            {/* 3. How payment works */}
-            <HowPaymentWorksCard />
-
-            {/* 4. Discuss your case */}
-            <DiscussCard />
-
-            {/* 5. Why discuss first */}
-            <WhyDiscussCard />
-
-            {/* 6. Getting started */}
-            <GettingStartedCard />
-        </ClientLayout>
+        </GuestLayout>
     );
 }

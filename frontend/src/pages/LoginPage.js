@@ -85,6 +85,13 @@ export default function LoginPage() {
 
             <main className="auth-form-panel">
                 <div className="auth-form-container">
+                    <button className="auth-back-btn" onClick={() => navigate(-1)} aria-label="Go back">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        Back
+                    </button>
+
                     <p className="auth-form-subtitle">
                         Your recovery continues here.
                     </p>

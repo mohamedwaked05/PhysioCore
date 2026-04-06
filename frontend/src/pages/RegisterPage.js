@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/axios';
 import AuthSidebar from '../components/AuthSidebar';
 import Spinner from '../components/Spinner';
@@ -17,11 +17,13 @@ function GoogleIcon() {
 }
 
 export default function RegisterPage() {
-    const navigate = useNavigate();
+    const navigate  = useNavigate();
+    const location  = useLocation();
+    const initRole  = location.state?.role ?? 'client';
 
     const [form, setForm] = useState({
         first_name: '', last_name: '', email: '',
-        password: '', password_confirmation: '', role: 'client',
+        password: '', password_confirmation: '', role: initRole,
     });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -57,6 +59,13 @@ export default function RegisterPage() {
 
             <main className="auth-form-panel">
                 <div className="auth-form-container">
+                    <button className="auth-back-btn" onClick={() => navigate(-1)} aria-label="Go back">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        Back
+                    </button>
+
                     <h1 className="auth-form-title">Create account</h1>
                     <p className="auth-form-subtitle">Join PhysioCore and start your recovery journey</p>
 
@@ -77,8 +86,7 @@ export default function RegisterPage() {
                                 <input
                                     className="auth-input"
                                     type="text"
-                                    name=""
-                                    placeholder=""
+                                    name="first_name"
                                     value={form.first_name}
                                     onChange={handleChange}
                                     required
@@ -90,8 +98,7 @@ export default function RegisterPage() {
                                 <input
                                     className="auth-input"
                                     type="text"
-                                    name=""
-                                    placeholder=""
+                                    name="last_name"
                                     value={form.last_name}
                                     onChange={handleChange}
                                     required

@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getClinics, createAccessRequest, getAccessRequests } from '../../api/client';
-import ClientLayout from '../../components/ClientLayout';
+import { getPublicClinics } from '../../api/public';
+import { createAccessRequest, getAccessRequests } from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { useAuthModal } from '../../context/AuthModalContext';
+import GuestLayout from '../../components/GuestLayout';
 import Avatar from '../../components/ui/Avatar';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
-import { useToast } from '../../context/ToastContext';
 import '../../styles/ui.css';
 import '../../styles/client.css';
+import '../../styles/guest.css';
 
 function EmptyState({ hasFilters, onClear }) {
     return (
@@ -23,8 +27,6 @@ function EmptyState({ hasFilters, onClear }) {
                     <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round">
                         <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
                         <polyline points="9 22 9 12 15 12 15 22"/>
-                        <line x1="9" y1="8" x2="9.01" y2="8"/>
-                        <line x1="15" y1="8" x2="15.01" y2="8"/>
                     </svg>
                 )}
             </div>
@@ -92,33 +94,42 @@ function formatPrice(min, max) {
 }
 
 export default function ClinicListingPage() {
+    const { user }          = useAuth();
+    const { addToast }      = useToast();
+    const { openAuthModal } = useAuthModal();
+    const navigate          = useNavigate();
+
     const [clinics, setClinics]               = useState([]);
     const [activeRequests, setActiveRequests] = useState(new Set());
     const [loading, setLoading]               = useState(true);
     const [requesting, setRequesting]         = useState(null);
-    const navigate = useNavigate();
-    const { addToast } = useToast();
 
-    const [search, setSearch]                 = useState('');
-    const [paymentFilter, setPaymentFilter]   = useState('');
-    const [priceFilter, setPriceFilter]       = useState('');
+    const [search, setSearch]               = useState('');
+    const [paymentFilter, setPaymentFilter] = useState('');
+    const [priceFilter, setPriceFilter]     = useState('');
 
     useEffect(() => {
-        Promise.all([getClinics(), getAccessRequests()])
-            .then(([clinicsRes, requestsRes]) => {
-                setClinics(clinicsRes.data);
-                const active = new Set(
-                    requestsRes.data
-                        .filter(r => r.status === 'pending' || r.status === 'approved')
-                        .map(r => r.clinic_id)
-                );
-                setActiveRequests(active);
-            })
+        // Public API — works for guests and authenticated users alike
+        getPublicClinics()
+            .then(res => setClinics(res.data))
             .catch(() => {})
             .finally(() => setLoading(false));
-    }, []);
 
-    // Collect unique payment methods from all clinics
+        // Active access requests only available to authenticated clients
+        if (user?.role === 'client') {
+            getAccessRequests()
+                .then(res => {
+                    const active = new Set(
+                        res.data
+                            .filter(r => r.status === 'pending' || r.status === 'approved')
+                            .map(r => r.clinic_id)
+                    );
+                    setActiveRequests(active);
+                })
+                .catch(() => {});
+        }
+    }, [user]);
+
     const paymentOptions = useMemo(() => {
         const set = new Set();
         clinics.forEach(c => {
@@ -132,13 +143,11 @@ export default function ClinicListingPage() {
         return Array.from(set).sort();
     }, [clinics]);
 
-    // Apply filters
     const filtered = useMemo(() => {
-        const q          = search.trim().toLowerCase();
-        const maxBudget  = priceFilter !== '' ? parseInt(priceFilter, 10) : null;
+        const q         = search.trim().toLowerCase();
+        const maxBudget = priceFilter !== '' ? parseInt(priceFilter, 10) : null;
 
         return clinics.filter(clinic => {
-            // Search
             if (q) {
                 const name      = (clinic.commercial_name || clinic.legal_name || '').toLowerCase();
                 const specialty = (clinic.specialty_text  || '').toLowerCase();
@@ -148,23 +157,18 @@ export default function ClinicListingPage() {
                     return false;
                 }
             }
-
-            // Payment method
             if (paymentFilter) {
                 const methods = (clinic.payment_methods || '').toLowerCase();
                 if (!methods.includes(paymentFilter.toLowerCase())) return false;
             }
-
-            // Price (max budget — only exclude if clinic has a min_price set above the budget)
             if (maxBudget !== null && clinic.min_price != null) {
                 if (clinic.min_price > maxBudget) return false;
             }
-
             return true;
         });
     }, [clinics, search, paymentFilter, priceFilter]);
 
-    const handleRequest = async (clinicId) => {
+    const doRequest = async (clinicId) => {
         setRequesting(clinicId);
         try {
             await createAccessRequest({ clinic_id: clinicId });
@@ -177,201 +181,187 @@ export default function ClinicListingPage() {
         }
     };
 
+    const handleRequest = (clinicId, e) => {
+        e.stopPropagation();
+        if (!user) {
+            openAuthModal(() => doRequest(clinicId));
+            return;
+        }
+        doRequest(clinicId);
+    };
+
+    const clearFilters = () => { setSearch(''); setPriceFilter(''); setPaymentFilter(''); };
+    const hasFilters   = !!(search || priceFilter || paymentFilter);
+
     if (loading) {
         return (
-            <ClientLayout>
-                <div className="client-page-header">
-                    <Skeleton height="22px" width="160px" radius="6px" style={{ marginBottom: '0.4rem' }} />
-                    <Skeleton height="13px" width="220px" radius="6px" />
+            <GuestLayout>
+                <div className="client-content">
+                    <div className="client-page-header">
+                        <Skeleton height="22px" width="160px" radius="6px" style={{ marginBottom: '0.4rem' }} />
+                        <Skeleton height="13px" width="220px" radius="6px" />
+                    </div>
+                    <div className="clinic-grid">
+                        {Array.from({ length: 6 }).map((_, i) => <ClinicCardSkeleton key={i} />)}
+                    </div>
                 </div>
-                <div className="clinic-grid">
-                    {Array.from({ length: 6 }).map((_, i) => <ClinicCardSkeleton key={i} />)}
-                </div>
-            </ClientLayout>
+            </GuestLayout>
         );
     }
 
     return (
-        <ClientLayout>
-            <div className="client-page-header">
-                <h1 className="client-page-title">Browse Clinics</h1>
-                <p className="client-page-subtitle">
-                    {filtered.length} of {clinics.length} verified {clinics.length === 1 ? 'clinic' : 'clinics'} shown.
-                </p>
-            </div>
+        <GuestLayout>
+            <div className="client-content">
+                <div className="client-page-header">
+                    <h1 className="client-page-title">Browse Clinics</h1>
+                    <p className="client-page-subtitle">
+                        {filtered.length} of {clinics.length} verified {clinics.length === 1 ? 'clinic' : 'clinics'} shown.
+                    </p>
+                </div>
 
-            {/* Search & Filter Bar */}
-            <div className="clinic-filter-bar">
-                <div className="clinic-search-wrap">
-                    <svg className="clinic-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <circle cx="11" cy="11" r="8"/>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                    </svg>
-                    <input
-                        className="clinic-search-input"
-                        type="text"
-                        placeholder="Search by name, specialty, or location…"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                    />
-                    {search && (
-                        <button className="clinic-search-clear" onClick={() => setSearch('')} aria-label="Clear search">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                            </svg>
-                        </button>
+                {/* Search & Filter Bar */}
+                <div className="clinic-filter-bar">
+                    <div className="clinic-search-wrap">
+                        <svg className="clinic-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input
+                            className="clinic-search-input"
+                            type="text"
+                            placeholder="Search by name, specialty, or location…"
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                        />
+                        {search && (
+                            <button className="clinic-search-clear" onClick={() => setSearch('')} aria-label="Clear search">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+
+                    <select className="clinic-filter-select" value={priceFilter} onChange={e => setPriceFilter(e.target.value)}>
+                        {PRICE_BRACKETS.map(b => (
+                            <option key={b.label} value={b.max ?? ''}>{b.label}</option>
+                        ))}
+                    </select>
+
+                    <select
+                        className="clinic-filter-select"
+                        value={paymentFilter}
+                        onChange={e => setPaymentFilter(e.target.value)}
+                        disabled={paymentOptions.length === 0}
+                    >
+                        <option value="">All Payment Methods</option>
+                        {paymentOptions.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+
+                    {hasFilters && (
+                        <button className="clinic-filter-reset" onClick={clearFilters}>Clear filters</button>
                     )}
                 </div>
 
-                <select
-                    className="clinic-filter-select"
-                    value={priceFilter}
-                    onChange={e => setPriceFilter(e.target.value)}
-                >
-                    {PRICE_BRACKETS.map(b => (
-                        <option key={b.label} value={b.max ?? ''}>
-                            {b.label}
-                        </option>
-                    ))}
-                </select>
+                {filtered.length === 0 ? (
+                    <EmptyState hasFilters={hasFilters} onClear={clearFilters} />
+                ) : (
+                    <div className="clinic-grid">
+                        {filtered.map((clinic, i) => {
+                            const hasActive    = activeRequests.has(clinic.id);
+                            const isRequesting = requesting === clinic.id;
+                            const name         = clinic.commercial_name || clinic.legal_name;
+                            const priceLabel   = formatPrice(clinic.min_price, clinic.max_price);
 
-                <select
-                    className="clinic-filter-select"
-                    value={paymentFilter}
-                    onChange={e => setPaymentFilter(e.target.value)}
-                    disabled={paymentOptions.length === 0}
-                >
-                    <option value="">All Payment Methods</option>
-                    {paymentOptions.map(m => (
-                        <option key={m} value={m}>{m}</option>
-                    ))}
-                </select>
+                            return (
+                                <div
+                                    key={clinic.id}
+                                    className="clinic-card clinic-card-clickable"
+                                    style={{ '--i': i }}
+                                    onClick={() => navigate(`/clinics/${clinic.id}`)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={e => e.key === 'Enter' && navigate(`/clinics/${clinic.id}`)}
+                                >
+                                    <div className="clinic-card-header">
+                                        <Avatar src={clinic.profile_photo_url} name={name} size="md" />
+                                        <div className="clinic-card-header-info">
+                                            <span className="clinic-card-name">{name}</span>
+                                            {clinic.specialty_text && (
+                                                <span className="clinic-card-specialty">{clinic.specialty_text}</span>
+                                            )}
+                                        </div>
+                                    </div>
 
-                {(search || priceFilter || paymentFilter) && (
-                    <button
-                        className="clinic-filter-reset"
-                        onClick={() => { setSearch(''); setPriceFilter(''); setPaymentFilter(''); }}
-                    >
-                        Clear filters
-                    </button>
-                )}
-            </div>
+                                    <p className="clinic-card-desc">
+                                        {clinic.description ?? 'No description provided.'}
+                                    </p>
 
-            {filtered.length === 0 ? (
-                <EmptyState
-                    hasFilters={!!(search || priceFilter || paymentFilter)}
-                    onClear={() => { setSearch(''); setPriceFilter(''); setPaymentFilter(''); }}
-                />
-            ) : (
-                <div className="clinic-grid">
-                    {filtered.map((clinic, i) => {
-                        const hasActive    = activeRequests.has(clinic.id);
-                        const isRequesting = requesting === clinic.id;
-                        const name         = clinic.commercial_name || clinic.legal_name;
-                        const priceLabel   = formatPrice(clinic.min_price, clinic.max_price);
-
-                        return (
-                            <div
-                                key={clinic.id}
-                                className="clinic-card clinic-card-clickable"
-                                style={{ '--i': i }}
-                                onClick={() => navigate(`/client/clinics/${clinic.id}`)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={e => e.key === 'Enter' && navigate(`/client/clinics/${clinic.id}`)}
-                            >
-                                {/* Header */}
-                                <div className="clinic-card-header">
-                                    <Avatar src={clinic.profile_photo_url} name={name} size="md" />
-                                    <div className="clinic-card-header-info">
-                                        <span className="clinic-card-name">{name}</span>
-                                        {clinic.specialty_text && (
-                                            <span className="clinic-card-specialty">{clinic.specialty_text}</span>
+                                    <div className="clinic-card-meta">
+                                        {clinic.address && (
+                                            <span className="clinic-card-meta-item">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                                                    <circle cx="12" cy="10" r="3"/>
+                                                </svg>
+                                                {clinic.address}
+                                            </span>
+                                        )}
+                                        {clinic.working_hours && (
+                                            <span className="clinic-card-meta-item">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <polyline points="12 6 12 12 16 14"/>
+                                                </svg>
+                                                {clinic.working_hours}
+                                            </span>
+                                        )}
+                                        {clinic.estimated_response_time && (
+                                            <span className="clinic-card-meta-item clinic-card-meta-response">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                                </svg>
+                                                Responds {clinic.estimated_response_time}
+                                            </span>
                                         )}
                                     </div>
-                                </div>
 
-                                {/* Description */}
-                                <p className="clinic-card-desc">
-                                    {clinic.description ?? 'No description provided.'}
-                                </p>
+                                    {priceLabel && (
+                                        <div className="clinic-card-price">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                <line x1="12" y1="1" x2="12" y2="23"/>
+                                                <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                                            </svg>
+                                            {priceLabel}
+                                        </div>
+                                    )}
 
-                                {/* Meta info */}
-                                <div className="clinic-card-meta">
-                                    {clinic.address && (
-                                        <span className="clinic-card-meta-item">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                                                <circle cx="12" cy="10" r="3"/>
-                                            </svg>
-                                            {clinic.address}
-                                        </span>
+                                    {clinic.services && (
+                                        <div className="clinic-card-tags">
+                                            {clinic.services.split(',').slice(0, 3).map((s, j) => (
+                                                <span key={j} className="clinic-card-tag">{s.trim()}</span>
+                                            ))}
+                                        </div>
                                     )}
-                                    {clinic.working_hours && (
-                                        <span className="clinic-card-meta-item">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                <circle cx="12" cy="12" r="10"/>
-                                                <polyline points="12 6 12 12 16 14"/>
-                                            </svg>
-                                            {clinic.working_hours}
-                                        </span>
-                                    )}
-                                    {clinic.clinic_mobile && (
-                                        <span className="clinic-card-meta-item">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-                                            </svg>
-                                            {clinic.clinic_mobile}
-                                        </span>
-                                    )}
-                                    {clinic.estimated_response_time && (
-                                        <span className="clinic-card-meta-item clinic-card-meta-response">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                                            </svg>
-                                            Responds {clinic.estimated_response_time}
-                                        </span>
-                                    )}
-                                </div>
 
-                                {/* Price badge */}
-                                {priceLabel && (
-                                    <div className="clinic-card-price">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                            <line x1="12" y1="1" x2="12" y2="23"/>
-                                            <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-                                        </svg>
-                                        {priceLabel}
+                                    <div className="clinic-card-footer">
+                                        <Button
+                                            variant={hasActive ? 'secondary' : 'primary'}
+                                            size="sm"
+                                            onClick={e => handleRequest(clinic.id, e)}
+                                            disabled={hasActive}
+                                            loading={isRequesting}
+                                            style={{ width: '100%' }}
+                                        >
+                                            {hasActive ? 'Request Sent' : 'Request Access'}
+                                        </Button>
                                     </div>
-                                )}
-
-                                {/* Services tags */}
-                                {clinic.services && (
-                                    <div className="clinic-card-tags">
-                                        {clinic.services.split(',').slice(0, 3).map((s, i) => (
-                                            <span key={i} className="clinic-card-tag">{s.trim()}</span>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Footer */}
-                                <div className="clinic-card-footer">
-                                    <Button
-                                        variant={hasActive ? 'secondary' : 'primary'}
-                                        size="sm"
-                                        onClick={e => { e.stopPropagation(); handleRequest(clinic.id); }}
-                                        disabled={hasActive}
-                                        loading={isRequesting}
-                                        style={{ width: '100%' }}
-                                    >
-                                        {hasActive ? 'Request Sent' : 'Request Access'}
-                                    </Button>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-        </ClientLayout>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        </GuestLayout>
     );
 }

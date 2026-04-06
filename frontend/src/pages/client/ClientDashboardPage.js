@@ -97,7 +97,7 @@ export default function ClientDashboardPage() {
                         <span className="client-card-title">Quick Actions</span>
                     </div>
                     <div className="client-actions-row">
-                        <Link to="/client/clinics" className="client-action-btn">
+                        <Link to="/clinics" className="client-action-btn">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
                                 <circle cx="12" cy="10" r="3"/>
@@ -118,7 +118,7 @@ export default function ClientDashboardPage() {
                 <div className="client-card span-2">
                     <div className="client-card-header">
                         <span className="client-card-title">Access Requests</span>
-                        <Link to="/client/clinics" className="client-action-btn secondary" style={{ fontSize: '0.78rem', padding: '0.3rem 0.75rem' }}>
+                        <Link to="/clinics" className="client-action-btn secondary" style={{ fontSize: '0.78rem', padding: '0.3rem 0.75rem' }}>
                             New request
                         </Link>
                     </div>
