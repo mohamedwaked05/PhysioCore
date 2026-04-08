@@ -24,6 +24,7 @@ class UpdateClinicProfileRequest extends FormRequest
             'tax_id'            => ['sometimes', 'required', 'string', 'max:100'],
             'license_number'    => ['sometimes', 'required', 'string', 'max:100'],
             'license_file'      => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'cert_file'         => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'profile_photo'     => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
             'certifications'    => ['nullable', 'string', 'max:2000'],
             'experience'        => ['nullable', 'string', 'max:255'],

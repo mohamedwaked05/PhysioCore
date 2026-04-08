@@ -8,6 +8,8 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -18,7 +20,19 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = $this->authService->register($request->validated());
+        $data = $request->validated();
+
+        // Store clinic documents and attach their public URLs to the data array
+        if ($data['role'] === 'clinic') {
+            if ($request->hasFile('license_file')) {
+                $data['license_file_url'] = $this->storeFile($request, 'license_file', 'licenses');
+            }
+            if ($request->hasFile('cert_file')) {
+                $data['cert_file_url'] = $this->storeFile($request, 'cert_file', 'certifications');
+            }
+        }
+
+        $user = $this->authService->register($data);
 
         return response()->json([
             'message' => 'Registration successful. Please check your email to verify your account.',
@@ -65,5 +79,14 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully.']);
+    }
+
+    private function storeFile(Request $request, string $field, string $folder): string
+    {
+        $file     = $request->file($field);
+        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $path     = $file->storeAs($folder, $filename, 'public');
+
+        return Storage::disk('public')->url($path);
     }
 }

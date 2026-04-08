@@ -30,7 +30,7 @@ class AuthService
             'provider'      => 'local',
         ]);
 
-        $this->initializeProfile($user);
+        $this->initializeProfile($user, $data);
 
         // Fires the built-in Registered event → Laravel sends verification email
         event(new Registered($user));
@@ -42,8 +42,9 @@ class AuthService
      * Create the appropriate profile record based on the user's role.
      * client → ClientProfile
      * clinic → Clinic (status = pending, awaiting admin verification)
+     *          Pre-fills registration-time clinic fields if provided.
      */
-    private function initializeProfile(User $user): void
+    private function initializeProfile(User $user, array $data = []): void
     {
         if ($user->role === 'client') {
             ClientProfile::create(['user_id' => $user->id]);
@@ -51,6 +52,10 @@ class AuthService
             Clinic::create([
                 'user_id'             => $user->id,
                 'legal_name'          => $user->first_name . ' ' . $user->last_name,
+                'clinic_mobile'       => $data['clinic_mobile']    ?? null,
+                'payment_methods'     => $data['payment_methods']  ?? null,
+                'license_file_url'    => $data['license_file_url'] ?? null,
+                'cert_file_url'       => $data['cert_file_url']    ?? null,
                 'verification_status' => 'pending',
             ]);
         }

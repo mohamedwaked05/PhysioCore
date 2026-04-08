@@ -233,6 +233,8 @@ export default function ClinicProfilePage() {
     const [certTags, setCertTags]       = useState([]);
     const [licenseFile, setLicenseFile] = useState(null);
     const [licenseUrl, setLicenseUrl]   = useState('');
+    const [certFile, setCertFile]       = useState(null);
+    const [certFileUrl, setCertFileUrl] = useState('');
     const [photoFile, setPhotoFile]     = useState(null);
     const [photoPreview, setPhotoPreview] = useState('');
     const [isRegistered, setIsRegistered] = useState(false);
@@ -268,6 +270,7 @@ export default function ClinicProfilePage() {
                 setServiceTags(strToTags(d.services ?? ''));
                 setCertTags(strToTags(d.certifications ?? ''));
                 setLicenseUrl(d.license_file_url ?? '');
+                setCertFileUrl(d.cert_file_url ?? '');
                 setPhotoPreview(d.profile_photo_url ?? '');
                 setIsRegistered(!!d.clinic_email);
                 // New clinic starts in edit mode
@@ -337,6 +340,7 @@ export default function ClinicProfilePage() {
         setErrorMsg('');
         if (photoFile) setPhotoFile(null);
         if (licenseFile) setLicenseFile(null);
+        if (certFile) setCertFile(null);
     };
 
     const handleSubmit = async (e) => {
@@ -359,6 +363,7 @@ export default function ClinicProfilePage() {
         if (serviceTags.length > 0) formData.append('services', serviceTags.join(', '));
         if (certTags.length > 0)    formData.append('certifications', certTags.join(', '));
         if (licenseFile) formData.append('license_file', licenseFile);
+        if (certFile)    formData.append('cert_file', certFile);
         if (photoFile)   formData.append('profile_photo', photoFile);
 
         try {
@@ -366,9 +371,11 @@ export default function ClinicProfilePage() {
             const res = await fn(formData);
             const d   = res.data ?? {};
             setLicenseUrl(d.license_file_url ?? licenseUrl);
+            setCertFileUrl(d.cert_file_url ?? certFileUrl);
             setPhotoPreview(d.profile_photo_url ?? photoPreview);
             setIsRegistered(true);
             setLicenseFile(null);
+            setCertFile(null);
             setPhotoFile(null);
             setEditing(false);
             setSuccess(true);
@@ -714,6 +721,34 @@ export default function ClinicProfilePage() {
                                         View license file
                                       </a>
                                     : <span style={{ fontSize: '0.875rem', color: '#9896a4' }}>No license uploaded</span>
+                            }
+                        </Field>
+
+                        <Field className="span-2">
+                            <Label hint="optional">Certification Document</Label>
+                            {editing
+                                ? <LicenseUpload
+                                    file={certFile}
+                                    currentUrl={certFileUrl}
+                                    onChange={(f) => {
+                                        if (!LICENSE_TYPES.includes(f.type)) {
+                                            setErrors(prev => ({ ...prev, cert_file: 'Invalid file type. Allowed: PDF, JPG, PNG.' }));
+                                            return;
+                                        }
+                                        if (f.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                                            setErrors(prev => ({ ...prev, cert_file: `Max file size is ${MAX_FILE_SIZE_MB}MB.` }));
+                                            return;
+                                        }
+                                        setCertFile(f);
+                                        setErrors(prev => ({ ...prev, cert_file: null }));
+                                    }}
+                                    error={errors.cert_file}
+                                  />
+                                : certFileUrl
+                                    ? <a href={certFileUrl} target="_blank" rel="noopener noreferrer" className="file-current-link">
+                                        View certification file
+                                      </a>
+                                    : <span style={{ fontSize: '0.875rem', color: '#9896a4' }}>No certification uploaded</span>
                             }
                         </Field>
 

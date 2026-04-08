@@ -895,3 +895,177 @@
     right: 1rem;
   }
 }
+
+/* ─── Step Progress Indicator ─────────────────────────────── */
+.lp-step-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 1.35rem;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+}
+.lp-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.lp-step.active {
+    color: var(--primary);
+}
+.lp-step.done {
+    color: #22c55e;
+}
+.lp-step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s;
+}
+.lp-step.active .lp-step-num {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+.lp-step.done .lp-step-num {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: #fff;
+}
+.lp-step-connector {
+    height: 2px;
+    flex: 1;
+    background: var(--border);
+    margin: 0 10px;
+    border-radius: 2px;
+    transition: background 0.2s;
+}
+.lp-step-connector.done {
+    background: #22c55e;
+}
+
+/* ─── Clinic Step 2 — file upload ─────────────────────────── */
+.lp-file-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    cursor: pointer;
+    font-size: 0.8375rem;
+    color: var(--text-secondary);
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.lp-file-btn:hover:not(:disabled) {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 5%, var(--bg));
+    color: var(--primary);
+}
+.lp-file-btn.has-file {
+    border-style: solid;
+    border-color: #22c55e;
+    color: #15803d;
+    background: color-mix(in srgb, #22c55e 6%, var(--bg));
+}
+.lp-file-btn.error {
+    border-color: #dc2626;
+}
+.lp-file-icon {
+    flex-shrink: 0;
+    opacity: 0.65;
+}
+.lp-file-btn.has-file .lp-file-icon { opacity: 1; color: #22c55e; }
+.lp-file-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ─── Clinic Step 2 — payment pills ───────────────────────── */
+.lp-payment-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 2px;
+}
+.lp-payment-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 30px;
+    background: var(--bg);
+    cursor: pointer;
+    font-size: 0.8375rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    user-select: none;
+}
+.lp-payment-pill:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 6%, var(--bg));
+}
+.lp-payment-pill.selected {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #fff;
+}
+.lp-payment-pill-check {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 10px;
+    transition: background 0.1s;
+}
+.lp-payment-pill.selected .lp-payment-pill-check {
+    background: rgba(255,255,255,0.25);
+    border-color: transparent;
+}
+
+/* ─── Step 2 review note ───────────────────────────────────── */
+.lp-review-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 11px 13px;
+    background: color-mix(in srgb, var(--primary) 6%, var(--bg));
+    border: 1.5px solid color-mix(in srgb, var(--primary) 20%, var(--border));
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1.1rem;
+}
+.lp-review-note-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: var(--primary);
+    opacity: 0.75;
+}

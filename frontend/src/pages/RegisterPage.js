@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import Spinner from '../components/Spinner';
+import PhoneInput from '../components/ui/PhoneInput';
 import '../styles/login.css';
+import '../styles/ui.css';
 
 /* ── Icons ──────────────────────────────────────────────────── */
 function PersonIcon() {
@@ -123,6 +125,34 @@ function MailSentIcon() {
     );
 }
 
+function UploadIcon() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+    );
+}
+
+function CheckIcon() {
+    return (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round">
+            <polyline points="20 6 9 17 4 12"/>
+        </svg>
+    );
+}
+
+function InfoIcon() {
+    return (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+    );
+}
+
 /* ── Sidebar feature icons ──────────────────────────────────── */
 function ChartLineIcon() {
     return (
@@ -147,6 +177,68 @@ function UsersIcon() {
             <path d="M23 21v-2a4 4 0 00-3-3.87"/>
             <path d="M16 3.13a4 4 0 010 7.75"/>
         </svg>
+    );
+}
+
+/* ── File upload helper ─────────────────────────────────────── */
+function FileUploadField({ label, file, onChange, error, accept, hint }) {
+    const inputRef = useRef(null);
+    const handleChange = (e) => {
+        const f = e.target.files[0];
+        if (f) onChange(f);
+        e.target.value = '';
+    };
+    return (
+        <div className="lp-field">
+            <label className="lp-label">{label}</label>
+            <input ref={inputRef} type="file" accept={accept} style={{ display: 'none' }} onChange={handleChange} />
+            <button
+                type="button"
+                className={`lp-file-btn${file ? ' has-file' : ''}${error ? ' error' : ''}`}
+                onClick={() => inputRef.current.click()}
+            >
+                <span className="lp-file-icon">
+                    {file
+                        ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        : <UploadIcon />
+                    }
+                </span>
+                <span className="lp-file-name">
+                    {file ? file.name : hint}
+                </span>
+            </button>
+            {error && <p className="lp-field-error">{error}</p>}
+        </div>
+    );
+}
+
+/* ── Payment pill helper ─────────────────────────────────────── */
+const PAYMENT_OPTIONS = ['Whish', 'OMT', 'BOB', 'Cash'];
+
+function PaymentPills({ selected, onChange }) {
+    const toggle = (opt) => {
+        if (selected.includes(opt)) {
+            onChange(selected.filter(o => o !== opt));
+        } else {
+            onChange([...selected, opt]);
+        }
+    };
+    return (
+        <div className="lp-payment-options">
+            {PAYMENT_OPTIONS.map(opt => (
+                <button
+                    key={opt}
+                    type="button"
+                    className={`lp-payment-pill${selected.includes(opt) ? ' selected' : ''}`}
+                    onClick={() => toggle(opt)}
+                >
+                    <span className="lp-payment-pill-check">
+                        {selected.includes(opt) && <CheckIcon />}
+                    </span>
+                    {opt}
+                </button>
+            ))}
+        </div>
     );
 }
 
@@ -226,16 +318,27 @@ export default function RegisterPage() {
     const { login } = useAuth();
     const initRole  = location.state?.role ?? 'client';
 
+    /* Step 1 — basic account info */
     const [form, setForm] = useState({
         first_name: '', last_name: '', email: '',
         password: '', password_confirmation: '', role: initRole,
     });
-    const [errors, setErrors]         = useState({});
-    const [loading, setLoading]       = useState(false);
-    const [success, setSuccess]       = useState('');
-    const [showPass, setShowPass]     = useState(false);
+    const [errors, setErrors]           = useState({});
+    const [loading, setLoading]         = useState(false);
+    const [success, setSuccess]         = useState('');
+    const [showPass, setShowPass]       = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-    const [darkMode, setDarkMode]     = useState(() => localStorage.getItem('physiocore-theme') === 'dark');
+    const [darkMode, setDarkMode]       = useState(() => localStorage.getItem('physiocore-theme') === 'dark');
+
+    /* Step 2 — clinic verification (only for clinic role) */
+    const [step, setStep]         = useState(1);
+    const [clinicExtra, setClinicExtra] = useState({
+        phone:           '',
+        payment_methods: [],
+        license_file:    null,
+        cert_file:       null,
+    });
+    const [clinicErrors, setClinicErrors] = useState({});
 
     const toggleDark = () => {
         setDarkMode(prev => {
@@ -245,7 +348,7 @@ export default function RegisterPage() {
         });
     };
 
-    // Listen for email verification broadcast → auto-login
+    /* Listen for email verification broadcast → auto-login */
     useEffect(() => {
         if (!success) return;
         let ch;
@@ -269,16 +372,63 @@ export default function RegisterPage() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
+    /* ── Step 1 submit ─────────────────────────────────────── */
+    const handleStep1 = (e) => {
         e.preventDefault();
         setErrors({});
+        if (form.role === 'clinic') {
+            // Advance to step 2 — no API call yet
+            setStep(2);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            submitRegistration();
+        }
+    };
+
+    /* ── Step 2 submit ─────────────────────────────────────── */
+    const handleStep2 = async (e) => {
+        e.preventDefault();
+        const errs = {};
+        if (!clinicExtra.phone)                     errs.phone           = 'Phone number is required.';
+        if (clinicExtra.payment_methods.length === 0) errs.payment_methods = 'Select at least one payment method.';
+        if (!clinicExtra.license_file)              errs.license_file    = 'License document is required.';
+        if (!clinicExtra.cert_file)                 errs.cert_file       = 'Certification document is required.';
+
+        if (Object.keys(errs).length > 0) {
+            setClinicErrors(errs);
+            return;
+        }
+        setClinicErrors({});
+        submitRegistration();
+    };
+
+    /* ── Actual API call ───────────────────────────────────── */
+    const submitRegistration = async () => {
         setLoading(true);
         try {
-            const res = await api.post('/auth/register', form);
-            setSuccess(res.data.message);
-            setTimeout(() => navigate('/login'), 4000);
+            let res;
+            if (form.role === 'clinic') {
+                const formData = new FormData();
+                Object.entries(form).forEach(([k, v]) => formData.append(k, v));
+                formData.append('clinic_mobile', clinicExtra.phone);
+                formData.append('payment_methods', clinicExtra.payment_methods.join(', '));
+                if (clinicExtra.license_file) formData.append('license_file', clinicExtra.license_file);
+                if (clinicExtra.cert_file)    formData.append('cert_file',    clinicExtra.cert_file);
+                res = await api.post('/auth/register', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+            } else {
+                res = await api.post('/auth/register', form);
+            }
+            setSuccess(res.data.message || 'Account created!');
         } catch (err) {
-            setErrors(err.response?.data?.errors || { general: ['Registration failed.'] });
+            const serverErrors = err.response?.data?.errors || { general: ['Registration failed.'] };
+            if (form.role === 'clinic' && step === 2) {
+                setClinicErrors(serverErrors);
+            } else {
+                setErrors(serverErrors);
+                if (form.role === 'clinic') setStep(1);
+            }
         } finally {
             setLoading(false);
         }
@@ -317,8 +467,13 @@ export default function RegisterPage() {
                                 <span className="lp-verify-email-chip">{form.email}</span>
                                 .<br />Click the link to activate your account and get started.
                             </p>
+                            {form.role === 'clinic' && (
+                                <p className="lp-verify-note" style={{ color: 'var(--primary)', fontWeight: 500 }}>
+                                    Your clinic details have been submitted for admin review.
+                                </p>
+                            )}
                             <p className="lp-verify-note">
-                                Redirecting to sign in shortly...
+                                Redirecting to sign in shortly…
                             </p>
                             <p style={{ marginTop: '1.5rem', textAlign: 'center' }}>
                                 <Link to="/login" className="lp-forgot-link">Go to sign in →</Link>
@@ -330,7 +485,124 @@ export default function RegisterPage() {
         );
     }
 
-    /* ── Registration form ─────────────────────────────────── */
+    /* ── Step 2 — Clinic Verification ─────────────────────── */
+    if (form.role === 'clinic' && step === 2) {
+        return (
+            <div className={`login-page${darkMode ? ' dark' : ''}`}>
+                <Sidebar />
+
+                <div className="lp-form-panel">
+                    {themeToggle}
+
+                    <div className="lp-card">
+                        {/* Back to step 1 */}
+                        <button className="lp-back-btn" onClick={() => { setStep(1); setClinicErrors({}); }} aria-label="Go back">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                <polyline points="15 18 9 12 15 6"/>
+                            </svg>
+                            Back
+                        </button>
+
+                        {/* Step indicator */}
+                        <div className="lp-step-bar">
+                            <div className="lp-step done">
+                                <span className="lp-step-num"><CheckIcon /></span>
+                                <span>Account Info</span>
+                            </div>
+                            <div className="lp-step-connector done" />
+                            <div className="lp-step active">
+                                <span className="lp-step-num">2</span>
+                                <span>Clinic Details</span>
+                            </div>
+                        </div>
+
+                        <h2 className="lp-title">
+                            Clinic <span className="lp-title-accent">verification</span>
+                        </h2>
+                        <p className="lp-subtitle">Provide your clinic documents for admin review.</p>
+
+                        {/* Review note */}
+                        <div className="lp-review-note">
+                            <span className="lp-review-note-icon"><InfoIcon /></span>
+                            <span>These documents will be reviewed by our admin team before your clinic account is activated. All fields are required.</span>
+                        </div>
+
+                        {clinicErrors.general && (
+                            <div className="lp-error-banner">
+                                <AlertCircleIcon />
+                                <span>{clinicErrors.general[0]}</span>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleStep2}>
+                            {/* Phone */}
+                            <div className="lp-field">
+                                <label className="lp-label">Clinic Phone Number</label>
+                                <PhoneInput
+                                    name="clinic_phone"
+                                    value={clinicExtra.phone}
+                                    onChange={(e) => setClinicExtra(prev => ({ ...prev, phone: e.target.value }))}
+                                    placeholder="Clinic phone number"
+                                    error={!!clinicErrors.phone}
+                                />
+                                {clinicErrors.phone && <p className="lp-field-error">{clinicErrors.phone}</p>}
+                            </div>
+
+                            {/* Payment methods */}
+                            <div className="lp-field">
+                                <label className="lp-label">Payment Methods Accepted</label>
+                                <PaymentPills
+                                    selected={clinicExtra.payment_methods}
+                                    onChange={(val) => {
+                                        setClinicExtra(prev => ({ ...prev, payment_methods: val }));
+                                        if (clinicErrors.payment_methods) setClinicErrors(prev => ({ ...prev, payment_methods: null }));
+                                    }}
+                                />
+                                {clinicErrors.payment_methods && <p className="lp-field-error">{clinicErrors.payment_methods}</p>}
+                            </div>
+
+                            {/* License document */}
+                            <FileUploadField
+                                label="License Document"
+                                file={clinicExtra.license_file}
+                                onChange={(f) => {
+                                    setClinicExtra(prev => ({ ...prev, license_file: f }));
+                                    if (clinicErrors.license_file) setClinicErrors(prev => ({ ...prev, license_file: null }));
+                                }}
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                hint="Upload official clinic license (PDF, JPG, PNG — max 5MB)"
+                                error={clinicErrors.license_file}
+                            />
+
+                            {/* Certification document */}
+                            <FileUploadField
+                                label="Certification Document"
+                                file={clinicExtra.cert_file}
+                                onChange={(f) => {
+                                    setClinicExtra(prev => ({ ...prev, cert_file: f }));
+                                    if (clinicErrors.cert_file) setClinicErrors(prev => ({ ...prev, cert_file: null }));
+                                }}
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                hint="Upload certifications or accreditations (PDF, JPG, PNG — max 5MB)"
+                                error={clinicErrors.cert_file}
+                            />
+
+                            <button className="lp-submit-btn" type="submit" disabled={loading} style={{ marginTop: '0.5rem' }}>
+                                {loading && <Spinner />}
+                                {loading ? 'Creating account…' : 'Create Account'}
+                            </button>
+                        </form>
+
+                        <p className="lp-bottom-text">
+                            Already have an account? <Link to="/login">Sign in</Link>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    /* ── Step 1 — Account Info ─────────────────────────────── */
     return (
         <div className={`login-page${darkMode ? ' dark' : ''}`}>
             <Sidebar />
@@ -346,6 +618,21 @@ export default function RegisterPage() {
                         </svg>
                         Back
                     </button>
+
+                    {/* Step indicator — shown only when clinic is selected */}
+                    {form.role === 'clinic' && (
+                        <div className="lp-step-bar">
+                            <div className="lp-step active">
+                                <span className="lp-step-num">1</span>
+                                <span>Account Info</span>
+                            </div>
+                            <div className="lp-step-connector" />
+                            <div className="lp-step">
+                                <span className="lp-step-num">2</span>
+                                <span>Clinic Details</span>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Title */}
                     <h2 className="lp-title">
@@ -370,7 +657,7 @@ export default function RegisterPage() {
                     <div className="lp-divider"><span>or sign up with email</span></div>
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleStep1}>
                         {/* Name row */}
                         <div className="lp-name-row">
                             <div className="lp-field">
@@ -494,7 +781,10 @@ export default function RegisterPage() {
 
                         <button className="lp-submit-btn" type="submit" disabled={loading} style={{ marginTop: '0.25rem' }}>
                             {loading && <Spinner />}
-                            {loading ? 'Creating account...' : 'Create Account'}
+                            {form.role === 'clinic'
+                                ? (loading ? 'Please wait…' : 'Continue →')
+                                : (loading ? 'Creating account…' : 'Create Account')
+                            }
                         </button>
                     </form>
 

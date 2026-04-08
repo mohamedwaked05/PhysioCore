@@ -33,11 +33,15 @@ class ClinicProfileController extends Controller
             $data['license_file_url'] = $this->storeFile($request, 'license_file', 'licenses');
         }
 
+        if ($request->hasFile('cert_file')) {
+            $data['cert_file_url'] = $this->storeFile($request, 'cert_file', 'certifications');
+        }
+
         if ($request->hasFile('profile_photo')) {
             $data['profile_photo_url'] = $this->storeFile($request, 'profile_photo', 'clinic-photos');
         }
 
-        unset($data['license_file'], $data['profile_photo']);
+        unset($data['license_file'], $data['cert_file'], $data['profile_photo']);
         $clinic->update($data);
 
         return response()->json($clinic->fresh(), 201);
@@ -55,6 +59,13 @@ class ClinicProfileController extends Controller
             $data['license_file_url'] = $this->storeFile($request, 'license_file', 'licenses');
         }
 
+        if ($request->hasFile('cert_file')) {
+            if ($clinic->cert_file_url) {
+                $this->deleteStoredFile($clinic->cert_file_url);
+            }
+            $data['cert_file_url'] = $this->storeFile($request, 'cert_file', 'certifications');
+        }
+
         if ($request->hasFile('profile_photo')) {
             if ($clinic->profile_photo_url) {
                 $this->deleteStoredFile($clinic->profile_photo_url);
@@ -62,7 +73,7 @@ class ClinicProfileController extends Controller
             $data['profile_photo_url'] = $this->storeFile($request, 'profile_photo', 'clinic-photos');
         }
 
-        unset($data['license_file'], $data['profile_photo']);
+        unset($data['license_file'], $data['cert_file'], $data['profile_photo']);
         $clinic->update($data);
 
         return response()->json($clinic->fresh());

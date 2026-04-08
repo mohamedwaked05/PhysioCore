@@ -18,6 +18,7 @@ class Clinic extends Model
         'specialty_text',
         'license_number',
         'license_file_url',
+        'cert_file_url',
         'profile_photo_url',
         'certifications',
         'experience',

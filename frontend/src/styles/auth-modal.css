@@ -448,3 +448,156 @@
     transition: opacity 0.15s;
 }
 .auth-modal-forgot-btn:hover { opacity: 0.7; }
+
+/* ── Clinic registration — step bar ────────────────────────── */
+.am-step-bar {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+.am-step {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex: 1;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+.am-step--active { color: var(--primary); }
+.am-step--done   { color: #22c55e; }
+
+.am-step-num {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.am-step--active .am-step-num {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+.am-step--done .am-step-num {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: #fff;
+}
+
+.am-step-connector {
+    height: 2px;
+    flex: 1;
+    background: var(--border);
+    margin: 0 8px;
+    border-radius: 2px;
+}
+.am-step-connector--done { background: #22c55e; }
+
+/* ── Clinic registration — review note ─────────────────────── */
+.am-review-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 9px 11px;
+    background: color-mix(in srgb, var(--primary) 6%, var(--bg));
+    border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+    border-radius: 8px;
+    font-size: 0.775rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 0.85rem;
+}
+.am-review-note svg { margin-top: 1px; color: var(--primary); opacity: 0.75; }
+
+/* ── Clinic registration — payment pills ───────────────────── */
+.am-payment-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+.am-payment-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 13px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    font-family: inherit;
+}
+.am-payment-pill:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+.am-payment-pill.selected {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #fff;
+}
+.am-payment-pill-check {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.am-payment-pill.selected .am-payment-pill-check {
+    background: rgba(255,255,255,0.25);
+    border-color: transparent;
+}
+
+/* ── Clinic registration — file upload ─────────────────────── */
+.am-file-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: left;
+    font-family: inherit;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    box-sizing: border-box;
+}
+.am-file-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 5%, var(--bg));
+}
+.am-file-btn.has-file {
+    border-style: solid;
+    border-color: #22c55e;
+    color: #15803d;
+    background: color-mix(in srgb, #22c55e 6%, var(--bg));
+}
+.am-file-btn.error { border-color: #dc2626; }
+.am-file-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
