@@ -6,29 +6,171 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import SectionHeader from '../../components/ui/SectionHeader';
 import { Field, Label, Input, Textarea, FieldError } from '../../components/ui/Input';
+import PhoneInput from '../../components/ui/PhoneInput';
+import TagInput from '../../components/ui/TagInput';
 import '../../styles/ui.css';
 import '../../styles/clinic.css';
 
+/* ── Price options ───────────────────────────────────────── */
+const PRICE_OPTIONS = [
+    { label: '$0',   value: '0'   },
+    { label: '$25',  value: '25'  },
+    { label: '$50',  value: '50'  },
+    { label: '$75',  value: '75'  },
+    { label: '$100', value: '100' },
+    { label: '$125', value: '125' },
+    { label: '$150', value: '150' },
+    { label: '$175', value: '175' },
+    { label: '$200', value: '200' },
+    { label: '$250', value: '250' },
+    { label: '$300', value: '300' },
+    { label: '$350', value: '350' },
+    { label: '$400', value: '400' },
+    { label: '$500', value: '500' },
+    { label: '$600', value: '600' },
+    { label: '$750', value: '750' },
+    { label: '$1000',value: '1000'},
+];
+
+/* ── Working Hours Builder ───────────────────────────────── */
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const TIMES = [];
+for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 30) {
+        const hh   = String(h).padStart(2, '0');
+        const mm   = String(m).padStart(2, '0');
+        const ampm = h < 12 ? 'AM' : 'PM';
+        const h12  = h === 0 ? 12 : h > 12 ? h - 12 : h;
+        TIMES.push({ value: `${hh}:${mm}`, label: `${h12}:${mm} ${ampm}` });
+    }
+}
+
+function serializeSchedule(schedule) {
+    return schedule
+        .filter(d => d.enabled)
+        .map(d => `${d.day} ${d.from}-${d.to}`)
+        .join(' | ');
+}
+
+function parseSchedule(str) {
+    const base = DAYS.map(day => ({ day, enabled: false, from: '09:00', to: '18:00' }));
+    if (!str) return base;
+    const parts = str.split('|').map(s => s.trim());
+    parts.forEach(part => {
+        const match = part.match(/^(\w+)\s+(\d{2}:\d{2})-(\d{2}:\d{2})$/);
+        if (match) {
+            const idx = base.findIndex(d => d.day === match[1]);
+            if (idx !== -1) {
+                base[idx] = { day: match[1], enabled: true, from: match[2], to: match[3] };
+            }
+        }
+    });
+    return base;
+}
+
+function WorkingHoursBuilder({ value, onChange, disabled }) {
+    const [schedule, setSchedule] = useState(() => parseSchedule(value));
+
+    useEffect(() => {
+        setSchedule(parseSchedule(value));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const update = (newSchedule) => {
+        setSchedule(newSchedule);
+        onChange({ target: { name: 'working_hours', value: serializeSchedule(newSchedule) } });
+    };
+
+    const toggleDay = (i) => {
+        const next = schedule.map((d, idx) => idx === i ? { ...d, enabled: !d.enabled } : d);
+        update(next);
+    };
+
+    const setTime = (i, field, val) => {
+        const next = schedule.map((d, idx) => idx === i ? { ...d, [field]: val } : d);
+        update(next);
+    };
+
+    if (disabled) {
+        const active = schedule.filter(d => d.enabled);
+        return (
+            <div className="wh-display">
+                {active.length === 0
+                    ? <span className="wh-display-empty">Not set</span>
+                    : active.map(d => (
+                        <span key={d.day} className="wh-display-chip">
+                            <strong>{d.day}</strong>
+                            {d.from}–{d.to}
+                        </span>
+                    ))
+                }
+            </div>
+        );
+    }
+
+    return (
+        <div className="wh-builder">
+            {schedule.map((d, i) => (
+                <div key={d.day} className={`wh-row${d.enabled ? ' wh-active' : ''}`}>
+                    <input
+                        type="checkbox"
+                        className="wh-toggle"
+                        checked={d.enabled}
+                        onChange={() => toggleDay(i)}
+                    />
+                    <span className="wh-day-label">{d.day}</span>
+                    {d.enabled ? (
+                        <>
+                            <select
+                                className="wh-time-select"
+                                value={d.from}
+                                onChange={e => setTime(i, 'from', e.target.value)}
+                            >
+                                {TIMES.map(t => (
+                                    <option key={t.value} value={t.value}>{t.label}</option>
+                                ))}
+                            </select>
+                            <span className="wh-separator">to</span>
+                            <select
+                                className="wh-time-select"
+                                value={d.to}
+                                onChange={e => setTime(i, 'to', e.target.value)}
+                            >
+                                {TIMES.map(t => (
+                                    <option key={t.value} value={t.value}>{t.label}</option>
+                                ))}
+                            </select>
+                        </>
+                    ) : (
+                        <span className="wh-closed">Closed</span>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+}
+
 const INITIAL_FORM = {
-    legal_name:       '',
-    commercial_name:  '',
-    clinic_email:     '',
-    clinic_mobile:    '',
-    address:          '',
-    description:      '',
-    specialty_text:   '',
-    tax_id:           '',
-    license_number:   '',
-    certifications:   '',
-    experience:       '',
+    legal_name:               '',
+    commercial_name:          '',
+    clinic_email:             '',
+    clinic_mobile:            '',
+    address:                  '',
+    description:              '',
+    specialty_text:           '',
+    tax_id:                   '',
+    license_number:           '',
+    experience:               '',
     payment_methods:          '',
-    services:                 '',
     working_hours:            '',
     social_media_link:        '',
     min_price:                '',
     max_price:                '',
     estimated_response_time:  '',
 };
+
+const strToTags = (str) =>
+    str ? str.split(',').map(s => s.trim()).filter(Boolean) : [];
 
 const MAX_FILE_SIZE_MB = 5;
 const LICENSE_TYPES    = ['application/pdf', 'image/jpeg', 'image/png'];
@@ -87,6 +229,8 @@ function LicenseUpload({ file, currentUrl, onChange, error }) {
 
 export default function ClinicProfilePage() {
     const [form, setForm]               = useState(INITIAL_FORM);
+    const [serviceTags, setServiceTags] = useState([]);
+    const [certTags, setCertTags]       = useState([]);
     const [licenseFile, setLicenseFile] = useState(null);
     const [licenseUrl, setLicenseUrl]   = useState('');
     const [photoFile, setPhotoFile]     = useState(null);
@@ -104,25 +248,25 @@ export default function ClinicProfilePage() {
             .then(res => {
                 const d = res.data ?? {};
                 setForm({
-                    legal_name:        d.legal_name        ?? '',
-                    commercial_name:   d.commercial_name   ?? '',
-                    clinic_email:      d.clinic_email      ?? '',
-                    clinic_mobile:     d.clinic_mobile     ?? '',
-                    address:           d.address           ?? '',
-                    description:       d.description       ?? '',
-                    specialty_text:    d.specialty_text    ?? '',
-                    tax_id:            d.tax_id            ?? '',
-                    license_number:    d.license_number    ?? '',
-                    certifications:    d.certifications    ?? '',
-                    experience:        d.experience        ?? '',
-                    payment_methods:         d.payment_methods         ?? '',
-                    services:                d.services                ?? '',
-                    working_hours:           d.working_hours           ?? '',
-                    social_media_link:       d.social_media_link       ?? '',
-                    min_price:               d.min_price  != null ? String(d.min_price)  : '',
-                    max_price:               d.max_price  != null ? String(d.max_price)  : '',
-                    estimated_response_time: d.estimated_response_time ?? '',
+                    legal_name:               d.legal_name               ?? '',
+                    commercial_name:          d.commercial_name          ?? '',
+                    clinic_email:             d.clinic_email             ?? '',
+                    clinic_mobile:            d.clinic_mobile            ?? '',
+                    address:                  d.address                  ?? '',
+                    description:              d.description              ?? '',
+                    specialty_text:           d.specialty_text           ?? '',
+                    tax_id:                   d.tax_id                   ?? '',
+                    license_number:           d.license_number           ?? '',
+                    experience:               d.experience               ?? '',
+                    payment_methods:          d.payment_methods          ?? '',
+                    working_hours:            d.working_hours            ?? '',
+                    social_media_link:        d.social_media_link        ?? '',
+                    min_price:                d.min_price  != null ? String(d.min_price)  : '',
+                    max_price:                d.max_price  != null ? String(d.max_price)  : '',
+                    estimated_response_time:  d.estimated_response_time  ?? '',
                 });
+                setServiceTags(strToTags(d.services ?? ''));
+                setCertTags(strToTags(d.certifications ?? ''));
                 setLicenseUrl(d.license_file_url ?? '');
                 setPhotoPreview(d.profile_photo_url ?? '');
                 setIsRegistered(!!d.clinic_email);
@@ -173,6 +317,17 @@ export default function ClinicProfilePage() {
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.clinic_email)) errs.clinic_email = 'Enter a valid email.';
         if (!form.clinic_mobile.trim())   errs.clinic_mobile   = 'Phone number is required.';
         if (!form.address.trim())         errs.address         = 'Address is required.';
+        if (!form.specialty_text.trim())          errs.specialty_text          = 'Specialty is required.';
+        if (!form.tax_id.trim())                  errs.tax_id                  = 'Tax ID is required.';
+        if (!form.license_number.trim())           errs.license_number          = 'License number is required.';
+        if (!form.payment_methods.trim())          errs.payment_methods         = 'Payment methods are required.';
+        if (!form.working_hours.trim())            errs.working_hours           = 'Working hours are required.';
+        if (!form.estimated_response_time.trim())  errs.estimated_response_time = 'Estimated response time is required.';
+        if (form.min_price === '' || form.min_price === null) errs.min_price = 'Min session price is required.';
+        if (form.max_price === '' || form.max_price === null) errs.max_price = 'Max session price is required.';
+        if (form.min_price !== '' && form.max_price !== '' && Number(form.max_price) < Number(form.min_price)) {
+            errs.max_price = 'Max price must be ≥ min price.';
+        }
         return errs;
     };
 
@@ -201,6 +356,8 @@ export default function ClinicProfilePage() {
         Object.entries(form).forEach(([k, v]) => {
             if (v !== null && v !== undefined && v !== '') formData.append(k, v);
         });
+        if (serviceTags.length > 0) formData.append('services', serviceTags.join(', '));
+        if (certTags.length > 0)    formData.append('certifications', certTags.join(', '));
         if (licenseFile) formData.append('license_file', licenseFile);
         if (photoFile)   formData.append('profile_photo', photoFile);
 
@@ -331,14 +488,13 @@ export default function ClinicProfilePage() {
 
                         <Field>
                             <Label>Phone Number <span style={{ color: '#dc2626' }}>*</span></Label>
-                            <Input
-                                type="tel"
+                            <PhoneInput
                                 name="clinic_mobile"
                                 value={form.clinic_mobile}
                                 onChange={handleChange}
-                                placeholder="+961"
                                 disabled={!editing}
                                 error={errors.clinic_mobile}
+                                placeholder="Clinic phone number"
                             />
                             <FieldError message={errors.clinic_mobile} />
                         </Field>
@@ -357,7 +513,7 @@ export default function ClinicProfilePage() {
                         </Field>
 
                         <Field>
-                            <Label hint="optional">Tax ID</Label>
+                            <Label>Tax ID <span style={{ color: '#dc2626' }}>*</span></Label>
                             <Input
                                 name="tax_id"
                                 value={form.tax_id}
@@ -391,7 +547,7 @@ export default function ClinicProfilePage() {
                     <div className="ui-form-grid">
 
                         <Field>
-                            <Label hint="optional">Specialty</Label>
+                            <Label>Specialty <span style={{ color: '#dc2626' }}>*</span></Label>
                             <Input
                                 name="specialty_text"
                                 value={form.specialty_text}
@@ -416,21 +572,18 @@ export default function ClinicProfilePage() {
                             <FieldError message={errors.experience} />
                         </Field>
 
-                        <Field>
-                            <Label hint="optional">Working Hours</Label>
-                            <Input
-                                name="working_hours"
+                        <Field className="span-2">
+                            <Label>Working Hours <span style={{ color: '#dc2626' }}>*</span></Label>
+                            <WorkingHoursBuilder
                                 value={form.working_hours}
                                 onChange={handleChange}
-                                placeholder="e.g. Mon–Fri 9am–6pm"
                                 disabled={!editing}
-                                error={errors.working_hours}
                             />
                             <FieldError message={errors.working_hours} />
                         </Field>
 
                         <Field>
-                            <Label hint="optional">Payment Methods</Label>
+                            <Label>Payment Methods <span style={{ color: '#dc2626' }}>*</span></Label>
                             <Input
                                 name="payment_methods"
                                 value={form.payment_methods}
@@ -443,35 +596,41 @@ export default function ClinicProfilePage() {
                         </Field>
 
                         <Field>
-                            <Label hint="optional">Min. Session Price (USD)</Label>
-                            <Input
-                                type="number"
+                            <Label>Min. Session Price (USD) <span style={{ color: '#dc2626' }}>*</span></Label>
+                            <select
+                                className={`ui-select${errors.min_price ? ' ui-input--error' : ''}`}
                                 name="min_price"
                                 value={form.min_price}
                                 onChange={handleChange}
-                                placeholder="e.g. 50"
                                 disabled={!editing}
-                                error={errors.min_price}
-                            />
+                            >
+                                <option value="">Select min price</option>
+                                {PRICE_OPTIONS.map(p => (
+                                    <option key={p.value} value={p.value}>{p.label}</option>
+                                ))}
+                            </select>
                             <FieldError message={errors.min_price} />
                         </Field>
 
                         <Field>
-                            <Label hint="optional">Max. Session Price (USD)</Label>
-                            <Input
-                                type="number"
+                            <Label>Max. Session Price (USD) <span style={{ color: '#dc2626' }}>*</span></Label>
+                            <select
+                                className={`ui-select${errors.max_price ? ' ui-input--error' : ''}`}
                                 name="max_price"
                                 value={form.max_price}
                                 onChange={handleChange}
-                                placeholder="e.g. 200"
                                 disabled={!editing}
-                                error={errors.max_price}
-                            />
+                            >
+                                <option value="">Select max price</option>
+                                {PRICE_OPTIONS.map(p => (
+                                    <option key={p.value} value={p.value}>{p.label}</option>
+                                ))}
+                            </select>
                             <FieldError message={errors.max_price} />
                         </Field>
 
                         <Field>
-                            <Label hint="optional">Estimated Response Time</Label>
+                            <Label>Estimated Response Time <span style={{ color: '#dc2626' }}>*</span></Label>
                             <Input
                                 name="estimated_response_time"
                                 value={form.estimated_response_time}
@@ -498,12 +657,11 @@ export default function ClinicProfilePage() {
 
                         <Field className="span-2">
                             <Label hint="optional">Services Offered</Label>
-                            <Textarea
-                                name="services"
-                                value={form.services}
-                                onChange={handleChange}
-                                placeholder="e.g. Manual therapy, ultrasound, dry needling"
+                            <TagInput
+                                tags={serviceTags}
+                                onChange={setServiceTags}
                                 disabled={!editing}
+                                placeholder="e.g. Manual therapy — press Enter to add"
                                 error={errors.services}
                             />
                             <FieldError message={errors.services} />
@@ -511,12 +669,11 @@ export default function ClinicProfilePage() {
 
                         <Field className="span-2">
                             <Label hint="optional">Certifications</Label>
-                            <Textarea
-                                name="certifications"
-                                value={form.certifications}
-                                onChange={handleChange}
-                                placeholder="e.g. ISO 9001, Ministry of Health licensed"
+                            <TagInput
+                                tags={certTags}
+                                onChange={setCertTags}
                                 disabled={!editing}
+                                placeholder="e.g. ISO 9001 — press Enter to add"
                                 error={errors.certifications}
                             />
                             <FieldError message={errors.certifications} />
@@ -531,7 +688,7 @@ export default function ClinicProfilePage() {
                     <div className="ui-form-grid">
 
                         <Field>
-                            <Label hint="optional">License Number</Label>
+                            <Label>License Number <span style={{ color: '#dc2626' }}>*</span></Label>
                             <Input
                                 name="license_number"
                                 value={form.license_number}

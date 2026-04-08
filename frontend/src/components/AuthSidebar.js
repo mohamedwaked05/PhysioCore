@@ -5,7 +5,7 @@ export default function AuthSidebar() {
             <div className="auth-sidebar-logo">
                 <div className="auth-sidebar-logo-icon">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 2L4 7v5c0 5 3.5 9.74 8 11 4.5-1.26 8-6 8-11V7l-8-5z" fill="white" opacity="0.9"/>
+                        <path d="M2 12h4l2-6 4 12 2-6h10" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.95"/>
                     </svg>
                 </div>
                 <span className="auth-sidebar-logo-text">PhysioCore</span>

@@ -63,11 +63,14 @@
 }
 
 .client-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   font-size: 0.855rem;
   font-weight: 500;
-  padding: 0.45rem 0.95rem;
+  padding: 0.45rem 0.9rem;
   border-radius: 8px;
   letter-spacing: 0.01em;
   transition: color 0.15s, background 0.15s;
@@ -82,6 +85,142 @@
   color: #fff;
   background: rgba(255, 255, 255, 0.15);
   font-weight: 600;
+}
+
+.nav-link-icon {
+  display: flex;
+  align-items: center;
+  opacity: 0.65;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.client-nav-link:hover .nav-link-icon,
+.client-nav-link.active .nav-link-icon {
+  opacity: 1;
+}
+
+/* ─── Settings gear button ────────────────────────────────── */
+.nav-settings-wrap {
+  position: relative;
+}
+
+.nav-settings-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+  flex-shrink: 0;
+}
+
+.nav-settings-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.nav-settings-btn.open {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: rotate(72deg);
+}
+
+/* ─── Dropdown panel ──────────────────────────────────────── */
+.nav-settings-dropdown {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  width: 216px;
+  background: rgba(13, 17, 38, 0.97);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 0.45rem;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.5),
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  animation: navDropIn 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  z-index: 300;
+}
+
+@keyframes navDropIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)     scale(1); }
+}
+
+/* ─── Dropdown items ──────────────────────────────────────── */
+.nav-settings-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.62rem 0.75rem;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.845rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  text-align: left;
+  text-decoration: none;
+}
+
+.nav-settings-item:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+}
+
+.nav-settings-item.danger {
+  color: rgba(252, 165, 165, 0.8);
+}
+
+.nav-settings-item.danger:hover {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fca5a5;
+}
+
+.nav-settings-item-icon {
+  display: flex;
+  align-items: center;
+  width: 17px;
+  flex-shrink: 0;
+}
+
+/* Night mode ON/OFF pill */
+.nav-settings-pill {
+  margin-left: auto;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  padding: 0.15rem 0.5rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav-settings-pill.on {
+  background: rgba(99, 102, 241, 0.3);
+  color: #a5b4fc;
+}
+
+.nav-settings-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 0.3rem 0.2rem;
 }
 
 .client-nav-right {

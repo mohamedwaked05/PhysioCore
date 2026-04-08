@@ -35,7 +35,13 @@ class EmailVerificationController extends Controller
 
         event(new Verified($user));
 
-        return redirect(config('app.frontend_url') . '/email-verified?status=success');
+        // Issue a token so the frontend can auto-login the user after verification
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return redirect(
+            config('app.frontend_url')
+            . '/email-verified?status=success&token=' . $token . '&role=' . $user->role
+        );
     }
 
     /**

@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import EmailVerifiedPage from './pages/EmailVerifiedPage';
 import GoogleCallbackPage from './pages/GoogleCallbackPage';
 import GoogleCompleteRegistrationPage from './pages/GoogleCompleteRegistrationPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -53,6 +54,7 @@ function App() {
                     <Route path="/login"    element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/verify-email/:id/:hash" element={<VerifyEmailPage />} />
+                    <Route path="/email-verified"         element={<EmailVerifiedPage />} />
                     <Route path="/auth/google/callback"   element={<GoogleCallbackPage />} />
                     <Route path="/auth/google/complete"   element={<GoogleCompleteRegistrationPage />} />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />

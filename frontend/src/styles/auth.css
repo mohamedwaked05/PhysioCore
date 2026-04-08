@@ -1,3 +1,9 @@
+/* ─── Email verified progress animation ───────────────────── */
+@keyframes progressDrain {
+  from { transform: scaleX(1);   transform-origin: left; }
+  to   { transform: scaleX(0);   transform-origin: left; }
+}
+
 /* ─── Auth Layout ─────────────────────────────────────────── */
 .auth-wrapper {
   display: flex;
@@ -397,6 +403,12 @@
   font-size: 0.82rem;
   color: #dc2626;
   margin-bottom: 1rem;
+}
+
+.auth-error-link {
+  color: #dc2626;
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 .auth-success-banner {

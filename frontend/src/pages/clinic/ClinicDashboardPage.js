@@ -63,6 +63,25 @@ export default function ClinicDashboardPage() {
             .finally(() => setLoading(false));
     }, []);
 
+    // Poll every 8 seconds while verification is pending so the dashboard
+    // auto-updates when an admin approves the clinic in the database.
+    useEffect(() => {
+        if (clinic?.verification_status !== 'pending') return;
+
+        const interval = setInterval(() => {
+            getClinicProfile()
+                .then(res => {
+                    const fresh = res.data;
+                    if (fresh?.verification_status !== 'pending') {
+                        setClinic(fresh); // triggers re-render + stops this effect
+                    }
+                })
+                .catch(() => {});
+        }, 8000);
+
+        return () => clearInterval(interval);
+    }, [clinic?.verification_status]);
+
     const isRegistered = !!clinic?.clinic_email;
 
     return (

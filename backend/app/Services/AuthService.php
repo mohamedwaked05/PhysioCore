@@ -71,10 +71,10 @@ class AuthService
             ]);
         }
 
-        // Google-only account (no password set)
+        // Google-only account — no password has been set yet
         if (! $user->password_hash) {
             throw ValidationException::withMessages([
-                'email' => ['This account was created with Google. Please sign in with Google or set a password first.'],
+                'email' => ['This account uses Google Sign-In. Click "Continue with Google" to log in, or use "Forgot password?" to create a password for email login.'],
             ]);
         }
 
@@ -107,9 +107,16 @@ class AuthService
     }
 
     /**
-     * Handle an existing Google user login.
-     * Returns a Sanctum token if the user already has an account.
-     * Returns null if the user is new (needs to complete registration).
+     * Handle a Google OAuth login/link.
+     *
+     * - Finds an existing user by google_id OR email.
+     * - If found by email only (email-registered account): links the google_id
+     *   and auto-verifies the email (Google already confirmed ownership).
+     *   The provider field is intentionally left as 'local' so we know how
+     *   the account was originally created; login availability is determined
+     *   by the presence of google_id (Google) and password_hash (email).
+     * - Checks for suspended accounts before issuing a token.
+     * - Returns null if no matching account exists (new user flow).
      */
     public function handleExistingGoogleUser(SocialiteUser $googleUser): ?array
     {
@@ -121,11 +128,24 @@ class AuthService
             return null;
         }
 
-        if (! $user->google_id) {
-            $user->update([
-                'google_id' => $googleUser->getId(),
-                'provider'  => 'google',
+        if ($user->status === 'suspended') {
+            throw ValidationException::withMessages([
+                'email' => ['Your account has been suspended. Please contact support.'],
             ]);
+        }
+
+        // Link Google to an existing email-registered account.
+        // Do NOT overwrite provider — keep it as 'local' so the original
+        // registration method is preserved. google_id alone signals Google is linked.
+        if (! $user->google_id) {
+            $updates = ['google_id' => $googleUser->getId()];
+
+            // Google has verified this email — auto-verify if not already done.
+            if (! $user->hasVerifiedEmail()) {
+                $updates['email_verified_at'] = now();
+            }
+
+            $user->update($updates);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import AuthSidebar from '../components/AuthSidebar';
@@ -26,9 +26,11 @@ export default function ResetPasswordPage() {
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [loading, setLoading]     = useState(false);
+    const [error, setError]         = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
+    const [success, setSuccess]     = useState(false);
+    const [countdown, setCountdown] = useState(5);
 
     const token = searchParams.get('token');
     const email = searchParams.get('email');
@@ -43,7 +45,14 @@ export default function ResetPasswordPage() {
                 token, email, password,
                 password_confirmation: passwordConfirmation,
             });
-            navigate('/login?message=Password reset successfully. You can now log in.');
+            setSuccess(true);
+
+            // Notify the forgot-password tab so it can redirect to login
+            try {
+                const ch = new BroadcastChannel('physiocore_password_reset');
+                ch.postMessage({ type: 'PASSWORD_RESET', email });
+                ch.close();
+            } catch (_) {}
         } catch (err) {
             const data = err.response?.data;
             if (data?.errors) setFieldErrors(data.errors);
@@ -52,6 +61,51 @@ export default function ResetPasswordPage() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (!success) return;
+        let secs = 5;
+        const tick = setInterval(() => {
+            secs -= 1;
+            setCountdown(secs);
+            if (secs <= 0) {
+                clearInterval(tick);
+                window.close();
+            }
+        }, 1000);
+        return () => clearInterval(tick);
+    }, [success]);
+
+    if (success) {
+        return (
+            <div className="auth-wrapper">
+                <div className="auth-card">
+                <AuthSidebar />
+                <main className="auth-form-panel">
+                    <div className="auth-form-container" style={{ textAlign: 'center' }}>
+                        <div style={{
+                            width: 64, height: 64, borderRadius: '50%',
+                            background: '#d1fae5', border: '1.5px solid #10b981',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto 1.25rem',
+                        }}>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <h1 className="auth-form-title" style={{ color: '#065f46' }}>Password reset!</h1>
+                        <p className="auth-form-subtitle">
+                            Your password has been updated. Your previous tab will take you to sign in.
+                        </p>
+                        <p style={{ fontSize: '0.82rem', color: '#9ca3af', marginTop: '0.5rem' }}>
+                            This tab closes in {countdown}s…
+                        </p>
+                    </div>
+                </main>
+                </div>
+            </div>
+        );
+    }
 
     if (!token || !email) {
         navigate('/login');

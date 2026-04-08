@@ -1,0 +1,897 @@
+/* ═══════════════════════════════════════════════════════════
+   PhysioCore — Modern Login Page
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Design Tokens ───────────────────────────────────────── */
+.login-page {
+  --primary:        #3E4772;
+  --primary-hover:  #2d3457;
+  --primary-soft:   rgba(62, 71, 114, 0.09);
+  --accent:         #7dd3fc;
+
+  /* Light mode */
+  --bg:             #eef2ff;
+  --surface:        #ffffff;
+  --text:           #0f172a;
+  --text-sub:       #475569;
+  --text-muted:     #94a3b8;
+  --border:         #e2e8f0;
+  --input-bg:       #f8faff;
+  --input-border:   #dde3f8;
+  --shadow:         0 30px 90px rgba(62, 71, 114, 0.14), 0 4px 16px rgba(62, 71, 114, 0.06);
+}
+
+.login-page.dark {
+  --primary-soft:   rgba(62, 71, 114, 0.22);
+
+  /* Dark mode */
+  --bg:             #07090f;
+  --surface:        #111827;
+  --text:           #f1f5f9;
+  --text-sub:       #94a3b8;
+  --text-muted:     #4b5563;
+  --border:         rgba(255, 255, 255, 0.07);
+  --input-bg:       #1e293b;
+  --input-border:   #2d3748;
+  --shadow:         0 30px 90px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Page shell ──────────────────────────────────────────── */
+.login-page {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: 'Inter', sans-serif;
+  transition: background 0.4s ease;
+}
+
+/* ════════════════════════════════════════════════════════════
+   LEFT SIDEBAR
+   ════════════════════════════════════════════════════════════ */
+.lp-sidebar {
+  width: 420px;
+  min-width: 420px;
+  position: relative;
+  background: linear-gradient(150deg, #0d1117 0%, #1a2035 45%, #28204e 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 3rem 2.5rem;
+  overflow: hidden;
+}
+
+/* Dot-grid texture */
+.lp-sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 26px 26px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Animated orbs ───────────────────────────────────────── */
+.lp-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  pointer-events: none;
+  z-index: 0;
+}
+.lp-orb-1 {
+  width: 300px; height: 300px;
+  background: rgba(62, 71, 114, 0.65);
+  top: -100px; left: -80px;
+  animation: lpFloat1 9s ease-in-out infinite;
+}
+.lp-orb-2 {
+  width: 220px; height: 220px;
+  background: rgba(110, 231, 247, 0.18);
+  bottom: 18%; right: -70px;
+  animation: lpFloat2 11s ease-in-out infinite;
+}
+.lp-orb-3 {
+  width: 170px; height: 170px;
+  background: rgba(99, 102, 241, 0.35);
+  bottom: -50px; left: 25%;
+  animation: lpFloat3 13s ease-in-out infinite;
+}
+.lp-orb-4 {
+  width: 100px; height: 100px;
+  background: rgba(125, 211, 252, 0.12);
+  top: 40%; left: 10%;
+  animation: lpFloat2 7s ease-in-out infinite reverse;
+}
+
+@keyframes lpFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(28px, 38px) scale(1.06); }
+  66%       { transform: translate(-18px, 18px) scale(0.96); }
+}
+@keyframes lpFloat2 {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(-32px, -42px); }
+}
+@keyframes lpFloat3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40%       { transform: translate(22px, -28px) scale(1.12); }
+}
+
+/* Sidebar content sits above orbs */
+.lp-sidebar-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ─── Logo ────────────────────────────────────────────────── */
+.lp-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 3rem;
+}
+
+.lp-logo-icon {
+  width: 42px; height: 42px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.lp-logo-icon::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 15px;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  animation: lpPulseRing 3.5s ease-in-out infinite;
+}
+
+@keyframes lpPulseRing {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50%       { opacity: 0.9; transform: scale(1.1); }
+}
+
+.lp-logo-text {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 1.45rem;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+
+/* ─── Headline ────────────────────────────────────────────── */
+.lp-headline {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.15rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.lp-headline em {
+  font-style: normal;
+  background: linear-gradient(90deg, #7dd3fc, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lp-desc {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+
+/* ─── Feature rows ────────────────────────────────────────── */
+.lp-features {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  flex: 1;
+}
+
+.lp-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  opacity: 0;
+  animation: lpFadeUp 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.lp-feature:nth-child(1) { animation-delay: 0.4s; }
+.lp-feature:nth-child(2) { animation-delay: 0.6s; }
+.lp-feature:nth-child(3) { animation-delay: 0.8s; }
+
+@keyframes lpFadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.lp-feature-icon {
+  width: 40px; height: 40px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.25s, border-color 0.25s, transform 0.2s;
+}
+
+.lp-feature:hover .lp-feature-icon {
+  background: rgba(125, 211, 252, 0.14);
+  border-color: rgba(125, 211, 252, 0.3);
+  transform: scale(1.06);
+}
+
+.lp-feature-text strong {
+  display: block;
+  font-size: 0.845rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.lp-feature-text span {
+  font-size: 0.775rem;
+  color: rgba(255, 255, 255, 0.48);
+  line-height: 1.5;
+}
+
+/* ─── Stats row ───────────────────────────────────────────── */
+.lp-stats {
+  display: flex;
+  gap: 0;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 2rem;
+}
+
+.lp-stat {
+  flex: 1;
+  text-align: center;
+  padding: 0 0.5rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+.lp-stat:last-child { border-right: none; }
+
+.lp-stat-value {
+  display: block;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #7dd3fc;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.lp-stat-label {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.38);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ════════════════════════════════════════════════════════════
+   RIGHT FORM PANEL
+   ════════════════════════════════════════════════════════════ */
+.lp-form-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--bg);
+  transition: background 0.4s ease;
+  position: relative;
+}
+
+/* ─── Dark mode toggle button ─────────────────────────────── */
+.lp-theme-toggle {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-sub);
+  transition: background 0.3s, border-color 0.25s, color 0.25s, transform 0.25s;
+  z-index: 10;
+}
+
+.lp-theme-toggle:hover {
+  background: var(--primary-soft);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: rotate(18deg) scale(1.08);
+}
+
+/* ─── Form card ───────────────────────────────────────────── */
+.lp-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  animation: lpSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: 0.1s;
+  opacity: 0;
+  transition: background 0.4s, border-color 0.4s, box-shadow 0.4s;
+}
+
+/* Dark mode gradient border */
+.login-page.dark .lp-card {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(135deg, rgba(62,71,114,0.5), rgba(99,102,241,0.25), rgba(110,231,247,0.15)) border-box;
+}
+
+@keyframes lpSlideIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ─── Back button ─────────────────────────────────────────── */
+.lp-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 1.75rem;
+}
+.lp-back-btn:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* ─── Title ───────────────────────────────────────────────── */
+.lp-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.3rem 0;
+  transition: color 0.4s;
+}
+
+.lp-title-accent {
+  background: linear-gradient(90deg, var(--primary), #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lp-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 1.75rem;
+  transition: color 0.4s;
+}
+
+/* ─── Alert banners ───────────────────────────────────────── */
+.lp-success-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #d1fae5;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.82rem;
+  color: #065f46;
+  margin-bottom: 1rem;
+}
+
+.lp-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.82rem;
+  color: #dc2626;
+  margin-bottom: 1rem;
+}
+
+.login-page.dark .lp-success-banner {
+  background: rgba(6, 95, 70, 0.2);
+  border-color: rgba(6, 95, 70, 0.35);
+  color: #6ee7b7;
+}
+.login-page.dark .lp-error-banner {
+  background: rgba(220, 38, 38, 0.14);
+  border-color: rgba(220, 38, 38, 0.28);
+  color: #fca5a5;
+}
+
+.lp-error-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* ─── Form fields ─────────────────────────────────────────── */
+.lp-field {
+  margin-bottom: 1rem;
+}
+
+.lp-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  margin-bottom: 0.4rem;
+  transition: color 0.4s;
+}
+
+.lp-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.lp-input-icon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+  z-index: 1;
+}
+
+.lp-input-wrap:focus-within .lp-input-icon {
+  color: var(--primary);
+}
+
+.lp-input {
+  width: 100%;
+  padding: 0.72rem 0.9rem 0.72rem 2.65rem;
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.4s, color 0.4s;
+}
+
+.lp-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(62, 71, 114, 0.11);
+  background: var(--surface);
+}
+
+.lp-input.has-right-icon {
+  padding-right: 2.75rem;
+}
+
+.lp-input::placeholder {
+  color: var(--text-muted);
+}
+
+.lp-eye-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  transition: color 0.15s;
+}
+.lp-eye-btn:hover { color: var(--primary); }
+
+/* ─── Remember / forgot row ───────────────────────────────── */
+.lp-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.lp-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--text-sub);
+  user-select: none;
+  transition: color 0.4s;
+}
+
+.lp-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--input-border);
+  border-radius: 5px;
+  background: var(--input-bg);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
+}
+.lp-checkbox:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.lp-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px; top: 1.5px;
+  width: 5px; height: 8px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+.lp-forgot-link {
+  font-size: 0.82rem;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.15s;
+}
+.lp-forgot-link:hover { opacity: 0.7; }
+
+/* ─── Submit button ───────────────────────────────────────── */
+.lp-submit-btn {
+  width: 100%;
+  padding: 0.82rem;
+  background: linear-gradient(135deg, #4d5690 0%, #3E4772 60%, #2d3457 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: box-shadow 0.25s, transform 0.15s, opacity 0.15s;
+  margin-bottom: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.01em;
+}
+
+/* Shimmer sweep on hover */
+.lp-submit-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -110%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.55s ease;
+}
+.lp-submit-btn:hover:not(:disabled)::after { left: 160%; }
+
+.lp-submit-btn:hover:not(:disabled) {
+  box-shadow: 0 10px 28px rgba(62, 71, 114, 0.5);
+  transform: translateY(-2px);
+}
+.lp-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(62, 71, 114, 0.35);
+}
+.lp-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ─── Bottom / register link ──────────────────────────────── */
+.lp-bottom-text {
+  text-align: center;
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  margin-bottom: 1.1rem;
+  transition: color 0.4s;
+}
+.lp-bottom-text a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.lp-bottom-text a:hover { text-decoration: underline; }
+
+/* ─── Divider ─────────────────────────────────────────────── */
+.lp-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.lp-divider::before,
+.lp-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.lp-divider span {
+  font-size: 0.77rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: color 0.4s;
+}
+
+/* ─── Google button ───────────────────────────────────────── */
+.lp-google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.72rem 1rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s, border-color 0.18s, transform 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.lp-google-btn:hover {
+  background: var(--input-bg);
+  border-color: rgba(62, 71, 114, 0.28);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+/* ════════════════════════════════════════════════════════════
+   REGISTER — extra components
+   ════════════════════════════════════════════════════════════ */
+
+/* Name row (first + last side by side) */
+.lp-name-row {
+  display: flex;
+  gap: 0.75rem;
+}
+.lp-name-row .lp-field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Role/select — styled like lp-input but with chevron */
+.lp-select {
+  width: 100%;
+  padding: 0.72rem 2.5rem 0.72rem 2.65rem;
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+  outline: none;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.4s, color 0.4s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+}
+.lp-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(62, 71, 114, 0.11);
+  background-color: var(--surface);
+}
+.lp-select option {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* ─── Role picker (two icon cards) ───────────────────────── */
+.lp-role-picker {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.lp-role-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 1rem 0.5rem 0.9rem;
+  background: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.lp-role-card:hover {
+  border-color: rgba(62, 71, 114, 0.4);
+  background: var(--surface);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(62, 71, 114, 0.1);
+}
+.lp-role-card.active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: 0 0 0 3px rgba(62, 71, 114, 0.1);
+}
+
+.lp-role-card-icon {
+  width: 50px; height: 50px;
+  border-radius: 13px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.lp-role-card.active .lp-role-card-icon {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.lp-role-card:hover:not(.active) .lp-role-card-icon {
+  color: var(--primary);
+  border-color: rgba(62, 71, 114, 0.3);
+}
+
+.lp-role-card-title {
+  display: block;
+  font-size: 0.855rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: color 0.4s;
+}
+.lp-role-card.active .lp-role-card-title {
+  color: var(--primary);
+}
+.lp-role-card-desc {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+  transition: color 0.4s;
+}
+
+/* Inline field-level errors */
+.lp-field-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 0.3rem;
+}
+.login-page.dark .lp-field-error {
+  color: #fca5a5;
+}
+
+/* ─── Verification sent state ─────────────────────────────── */
+.lp-verify-wrap {
+  text-align: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.lp-verify-icon-wrap {
+  width: 76px; height: 76px;
+  background: linear-gradient(135deg, rgba(62, 71, 114, 0.1), rgba(99, 102, 241, 0.1));
+  border: 1.5px solid var(--border);
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  animation: lpVerifyPulse 2.8s ease-in-out infinite;
+}
+
+@keyframes lpVerifyPulse {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(62, 71, 114, 0.2); }
+  50%       { box-shadow: 0 0 0 12px rgba(62, 71, 114, 0); }
+}
+
+.lp-verify-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.5rem 0;
+  transition: color 0.4s;
+}
+
+.lp-verify-desc {
+  font-size: 0.865rem;
+  color: var(--text-sub);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  transition: color 0.4s;
+}
+
+.lp-verify-email-chip {
+  display: inline-block;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.83rem;
+}
+
+.lp-verify-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  transition: color 0.4s;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .lp-sidebar { display: none; }
+}
+
+@media (max-width: 520px) {
+  .lp-form-panel {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 4rem;
+  }
+  .lp-card {
+    border-radius: 18px;
+    padding: 1.75rem 1.25rem;
+  }
+  .lp-theme-toggle {
+    top: 1rem;
+    right: 1rem;
+  }
+}

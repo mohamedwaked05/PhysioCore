@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useRef, useState } from 'react';
+import { useEffect, useState, createContext, useCallback, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from './AuthContext';
@@ -15,9 +15,9 @@ export function useAuthModal() {
 
 /* ── Provider ───────────────────────────────────────────────── */
 export function AuthModalProvider({ children }) {
-    const [open, setOpen]           = useState(false);
-    const pendingCallbackRef        = useRef(null);
-    const navigate                  = useNavigate();
+    const [open, setOpen]    = useState(false);
+    const pendingCallbackRef = useRef(null);
+    const navigate           = useNavigate();
 
     const openAuthModal = useCallback((callback = null) => {
         pendingCallbackRef.current = callback;
@@ -29,13 +29,8 @@ export function AuthModalProvider({ children }) {
         pendingCallbackRef.current = null;
     }, []);
 
-    // Called by SignInForm / Google popup after a successful login.
-    // loggedInUser is the user object returned from the API.
     const handleAuthSuccess = useCallback((loggedInUser) => {
         closeAuthModal();
-
-        // Non-client roles should never complete a guest action —
-        // send them straight to their own dashboard.
         if (loggedInUser?.role === 'clinic') {
             navigate('/clinic/dashboard', { replace: true });
             return;
@@ -44,9 +39,7 @@ export function AuthModalProvider({ children }) {
             navigate('/dashboard', { replace: true });
             return;
         }
-
         const cb = pendingCallbackRef.current;
-        // Small delay so AuthContext state propagates before callback fires
         setTimeout(() => cb?.(), 80);
     }, [closeAuthModal, navigate]);
 
@@ -89,6 +82,36 @@ function GoogleIcon() {
     );
 }
 
+function ClientRoleIcon() {
+    return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M4 21v-1a8 8 0 0116 0v1"/>
+        </svg>
+    );
+}
+
+function ClinicRoleIcon() {
+    return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 21V7l9-4 9 4v14"/>
+            <rect x="9" y="13" width="6" height="8"/>
+            <path d="M10 6h4M12 4v4"/>
+        </svg>
+    );
+}
+
+function MailSentIcon() {
+    return (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block', margin: '0 auto 0.75rem' }}>
+            <rect x="2" y="4" width="20" height="16" rx="2.5" stroke="var(--primary)" strokeWidth="1.6"/>
+            <polyline points="2,7 12,14 22,7" stroke="var(--primary)" strokeWidth="1.6"/>
+            <circle cx="18.5" cy="17.5" r="4" fill="#22c55e"/>
+            <polyline points="16.5 17.5 18 19 21 16.5" stroke="white" strokeWidth="1.8"/>
+        </svg>
+    );
+}
+
 /* ── Google OAuth popup helper ──────────────────────────────── */
 function openGooglePopup(login, onSuccess, onSetupToken) {
     const width  = 500;
@@ -104,7 +127,6 @@ function openGooglePopup(login, onSuccess, onSetupToken) {
 
     const handleMessage = (event) => {
         if (event.origin !== window.location.origin) return;
-
         if (event.data?.type === 'GOOGLE_AUTH_SUCCESS') {
             window.removeEventListener('message', handleMessage);
             const { user, token } = event.data;
@@ -119,8 +141,6 @@ function openGooglePopup(login, onSuccess, onSetupToken) {
     };
 
     window.addEventListener('message', handleMessage);
-
-    // Clean up listener if popup is closed manually
     const pollClosed = setInterval(() => {
         if (popup?.closed) {
             clearInterval(pollClosed);
@@ -130,7 +150,7 @@ function openGooglePopup(login, onSuccess, onSetupToken) {
 }
 
 /* ── Sign-In form ───────────────────────────────────────────── */
-function SignInForm({ onSuccess }) {
+function SignInForm({ onSuccess, onForgotPassword }) {
     const { login } = useAuth();
     const [form, setForm]               = useState({ email: '', password: '' });
     const [showPassword, setShowPassword] = useState(false);
@@ -163,7 +183,6 @@ function SignInForm({ onSuccess }) {
             login,
             onSuccess,
             (setupToken) => {
-                // New Google user — navigate full page to complete registration
                 window.location.href = `/auth/google/complete?setup_token=${setupToken}`;
             }
         );
@@ -171,7 +190,14 @@ function SignInForm({ onSuccess }) {
 
     return (
         <form onSubmit={handleSubmit}>
-            {error && <div className="auth-modal-error">{error}</div>}
+            {error && (
+                <div className="auth-modal-error">
+                    {error}
+                    {error.toLowerCase().includes('forgot') && (
+                        <> <button type="button" className="auth-modal-forgot-btn" style={{ fontWeight: 600, textDecoration: 'underline', color: 'inherit' }} onClick={onForgotPassword}>Reset it here.</button></>
+                    )}
+                </div>
+            )}
 
             <div className="auth-modal-field">
                 <label className="auth-modal-label">Email address</label>
@@ -207,7 +233,9 @@ function SignInForm({ onSuccess }) {
 
             <div className="auth-modal-meta-row">
                 <span />
-                <a href="/forgot-password" className="auth-modal-forgot">Forgot password?</a>
+                <button type="button" className="auth-modal-forgot-btn" onClick={onForgotPassword}>
+                    Forgot password?
+                </button>
             </div>
 
             <button className="auth-modal-submit" type="submit" disabled={loading}>
@@ -225,15 +253,123 @@ function SignInForm({ onSuccess }) {
     );
 }
 
+/* ── Forgot Password form ───────────────────────────────────── */
+function ForgotPasswordForm({ onBack }) {
+    const [email, setEmail]   = useState('');
+    const [loading, setLoading] = useState(false);
+    const [sent, setSent]     = useState(false);
+    const [error, setError]   = useState('');
+
+    // Listen for reset-complete broadcast → prompt user to sign in
+    useEffect(() => {
+        if (!sent) return;
+        let ch;
+        try {
+            ch = new BroadcastChannel('physiocore_password_reset');
+            ch.onmessage = (e) => {
+                if (e.data?.type === 'PASSWORD_RESET') {
+                    ch.close();
+                    onBack({ prefillEmail: e.data.email, resetSuccess: true });
+                }
+            };
+        } catch (_) {}
+        return () => ch?.close();
+    }, [sent, onBack]);
+
+    const handleSubmit = async e => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            await api.post('/auth/forgot-password', { email });
+            setSent(true);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Something went wrong. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (sent) {
+        return (
+            <div className="auth-modal-success" style={{ textAlign: 'center' }}>
+                <MailSentIcon />
+                <p style={{ margin: '0 0 0.4rem', fontWeight: 700, fontSize: '0.95rem', color: '#065f46' }}>
+                    Check your inbox
+                </p>
+                <p style={{ margin: '0 0 1.25rem', fontSize: '0.82rem', color: '#047857', lineHeight: 1.55 }}>
+                    We sent a reset link to <strong>{email}</strong>.<br />
+                    Click it to set a new password.
+                </p>
+                <button
+                    type="button"
+                    className="auth-modal-forgot-btn"
+                    onClick={() => onBack({})}
+                    style={{ fontSize: '0.82rem', fontWeight: 600 }}
+                >
+                    ← Back to sign in
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <form onSubmit={handleSubmit}>
+            {error && <div className="auth-modal-error">{error}</div>}
+
+            <div className="auth-modal-field">
+                <label className="auth-modal-label">Email address</label>
+                <input
+                    className="auth-modal-input"
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                    autoFocus
+                />
+            </div>
+
+            <button className="auth-modal-submit" type="submit" disabled={loading}>
+                {loading && <Spinner />}
+                {loading ? 'Sending…' : 'Send Reset Link'}
+            </button>
+
+            <p style={{ textAlign: 'center', marginTop: '0.75rem', marginBottom: 0 }}>
+                <button type="button" className="auth-modal-forgot-btn" onClick={() => onBack({})}>
+                    ← Back to sign in
+                </button>
+            </p>
+        </form>
+    );
+}
+
 /* ── Register form ──────────────────────────────────────────── */
-function RegisterForm() {
-    const [form, setForm]   = useState({
+function RegisterForm({ onSuccess }) {
+    const { login }        = useAuth();
+    const [form, setForm]  = useState({
         first_name: '', last_name: '', email: '',
         password: '', password_confirmation: '', role: 'client',
     });
     const [errors, setErrors]   = useState({});
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+
+    useEffect(() => {
+        if (!success) return;
+        let ch;
+        try {
+            ch = new BroadcastChannel('physiocore_verification');
+            ch.onmessage = (e) => {
+                if (e.data?.type === 'EMAIL_VERIFIED') {
+                    ch.close();
+                    login(e.data.user, e.data.token);
+                    onSuccess(e.data.user);
+                }
+            };
+        } catch (_) {}
+        return () => ch?.close();
+    }, [success, login, onSuccess]);
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -253,15 +389,14 @@ function RegisterForm() {
 
     if (success) {
         return (
-            <div className="auth-modal-success">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: '#065f46', marginBottom: '0.5rem' }}>
-                    <path d="M22 13V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2h8"/>
-                    <polyline points="2 6 12 12 22 6"/>
-                    <polyline points="16 19 18 21 22 17"/>
-                </svg>
-                <p style={{ margin: '0 0 0.25rem', fontWeight: 600, fontSize: '0.9rem' }}>Check your email</p>
-                <p style={{ margin: 0, fontSize: '0.82rem', color: '#047857' }}>
-                    We sent a verification link to <strong>{form.email}</strong>. Verify your account then sign in to continue.
+            <div className="auth-modal-success" style={{ textAlign: 'center' }}>
+                <MailSentIcon />
+                <p style={{ margin: '0 0 0.25rem', fontWeight: 700, fontSize: '0.95rem', color: '#065f46' }}>
+                    Check your email
+                </p>
+                <p style={{ margin: 0, fontSize: '0.82rem', color: '#047857', lineHeight: 1.55 }}>
+                    We sent a verification link to <strong>{form.email}</strong>.<br />
+                    Verify your account to continue.
                 </p>
             </div>
         );
@@ -301,12 +436,30 @@ function RegisterForm() {
                 <input className="auth-modal-input" type="password" name="password_confirmation" value={form.password_confirmation} onChange={handleChange} required />
             </div>
 
+            {/* Role picker — two icon cards */}
             <div className="auth-modal-field">
                 <label className="auth-modal-label">I am a</label>
-                <select className="auth-modal-select" name="role" value={form.role} onChange={handleChange}>
-                    <option value="client">Client (Patient)</option>
-                    <option value="clinic">Clinic</option>
-                </select>
+                <div className="am-role-picker">
+                    <button
+                        type="button"
+                        className={`am-role-card${form.role === 'client' ? ' active' : ''}`}
+                        onClick={() => setForm(f => ({ ...f, role: 'client' }))}
+                    >
+                        <div className="am-role-card-icon"><ClientRoleIcon /></div>
+                        <span className="am-role-card-title">Client</span>
+                        <span className="am-role-card-desc">Patient seeking rehab</span>
+                    </button>
+                    <button
+                        type="button"
+                        className={`am-role-card${form.role === 'clinic' ? ' active' : ''}`}
+                        onClick={() => setForm(f => ({ ...f, role: 'clinic' }))}
+                    >
+                        <div className="am-role-card-icon"><ClinicRoleIcon /></div>
+                        <span className="am-role-card-title">Clinic</span>
+                        <span className="am-role-card-desc">Healthcare provider</span>
+                    </button>
+                </div>
+                {errors.role && <span className="auth-modal-field-error">{errors.role[0]}</span>}
             </div>
 
             <button className="auth-modal-submit" type="submit" disabled={loading}>
@@ -319,19 +472,38 @@ function RegisterForm() {
 
 /* ── Modal shell ────────────────────────────────────────────── */
 function AuthModal({ onClose, onSuccess }) {
-    const [tab, setTab] = useState('signin');
+    // view: 'signin' | 'register' | 'forgot'
+    const [view, setView] = useState('signin');
 
-    // Close on backdrop click
     const handleBackdropClick = e => {
         if (e.target === e.currentTarget) onClose();
     };
+
+    // Called by ForgotPasswordForm when done (reset complete or back clicked)
+    const handleForgotBack = ({ prefillEmail, resetSuccess } = {}) => {
+        setView('signin');
+        // prefillEmail / resetSuccess could be used to pre-fill the sign-in form
+        // but that would require lifting state — the user can just type it in
+    };
+
+    const isForgot = view === 'forgot';
+
+    const promptText = {
+        signin:   <><strong>Sign in</strong> to continue where you left off.</>,
+        register: <><strong>Create an account</strong> to get started with PhysioCore.</>,
+        forgot:   <>Enter your email and we'll send you a <strong>reset link</strong>.</>,
+    }[view];
 
     return (
         <div className="auth-modal-backdrop" onClick={handleBackdropClick}>
             <div className="auth-modal-card">
                 {/* Header */}
                 <div className="auth-modal-header">
-                    <button className="auth-modal-back" onClick={onClose} aria-label="Go back">
+                    <button
+                        className="auth-modal-back"
+                        onClick={isForgot ? () => setView('signin') : onClose}
+                        aria-label={isForgot ? 'Back to sign in' : 'Go back'}
+                    >
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="15 18 9 12 15 6"/>
                         </svg>
@@ -339,7 +511,7 @@ function AuthModal({ onClose, onSuccess }) {
                     <div className="auth-modal-logo">
                         <div className="auth-modal-logo-icon">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 2L4 7v5c0 5 3.5 9.74 8 11 4.5-1.26 8-6 8-11V7l-8-5z" fill="white" opacity="0.9"/>
+                                <path d="M2 12h4l2-6 4 12 2-6h10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.95" fill="none"/>
                             </svg>
                         </div>
                         <span className="auth-modal-logo-text">PhysioCore</span>
@@ -354,36 +526,32 @@ function AuthModal({ onClose, onSuccess }) {
 
                 {/* Body */}
                 <div className="auth-modal-body">
-                    <p className="auth-modal-prompt">
-                        {tab === 'signin'
-                            ? <><strong>Sign in</strong> to continue where you left off.</>
-                            : <><strong>Create an account</strong> to get started with PhysioCore.</>
-                        }
-                    </p>
+                    <p className="auth-modal-prompt">{promptText}</p>
 
-                    {/* Tabs */}
-                    <div className="auth-modal-tabs">
-                        <button
-                            type="button"
-                            className={`auth-modal-tab${tab === 'signin' ? ' active' : ''}`}
-                            onClick={() => setTab('signin')}
-                        >
-                            Sign In
-                        </button>
-                        <button
-                            type="button"
-                            className={`auth-modal-tab${tab === 'register' ? ' active' : ''}`}
-                            onClick={() => setTab('register')}
-                        >
-                            Create Account
-                        </button>
-                    </div>
+                    {/* Tabs — hidden on forgot view */}
+                    {!isForgot && (
+                        <div className="auth-modal-tabs">
+                            <button
+                                type="button"
+                                className={`auth-modal-tab${view === 'signin' ? ' active' : ''}`}
+                                onClick={() => setView('signin')}
+                            >
+                                Sign In
+                            </button>
+                            <button
+                                type="button"
+                                className={`auth-modal-tab${view === 'register' ? ' active' : ''}`}
+                                onClick={() => setView('register')}
+                            >
+                                Create Account
+                            </button>
+                        </div>
+                    )}
 
                     {/* Form */}
-                    {tab === 'signin'
-                        ? <SignInForm onSuccess={onSuccess} />
-                        : <RegisterForm />
-                    }
+                    {view === 'signin'   && <SignInForm onSuccess={onSuccess} onForgotPassword={() => setView('forgot')} />}
+                    {view === 'register' && <RegisterForm onSuccess={onSuccess} />}
+                    {view === 'forgot'   && <ForgotPasswordForm onBack={handleForgotBack} />}
                 </div>
             </div>
         </div>

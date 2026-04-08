@@ -1,19 +1,65 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { useProfilePhoto } from '../hooks/useProfilePhoto';
-import Avatar from './ui/Avatar';
-import LogoutButton from './ui/LogoutButton';
+import NavBar from './NavBar';
 import '../styles/client.css';
 import '../styles/guest.css';
 
-function ThemeToggle({ theme, toggle }) {
+/* ── Icon definitions (shared with layouts) ──────────────── */
+function DashboardIcon() {
+    return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+    );
+}
+function ProfileIcon() {
+    return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="7" r="4"/>
+            <path d="M4 21v-1a8 8 0 0116 0v1"/>
+        </svg>
+    );
+}
+function BrowseClinicsIcon() {
+    return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="10.5" cy="10.5" r="7.5"/>
+            <path d="M21 21l-4.35-4.35"/>
+            <path d="M10.5 7.5v6M7.5 10.5h6"/>
+        </svg>
+    );
+}
+function ClinicProfileIcon() {
+    return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 21V7l9-4 9 4v14"/>
+            <rect x="9" y="13" width="6" height="8"/>
+            <path d="M10 6h4M12 4v4"/>
+        </svg>
+    );
+}
+function FindClinicIcon() {
+    return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="10.5" cy="10.5" r="7.5"/>
+            <path d="M21 21l-4.35-4.35"/>
+            <path d="M10.5 7.5v6M7.5 10.5h6"/>
+        </svg>
+    );
+}
+
+/* ── Guest-only theme toggle (no dropdown, no user) ─────── */
+function GuestThemeToggle() {
+    const { theme, toggle } = useTheme();
     return (
         <button
             className="client-theme-toggle"
             onClick={toggle}
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
         >
             {theme === 'dark' ? (
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -36,120 +82,89 @@ function ThemeToggle({ theme, toggle }) {
     );
 }
 
+/* ── New ECG logo icon ────────────────────────────────────── */
+function EcgLogo() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path
+                d="M2 12h4l2-6 4 12 2-6h10"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.95"
+            />
+        </svg>
+    );
+}
+
 export default function GuestLayout({ children }) {
-    const { user, logout } = useAuth();
-    const { theme, toggle } = useTheme();
-    const navigate  = useNavigate();
-    const location  = useLocation();
+    const { user }   = useAuth();
+    const navigate   = useNavigate();
+    const location   = useLocation();
 
-    const photoUrl = useProfilePhoto(user?.role);
-    const fullName = `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim();
-
-    const handleSignIn = () => {
-        navigate('/login', { state: { from: location } });
-    };
-
-    /* ── Authenticated client — identical to ClientLayout nav ── */
+    /* ── Authenticated client ───────────────────────────── */
     if (user?.role === 'client') {
         return (
             <div className="client-shell">
-                <nav className="client-nav">
-                    <NavLink to="/client/dashboard" className="client-nav-logo">
-                        <div className="client-nav-logo-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 2L4 7v5c0 5 3.5 9.74 8 11 4.5-1.26 8-6 8-11V7l-8-5z" fill="white" opacity="0.9"/>
-                            </svg>
-                        </div>
-                        <span className="client-nav-logo-text">PhysioCore</span>
-                    </NavLink>
-
-                    <div className="client-nav-links">
-                        <NavLink to="/client/dashboard" className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}>
-                            Dashboard
-                        </NavLink>
-                        <NavLink to="/client/profile" className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}>
-                            Profile
-                        </NavLink>
-                        <NavLink to="/clinics" className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}>
-                            Browse Clinics
-                        </NavLink>
-                    </div>
-
-                    <div className="client-nav-right">
-                        <div className="client-nav-user-chip">
-                            <Avatar size="sm" name={fullName} src={photoUrl} />
-                            <span className="client-nav-user">{fullName}</span>
-                        </div>
-                        <ThemeToggle theme={theme} toggle={toggle} />
-                        <LogoutButton />
-                    </div>
-                </nav>
-
+                <NavBar
+                    homeRoute="/client/dashboard"
+                    links={[
+                        { to: '/client/dashboard', label: 'Dashboard',      icon: <DashboardIcon /> },
+                        { to: '/client/profile',   label: 'Profile',        icon: <ProfileIcon /> },
+                        { to: '/clinics',           label: 'Browse Clinics', icon: <BrowseClinicsIcon /> },
+                    ]}
+                    profileRoute="/client/profile"
+                />
                 <main className="guest-main">{children}</main>
             </div>
         );
     }
 
-    /* ── Authenticated clinic — identical to ClinicLayout nav ── */
+    /* ── Authenticated clinic ───────────────────────────── */
     if (user?.role === 'clinic') {
         return (
             <div className="client-shell">
-                <nav className="client-nav">
-                    <NavLink to="/clinic/dashboard" className="client-nav-logo">
-                        <div className="client-nav-logo-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 2L4 7v5c0 5 3.5 9.74 8 11 4.5-1.26 8-6 8-11V7l-8-5z" fill="white" opacity="0.9"/>
-                            </svg>
-                        </div>
-                        <span className="client-nav-logo-text">PhysioCore</span>
-                    </NavLink>
-
-                    <div className="client-nav-links">
-                        <NavLink to="/clinic/dashboard" className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}>
-                            Dashboard
-                        </NavLink>
-                        <NavLink to="/clinic/profile" className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}>
-                            Profile
-                        </NavLink>
-                    </div>
-
-                    <div className="client-nav-right">
-                        <div className="client-nav-user-chip">
-                            <Avatar size="sm" name={fullName} src={photoUrl} />
-                            <span className="client-nav-user">{fullName}</span>
-                        </div>
-                        <ThemeToggle theme={theme} toggle={toggle} />
-                        <LogoutButton />
-                    </div>
-                </nav>
-
+                <NavBar
+                    homeRoute="/clinic/dashboard"
+                    links={[
+                        { to: '/clinic/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
+                        { to: '/clinic/profile',   label: 'Profile',   icon: <ClinicProfileIcon /> },
+                    ]}
+                    profileRoute="/clinic/profile"
+                />
                 <main className="guest-main">{children}</main>
             </div>
         );
     }
 
-    /* ── Guest — minimal navbar ─────────────────────────────── */
+    /* ── Guest (unauthenticated) ────────────────────────── */
     return (
         <div className="guest-shell">
             <nav className="client-nav">
                 <NavLink to="/" className="client-nav-logo">
                     <div className="client-nav-logo-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                            <path d="M12 2L4 7v5c0 5 3.5 9.74 8 11 4.5-1.26 8-6 8-11V7l-8-5z" fill="white" opacity="0.9"/>
-                        </svg>
+                        <EcgLogo />
                     </div>
                     <span className="client-nav-logo-text">PhysioCore</span>
                 </NavLink>
 
                 <div className="client-nav-links">
-                    <NavLink to="/clinics" className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}>
-                        Find a clinic
+                    <NavLink
+                        to="/clinics"
+                        className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}
+                    >
+                        <span className="nav-link-icon"><FindClinicIcon /></span>
+                        Find a Clinic
                     </NavLink>
                 </div>
 
                 <div className="client-nav-right">
-                    <ThemeToggle theme={theme} toggle={toggle} />
-                    <button className="guest-signin-btn" onClick={handleSignIn}>
+                    <GuestThemeToggle />
+                    <button
+                        className="guest-signin-btn"
+                        onClick={() => navigate('/login', { state: { from: location } })}
+                    >
                         Sign in
                     </button>
                 </div>
