@@ -43,10 +43,81 @@
     border-color: rgba(255, 255, 255, 0.38);
 }
 
-/* ─── Landing Hero ────────────────────────────────────────── */
-@keyframes heroFadeUp {
-    from { opacity: 0; transform: translateY(20px); }
+/* ─── Shared Section Labels ───────────────────────────────── */
+.landing-section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 0.55rem;
+    display: block;
+}
+
+.landing-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+    font-weight: 800;
+    color: var(--text);
+    margin: 0 0 0.6rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.landing-section-sub {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    max-width: 480px;
+    margin: 0 0 2rem;
+}
+
+/* ─── Shared Tag pill ─────────────────────────────────────── */
+.lp-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.65rem;
+    background: rgba(62, 71, 114, 0.07);
+    border: 1px solid rgba(62, 71, 114, 0.14);
+    border-radius: var(--radius-pill);
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: var(--primary);
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+}
+
+.lp-tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+/* ─── Shared stars ────────────────────────────────────────── */
+.lp-stars {
+    display: inline-flex;
+    gap: 1px;
+    color: #f59e0b;
+}
+
+/* ─── Scroll-driven reveal ────────────────────────────────── */
+@keyframes lp-fade-up {
+    from { opacity: 0; transform: translateY(18px); }
     to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   1. HERO SECTION
+   ══════════════════════════════════════════════════════════ */
+@keyframes heroContentIn {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroVisualIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)  scale(1); }
 }
 
 .landing-hero {
@@ -54,45 +125,47 @@
     min-height: calc(100vh - 60px);
     background: var(--bg);
     display: flex;
-    justify-content: center;
     align-items: center;
     padding: 5rem 2rem;
     overflow: hidden;
 }
 
-/* Dot grid background pattern */
+/* Dot-grid background */
 .landing-hero::before {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(rgba(62, 71, 114, 0.14) 1.5px, transparent 1.5px);
+    background-image: radial-gradient(rgba(62, 71, 114, 0.13) 1.5px, transparent 1.5px);
     background-size: 28px 28px;
     pointer-events: none;
 }
 
-/* Soft radial glow blobs */
+/* Soft radial glows */
 .landing-hero::after {
     content: '';
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(ellipse at 15% 20%, rgba(62, 71, 114, 0.08) 0%, transparent 55%),
-        radial-gradient(ellipse at 85% 80%, rgba(62, 71, 114, 0.06) 0%, transparent 55%);
+        radial-gradient(ellipse at 5% 30%,  rgba(62, 71, 114, 0.09) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 70%, rgba(62, 71, 114, 0.06) 0%, transparent 50%);
     pointer-events: none;
 }
 
-.landing-hero-card {
+.lp-hero-inner {
     position: relative;
     z-index: 1;
-    background: var(--surface);
-    border-radius: 24px;
-    border: 1px solid var(--border);
-    padding: 3.5rem 3rem;
-    max-width: 700px;
+    max-width: 1100px;
     width: 100%;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.06);
-    text-align: center;
-    animation: heroFadeUp 0.5s ease both;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+/* ── Hero content (left) ──────────────────────────────────── */
+.lp-hero-content {
+    animation: heroContentIn 0.55s ease both;
 }
 
 .landing-hero-pill {
@@ -101,11 +174,11 @@
     gap: 0.5rem;
     padding: 0.3rem 0.9rem;
     background: rgba(62, 71, 114, 0.08);
-    border: 1px solid rgba(62, 71, 114, 0.15);
-    border-radius: 999px;
-    font-size: 0.75rem;
+    border: 1px solid rgba(62, 71, 114, 0.16);
+    border-radius: var(--radius-pill);
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     color: var(--primary);
     margin-bottom: 1.5rem;
@@ -116,17 +189,17 @@
     height: 6px;
     border-radius: 50%;
     background: var(--primary);
-    opacity: 0.7;
+    opacity: 0.65;
 }
 
 .landing-hero-title {
     font-family: 'Syne', sans-serif;
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-size: clamp(2rem, 4.5vw, 3rem);
     font-weight: 800;
     color: var(--text);
-    line-height: 1.2;
+    line-height: 1.15;
     margin: 0 0 1.25rem;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.025em;
 }
 
 .landing-hero-title em {
@@ -139,299 +212,532 @@
     color: var(--text-secondary);
     line-height: 1.7;
     margin: 0 0 2rem;
-    max-width: 520px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: 440px;
 }
 
 .landing-hero-actions {
     display: flex;
-    justify-content: center;
-    gap: 0.875rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
+    margin-bottom: 2.25rem;
 }
 
-/* ─── Landing Features ────────────────────────────────────── */
-@keyframes featuresEntrance {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-.landing-features {
-    background: var(--bg);
-    padding: 5rem 2rem;
-}
-
-.landing-section-label {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 0.6rem;
-}
-
-.landing-section-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: var(--text);
-    margin: 0 0 0.5rem;
-    letter-spacing: -0.01em;
-}
-
-.landing-section-sub {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    line-height: 1.65;
-    max-width: 520px;
-    margin: 0 0 2.5rem;
-}
-
-.landing-features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-    animation: featuresEntrance 0.45s ease both;
-}
-
-.landing-feature-card {
-    background: var(--surface);
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    padding: 1.75rem 1.5rem;
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.2s, transform 0.2s;
-}
-
-.landing-feature-card:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
-}
-
-.landing-feature-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: rgba(62, 71, 114, 0.08);
+/* ── Hero stats row ───────────────────────────────────────── */
+.lp-hero-stats {
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: var(--primary);
-    margin-bottom: 1rem;
+    gap: 1.25rem;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    width: fit-content;
+}
+
+.lp-hero-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.lp-hero-stat strong {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+}
+
+.lp-hero-stat span {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+.lp-stat-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
     flex-shrink: 0;
 }
 
-.landing-feature-title {
+/* ── Hero visual (right) ──────────────────────────────────── */
+.lp-hero-visual-col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: heroVisualIn 0.65s 0.15s ease both;
+}
+
+.lp-hero-visual {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+}
+
+/* Floating chips */
+.lp-hero-chip {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.85rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    box-shadow: var(--shadow-md);
+    white-space: nowrap;
+    z-index: 2;
+}
+
+.lp-hero-chip--top {
+    top: -18px;
+    right: -10px;
+    animation: heroVisualIn 0.65s 0.4s ease both;
+}
+
+.lp-hero-chip--bottom {
+    bottom: -16px;
+    left: -10px;
+    animation: heroVisualIn 0.65s 0.55s ease both;
+}
+
+.lp-hero-chip-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.lp-hero-chip-icon--green {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.lp-hero-chip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+}
+
+/* Main clinic card mockup */
+.lp-hero-card {
+    background: var(--surface);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+}
+
+.lp-hero-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+}
+
+.lp-hero-card-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3E4772 0%, #4d5690 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
     font-family: 'Syne', sans-serif;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.lp-hero-card-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.lp-hero-card-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.92rem;
     font-weight: 700;
     color: var(--text);
-    margin: 0 0 0.5rem;
+    margin-bottom: 0.2rem;
 }
 
-.landing-feature-desc {
-    font-size: 0.85rem;
+.lp-hero-card-loc {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+.lp-hero-card-verified {
+    padding: 0.2rem 0.55rem;
+    background: #d1fae5;
+    color: #065f46;
+    border-radius: var(--radius-pill);
+    font-size: 0.68rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+}
+
+.lp-hero-card-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.lp-rating-text {
+    font-size: 0.78rem;
     color: var(--text-secondary);
-    line-height: 1.65;
-    margin: 0;
+    font-family: 'Inter', sans-serif;
 }
 
-/* ─── Landing Join Section ────────────────────────────────── */
-.landing-join {
+.lp-hero-card-btn {
+    background: linear-gradient(135deg, #4d5690 0%, #3E4772 100%);
+    color: #fff;
+    border-radius: 10px;
+    padding: 0.6rem;
+    text-align: center;
+    font-size: 0.84rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    opacity: 0.85;
+    cursor: default;
+    user-select: none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   2. STEPS / HOW IT WORKS
+   ══════════════════════════════════════════════════════════ */
+.landing-steps {
     background: var(--surface);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
     padding: 5rem 2rem;
 }
 
-.landing-join-inner {
+.lp-steps-head {
+    max-width: 520px;
+    margin-bottom: 3rem;
+    opacity: 0;
+    transform: translateY(18px);
+}
+
+.lp-steps-head.is-visible {
+    animation: lp-fade-up 0.5s ease both;
+}
+
+.lp-steps-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: center;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
 }
 
-.landing-join-text .landing-section-title {
-    margin-bottom: 1rem;
-}
-
-.landing-join-desc {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    line-height: 1.7;
-    margin: 0 0 1.75rem;
-}
-
-.landing-join-visual {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Decorative clinic card mockup */
-.landing-mockup {
-    width: 100%;
-    max-width: 380px;
+.lp-step-card {
     background: var(--bg);
-    border-radius: 20px;
-    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1.5rem;
+    position: relative;
+    transition: box-shadow var(--transition), transform var(--transition);
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.lp-step-card.is-visible {
+    animation: lp-fade-up 0.5s ease both;
+}
+
+.lp-step-card:hover {
     box-shadow: var(--shadow-md);
-    border: 1px solid var(--border);
+    transform: translateY(-3px);
 }
 
-.landing-mockup-header {
-    display: flex;
-    align-items: center;
-    gap: 0.875rem;
+.lp-step-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: rgba(62, 71, 114, 0.1);
+    line-height: 1;
     margin-bottom: 1rem;
+    letter-spacing: -0.03em;
+    position: absolute;
+    top: 1.25rem;
+    right: 1.5rem;
 }
 
-.landing-mockup-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--primary) 0%, #7b87d4 100%);
-    flex-shrink: 0;
+[data-theme="dark"] .lp-step-num {
+    color: rgba(123, 143, 232, 0.12);
 }
 
-.landing-mockup-line {
-    height: 10px;
-    border-radius: 6px;
-    background: var(--border);
-}
-
-.landing-mockup-line--dark {
-    background: rgba(62, 71, 114, 0.15);
-}
-
-.landing-mockup-badge-row {
-    display: flex;
-    gap: 0.5rem;
-    margin: 0.875rem 0;
-}
-
-.landing-mockup-badge {
-    height: 24px;
-    border-radius: 999px;
-    background: rgba(62, 71, 114, 0.1);
-}
-
-.landing-mockup-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 1rem 0;
-}
-
-.landing-mockup-stat-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 0.75rem;
-}
-
-.landing-mockup-stat {
-    background: var(--surface);
-    border-radius: 10px;
-    padding: 0.75rem;
-    border: 1px solid var(--border);
-}
-
-.landing-mockup-stat-num {
-    height: 18px;
-    border-radius: 4px;
-    background: rgba(62, 71, 114, 0.12);
-    width: 60%;
-    margin-bottom: 5px;
-}
-
-.landing-mockup-stat-label {
-    height: 8px;
-    border-radius: 4px;
-    background: var(--border);
-    width: 80%;
-}
-
-.landing-mockup-btn-row {
-    margin-top: 1rem;
-    height: 36px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #4d5690 0%, #3E4772 100%);
-    opacity: 0.85;
-}
-
-/* ─── Payment Section ─────────────────────────────────────── */
-.landing-payment {
-    background: var(--bg);
-    padding: 5rem 2rem;
-}
-
-.landing-payment-card {
-    background: var(--surface);
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    padding: 2.5rem;
-    box-shadow: var(--shadow-sm);
-}
-
-.landing-payment-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.landing-payment-note {
-    font-size: 0.83rem;
-    color: var(--text-muted);
-    max-width: 340px;
-    line-height: 1.55;
-}
-
-.landing-payment-methods {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.landing-payment-method {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 1.25rem 1.5rem;
-    background: var(--bg);
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    flex: 1;
-    min-width: 100px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.landing-payment-method:hover {
-    border-color: rgba(62, 71, 114, 0.25);
-    box-shadow: var(--shadow-sm);
-}
-
-.landing-payment-method-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+.lp-step-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
     background: rgba(62, 71, 114, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--primary);
+    margin-bottom: 1.1rem;
 }
 
-.landing-payment-method-label {
-    font-size: 0.78rem;
-    font-weight: 600;
+.lp-step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 0.55rem;
+}
+
+.lp-step-desc {
+    font-size: 0.855rem;
     color: var(--text-secondary);
-    text-align: center;
+    line-height: 1.65;
+    margin: 0;
+}
+
+/* ══════════════════════════════════════════════════════════
+   3. CLINIC BROWSE PREVIEW
+   ══════════════════════════════════════════════════════════ */
+.landing-preview {
+    background: var(--bg);
+    padding: 5rem 2rem;
+}
+
+.lp-preview-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    opacity: 0;
+    transform: translateY(18px);
+}
+
+.lp-preview-head.is-visible {
+    animation: lp-fade-up 0.5s ease both;
+}
+
+.lp-preview-head .landing-section-sub {
+    margin-bottom: 0;
+}
+
+.lp-clinics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+/* ── Clinic preview card ──────────────────────────────────── */
+.lp-clinic-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition), transform var(--transition);
+    opacity: 0;
+    transform: translateY(18px);
+}
+
+.lp-clinic-card.is-visible {
+    animation: lp-fade-up 0.5s ease both;
+}
+
+.lp-clinic-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.lp-clinic-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+}
+
+.lp-clinic-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.lp-clinic-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.lp-clinic-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lp-clinic-loc {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
     font-family: 'Inter', sans-serif;
+}
+
+.lp-clinic-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+}
+
+.lp-clinic-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+}
+
+.lp-clinic-reviews {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.lp-clinic-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.73rem;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+/* ══════════════════════════════════════════════════════════
+   4. CTA SECTION
+   ══════════════════════════════════════════════════════════ */
+.landing-cta {
+    background: linear-gradient(145deg, #2a2f52 0%, #3E4772 55%, #4d5690 100%);
+    padding: 6rem 2rem;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Soft radial glow inside CTA */
+.landing-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 50%, rgba(255,255,255,0.03) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.lp-cta-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 620px;
+    margin: 0 auto;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(18px);
+}
+
+.lp-cta-inner.is-visible {
+    animation: lp-fade-up 0.55s ease both;
+}
+
+.lp-cta-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.lp-cta-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.65rem, 3.5vw, 2.25rem);
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 1rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.lp-cta-sub {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.68);
+    line-height: 1.65;
+    margin: 0 0 2.25rem;
+}
+
+.lp-cta-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.875rem;
+    flex-wrap: wrap;
+}
+
+.lp-cta-outline-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.75rem 1.75rem;
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition);
+}
+
+.lp-cta-outline-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.55);
 }
 
 /* ─── Landing Footer ──────────────────────────────────────── */
@@ -518,60 +824,93 @@
 }
 
 /* ─── Responsive ──────────────────────────────────────────── */
-@media (max-width: 900px) {
-    .landing-features-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .landing-join-inner {
+@media (max-width: 940px) {
+    .lp-hero-inner {
         grid-template-columns: 1fr;
-        gap: 2.5rem;
+        gap: 3rem;
+        text-align: center;
     }
 
-    .landing-join-visual {
+    .landing-hero {
+        min-height: auto;
+        padding: 4.5rem 2rem;
+    }
+
+    .landing-hero-subtitle {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .landing-hero-actions {
+        justify-content: center;
+    }
+
+    .lp-hero-stats {
+        margin: 0 auto;
+    }
+
+    .lp-hero-visual-col {
         order: -1;
     }
 
-    .landing-mockup {
-        max-width: 100%;
+    .lp-hero-visual {
+        max-width: 340px;
     }
 
-    .landing-payment-header {
+    .lp-steps-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .lp-clinics-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .lp-preview-head {
         flex-direction: column;
         align-items: flex-start;
     }
 }
 
-@media (max-width: 620px) {
-    .landing-hero-card {
-        padding: 2.25rem 1.5rem;
+@media (max-width: 600px) {
+    .landing-hero {
+        padding: 3.5rem 1rem;
     }
 
-    .landing-features-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .landing-payment-methods {
-        flex-direction: column;
-    }
-
-    .landing-payment-method {
-        flex-direction: row;
-        padding: 0.9rem 1.25rem;
-        min-width: unset;
+    .landing-steps,
+    .landing-preview,
+    .landing-cta {
+        padding: 3.5rem 1rem;
     }
 
     .landing-container {
         padding: 0 1rem;
     }
 
-    .landing-hero {
-        padding: 3rem 1rem;
+    .lp-steps-grid {
+        grid-template-columns: 1fr;
     }
 
-    .landing-features,
-    .landing-join,
-    .landing-payment {
-        padding: 3.5rem 1rem;
+    .lp-clinics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lp-hero-stats {
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+    }
+
+    .lp-stat-divider {
+        width: 100%;
+        height: 1px;
+    }
+
+    .lp-hero-chip--top,
+    .lp-hero-chip--bottom {
+        display: none;
+    }
+
+    .lp-hero-visual {
+        max-width: 100%;
     }
 }

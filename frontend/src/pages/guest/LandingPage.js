@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import GuestLayout from '../../components/GuestLayout';
@@ -5,11 +6,31 @@ import Button from '../../components/ui/Button';
 import '../../styles/guest.css';
 import '../../styles/ui.css';
 
-function scrollToHowItWorks() {
-    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+/* ── Scroll-trigger hook ────────────────────────────────────── */
+function useInView(threshold = 0.1) {
+    const ref = useRef(null);
+    const [inView, setInView] = useState(false);
+    useEffect(() => {
+        const el = ref.current;
+        if (!el) return;
+        const obs = new IntersectionObserver(
+            ([e]) => { if (e.isIntersecting) { setInView(true); obs.disconnect(); } },
+            { threshold }
+        );
+        obs.observe(el);
+        return () => obs.disconnect();
+    }, [threshold]);
+    return [ref, inView];
 }
 
-/* ── Feature icons ──────────────────────────────────────────── */
+/* ── Icons ──────────────────────────────────────────────────── */
+function IconSearch() {
+    return (
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+    );
+}
 function IconClinic() {
     return (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -18,7 +39,6 @@ function IconClinic() {
         </svg>
     );
 }
-
 function IconPlan() {
     return (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -26,11 +46,9 @@ function IconPlan() {
             <polyline points="14 2 14 8 20 8"/>
             <line x1="16" y1="13" x2="8" y2="13"/>
             <line x1="16" y1="17" x2="8" y2="17"/>
-            <polyline points="10 9 9 9 8 9"/>
         </svg>
     );
 }
-
 function IconSafe() {
     return (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -39,272 +57,344 @@ function IconSafe() {
         </svg>
     );
 }
-
-/* ── Payment method icons ───────────────────────────────────── */
-function IconCard() {
+function IconPin() {
     return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-            <rect x="1" y="4" width="22" height="16" rx="2"/>
-            <line x1="1" y1="10" x2="23" y2="10"/>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+        </svg>
+    );
+}
+function IconStar() {
+    return (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+    );
+}
+function IconArrowRight() {
+    return (
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+        </svg>
+    );
+}
+function IconLock() {
+    return (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+    );
+}
+function IconCheck() {
+    return (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <polyline points="20 6 9 17 4 12"/>
         </svg>
     );
 }
 
-function IconCash() {
+/* ── Hero Visual ─────────────────────────────────────────────── */
+function HeroVisual() {
     return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-            <rect x="1" y="4" width="22" height="16" rx="2"/>
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M5 12h.01M19 12h.01"/>
-        </svg>
-    );
-}
-
-function IconInsurance() {
-    return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-    );
-}
-
-function IconBank() {
-    return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-            <line x1="3" y1="22" x2="21" y2="22"/>
-            <line x1="6" y1="18" x2="6" y2="11"/>
-            <line x1="10" y1="18" x2="10" y2="11"/>
-            <line x1="14" y1="18" x2="14" y2="11"/>
-            <line x1="18" y1="18" x2="18" y2="11"/>
-            <polygon points="12 2 20 7 4 7"/>
-        </svg>
-    );
-}
-
-function IconMobile() {
-    return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-            <rect x="5" y="2" width="14" height="20" rx="2"/>
-            <line x1="12" y1="18" x2="12.01" y2="18"/>
-        </svg>
-    );
-}
-
-/* ── Decorative clinic mockup ───────────────────────────────── */
-function ClinicMockup() {
-    return (
-        <div className="landing-mockup">
-            {/* Card header */}
-            <div className="landing-mockup-header">
-                <div className="landing-mockup-avatar" />
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '7px' }}>
-                    <div className="landing-mockup-line landing-mockup-line--dark" style={{ width: '65%' }} />
-                    <div className="landing-mockup-line" style={{ width: '45%' }} />
-                </div>
+        <div className="lp-hero-visual">
+            {/* Floating chip — top */}
+            <div className="lp-hero-chip lp-hero-chip--top">
+                <span className="lp-hero-chip-icon lp-hero-chip-icon--green"><IconCheck /></span>
+                Access request sent!
             </div>
 
-            {/* Description lines */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <div className="landing-mockup-line" style={{ width: '100%' }} />
-                <div className="landing-mockup-line" style={{ width: '88%' }} />
-                <div className="landing-mockup-line" style={{ width: '72%' }} />
-            </div>
-
-            {/* Badges */}
-            <div className="landing-mockup-badge-row">
-                <div className="landing-mockup-badge" style={{ width: '80px' }} />
-                <div className="landing-mockup-badge" style={{ width: '64px' }} />
-                <div className="landing-mockup-badge" style={{ width: '72px' }} />
-            </div>
-
-            <div className="landing-mockup-divider" />
-
-            {/* Stats row */}
-            <div className="landing-mockup-stat-row">
-                {[null, null, null].map((_, i) => (
-                    <div key={i} className="landing-mockup-stat">
-                        <div className="landing-mockup-stat-num" />
-                        <div className="landing-mockup-stat-label" />
+            {/* Main clinic card */}
+            <div className="lp-hero-card">
+                <div className="lp-hero-card-header">
+                    <div className="lp-hero-card-avatar">AN</div>
+                    <div className="lp-hero-card-meta">
+                        <div className="lp-hero-card-name">Al Noor Physiotherapy</div>
+                        <div className="lp-hero-card-loc"><IconPin /> Dubai, UAE</div>
                     </div>
-                ))}
+                    <div className="lp-hero-card-verified">Verified</div>
+                </div>
+
+                <div className="lp-tag-row">
+                    <span className="lp-tag">Sports Recovery</span>
+                    <span className="lp-tag">Post-Surgery</span>
+                    <span className="lp-tag">Manual Therapy</span>
+                </div>
+
+                <div className="lp-hero-card-rating">
+                    <span className="lp-stars">
+                        {[0,1,2,3,4].map(i => <IconStar key={i} />)}
+                    </span>
+                    <span className="lp-rating-text">4.9 · 128 reviews</span>
+                </div>
+
+                <div className="lp-hero-card-btn">View Profile</div>
             </div>
 
-            {/* CTA button */}
-            <div className="landing-mockup-btn-row" />
+            {/* Floating chip — bottom */}
+            <div className="lp-hero-chip lp-hero-chip--bottom">
+                <span className="lp-hero-chip-dot" />
+                <strong>500+</strong>&nbsp;verified clinics
+            </div>
         </div>
     );
 }
 
-/* ── Main page ──────────────────────────────────────────────── */
-export default function LandingPage() {
-    const navigate    = useNavigate();
-    const { user }    = useAuth();
+/* ── Steps data ──────────────────────────────────────────────── */
+const STEPS = [
+    {
+        Icon: IconClinic,
+        title: 'Pick a clinic',
+        desc: 'Browse verified physiotherapy clinics, filter by specialty, location, and budget — then send a direct access request in seconds.',
+    },
+    {
+        Icon: IconPlan,
+        title: 'Follow your plan',
+        desc: 'Your clinic builds a personalized rehabilitation program. Log your pain and effort levels after each session so your therapist can monitor real progress.',
+    },
+    {
+        Icon: IconSafe,
+        title: 'Stay safe',
+        desc: 'Our system continuously evaluates your exercise data and surfaces safety alerts before overexertion becomes a setback.',
+    },
+];
 
-    // Authenticated users have no reason to see the marketing landing page
+/* ── Clinic preview data ─────────────────────────────────────── */
+const MOCK_CLINICS = [
+    {
+        initials: 'AN',
+        bg: 'linear-gradient(135deg, #3E4772 0%, #4d5690 100%)',
+        name: 'Al Noor Physiotherapy',
+        location: 'Dubai, UAE',
+        rating: '4.9',
+        reviews: 128,
+        tags: ['Sports Recovery', 'Post-Surgery'],
+    },
+    {
+        initials: 'LB',
+        bg: 'linear-gradient(135deg, #1d6a4f 0%, #2d8a66 100%)',
+        name: 'LifeBack Clinic',
+        location: 'Abu Dhabi, UAE',
+        rating: '4.8',
+        reviews: 94,
+        tags: ['Orthopedic', 'Dry Needling'],
+    },
+    {
+        initials: 'MH',
+        bg: 'linear-gradient(135deg, #7b4f12 0%, #9a6520 100%)',
+        name: 'Motion Health Center',
+        location: 'Sharjah, UAE',
+        rating: '4.7',
+        reviews: 67,
+        tags: ['Neurological', 'Manual Therapy'],
+    },
+];
+
+/* ── Clinic preview card ─────────────────────────────────────── */
+function ClinicPreviewCard({ clinic, visible, delay }) {
+    return (
+        <div
+            className={`lp-clinic-card ${visible ? 'is-visible' : ''}`}
+            style={{ animationDelay: `${delay}ms` }}
+        >
+            <div className="lp-clinic-card-header">
+                <div className="lp-clinic-avatar" style={{ background: clinic.bg }}>
+                    {clinic.initials}
+                </div>
+                <div className="lp-clinic-info">
+                    <div className="lp-clinic-name">{clinic.name}</div>
+                    <div className="lp-clinic-loc"><IconPin /> {clinic.location}</div>
+                </div>
+            </div>
+
+            <div className="lp-tag-row">
+                {clinic.tags.map(t => <span key={t} className="lp-tag">{t}</span>)}
+            </div>
+
+            <div className="lp-clinic-footer">
+                <div className="lp-clinic-rating">
+                    <span className="lp-stars"><IconStar /></span>
+                    {clinic.rating}
+                    <span className="lp-clinic-reviews">({clinic.reviews})</span>
+                </div>
+                <div className="lp-clinic-hint">
+                    <IconLock /> Sign in to request
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ── Main page ───────────────────────────────────────────────── */
+export default function LandingPage() {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+
+    const [stepsRef,   stepsInView]   = useInView();
+    const [previewRef, previewInView] = useInView();
+    const [ctaRef,     ctaInView]     = useInView();
+
     if (user?.role === 'clinic')  return <Navigate to="/clinic/dashboard"  replace />;
     if (user?.role === 'client')  return <Navigate to="/client/dashboard"  replace />;
     if (user?.role === 'admin')   return <Navigate to="/dashboard"         replace />;
 
     return (
         <GuestLayout>
-            {/* ── 1. Hero ────────────────────────────────────────── */}
+
+            {/* ── 1. Hero ─────────────────────────────────────────── */}
             <section className="landing-hero">
-                <div className="landing-hero-card">
-                    <div className="landing-hero-pill">
-                        <span className="landing-hero-pill-dot" />
-                        Rehabilitation Platform
-                    </div>
+                <div className="lp-hero-inner">
 
-                    <h1 className="landing-hero-title">
-                        Rehab, guided by your clinic.{' '}
-                        <em>Nothing extra.</em>
-                    </h1>
-
-                    <p className="landing-hero-subtitle">
-                        Connect with verified physiotherapy clinics, follow a structured
-                        rehabilitation plan, and track your recovery — all from one secure,
-                        clinic-driven platform.
-                    </p>
-
-                    <div className="landing-hero-actions">
-                        <Button
-                            variant="primary"
-                            size="lg"
-                            onClick={() => navigate('/clinics')}
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                <circle cx="11" cy="11" r="8"/>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                            </svg>
-                            Browse clinics
-                        </Button>
-                        <Button variant="ghost" size="lg" onClick={scrollToHowItWorks}>
-                            How it works
-                        </Button>
-                    </div>
-                </div>
-            </section>
-
-            {/* ── 2. Features ────────────────────────────────────── */}
-            <section id="how-it-works" className="landing-features">
-                <div className="landing-container">
-                    <p className="landing-section-label">How it works</p>
-                    <h2 className="landing-section-title">Your rehab journey, structured.</h2>
-                    <p className="landing-section-sub">
-                        Three simple steps from finding the right clinic to completing your recovery plan safely.
-                    </p>
-
-                    <div className="landing-features-grid">
-                        {/* Card 1 */}
-                        <div className="landing-feature-card">
-                            <div className="landing-feature-icon">
-                                <IconClinic />
-                            </div>
-                            <h3 className="landing-feature-title">Pick a clinic</h3>
-                            <p className="landing-feature-desc">
-                                Browse verified physiotherapy clinics, filter by specialty,
-                                location, and budget — then send a direct access request in seconds.
-                            </p>
+                    {/* Left: content */}
+                    <div className="lp-hero-content">
+                        <div className="landing-hero-pill">
+                            <span className="landing-hero-pill-dot" />
+                            Rehabilitation Platform
                         </div>
 
-                        {/* Card 2 */}
-                        <div className="landing-feature-card">
-                            <div className="landing-feature-icon">
-                                <IconPlan />
-                            </div>
-                            <h3 className="landing-feature-title">Follow your plan</h3>
-                            <p className="landing-feature-desc">
-                                Your clinic builds a personalized rehabilitation program. Log
-                                your pain and effort levels after each session so your therapist
-                                can monitor real progress.
-                            </p>
-                        </div>
+                        <h1 className="landing-hero-title">
+                            Rehab, guided<br />
+                            by your clinic.<br />
+                            <em>Nothing extra.</em>
+                        </h1>
 
-                        {/* Card 3 */}
-                        <div className="landing-feature-card">
-                            <div className="landing-feature-icon">
-                                <IconSafe />
-                            </div>
-                            <h3 className="landing-feature-title">Stay safe</h3>
-                            <p className="landing-feature-desc">
-                                Our system continuously evaluates your exercise data and surfaces
-                                safety alerts before overexertion becomes a setback.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ── 3. Join as a clinic ────────────────────────────── */}
-            <section className="landing-join">
-                <div className="landing-container landing-join-inner">
-                    {/* Left: text */}
-                    <div className="landing-join-text">
-                        <p className="landing-section-label">For clinics</p>
-                        <h2 className="landing-section-title">Bring your clinic online.</h2>
-                        <p className="landing-join-desc">
-                            Create a professional clinic profile, manage patient access requests,
-                            and deliver structured rehabilitation plans — all from one dashboard.
-                            PhysioCore handles the coordination so you can focus on care.
+                        <p className="landing-hero-subtitle">
+                            Connect with verified physiotherapy clinics, follow a structured
+                            rehabilitation plan, and track your recovery — all from one secure,
+                            clinic-driven platform.
                         </p>
-                        <Button variant="primary" size="lg" onClick={() => navigate('/register', { state: { role: 'clinic' } })}>
-                            Register your clinic
+
+                        <div className="landing-hero-actions">
+                            <Button
+                                variant="primary"
+                                size="lg"
+                                onClick={() => navigate('/clinics')}
+                            >
+                                <IconSearch />
+                                Browse clinics
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="lg"
+                                onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                            >
+                                How it works
+                            </Button>
+                        </div>
+
+                        <div className="lp-hero-stats">
+                            <div className="lp-hero-stat">
+                                <strong>500+</strong>
+                                <span>Verified clinics</span>
+                            </div>
+                            <div className="lp-stat-divider" />
+                            <div className="lp-hero-stat">
+                                <strong>12k+</strong>
+                                <span>Active clients</span>
+                            </div>
+                            <div className="lp-stat-divider" />
+                            <div className="lp-hero-stat">
+                                <strong>4.9 ★</strong>
+                                <span>Avg. rating</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right: visual */}
+                    <div className="lp-hero-visual-col">
+                        <HeroVisual />
+                    </div>
+                </div>
+            </section>
+
+            {/* ── 2. How it Works ─────────────────────────────────── */}
+            <section id="how-it-works" className="landing-steps" ref={stepsRef}>
+                <div className="landing-container">
+                    <div className={`lp-steps-head ${stepsInView ? 'is-visible' : ''}`}>
+                        <p className="landing-section-label">How it works</p>
+                        <h2 className="landing-section-title">Three steps to recovery.</h2>
+                        <p className="landing-section-sub">
+                            From finding the right clinic to completing your rehabilitation plan safely.
+                        </p>
+                    </div>
+
+                    <div className="lp-steps-grid">
+                        {STEPS.map(({ Icon, title, desc }, i) => (
+                            <div
+                                key={i}
+                                className={`lp-step-card ${stepsInView ? 'is-visible' : ''}`}
+                                style={{ animationDelay: `${i * 110}ms` }}
+                            >
+                                <div className="lp-step-num">0{i + 1}</div>
+                                <div className="lp-step-icon"><Icon /></div>
+                                <h3 className="lp-step-title">{title}</h3>
+                                <p className="lp-step-desc">{desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* ── 3. Clinic Browse Preview ─────────────────────────── */}
+            <section className="landing-preview" ref={previewRef}>
+                <div className="landing-container">
+                    <div className={`lp-preview-head ${previewInView ? 'is-visible' : ''}`}>
+                        <div>
+                            <p className="landing-section-label">Browse clinics</p>
+                            <h2 className="landing-section-title">Find the right clinic for you.</h2>
+                            <p className="landing-section-sub">
+                                Explore verified physiotherapy clinics filtered by specialty,
+                                location, and availability. Start browsing — no account required.
+                            </p>
+                        </div>
+                        <Button variant="primary" size="lg" onClick={() => navigate('/clinics')}>
+                            View all clinics <IconArrowRight />
                         </Button>
                     </div>
 
-                    {/* Right: decorative mockup */}
-                    <div className="landing-join-visual">
-                        <ClinicMockup />
+                    <div className="lp-clinics-grid">
+                        {MOCK_CLINICS.map((clinic, i) => (
+                            <ClinicPreviewCard
+                                key={i}
+                                clinic={clinic}
+                                visible={previewInView}
+                                delay={i * 90}
+                            />
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* ── 4. Payment options ─────────────────────────────── */}
-            <section className="landing-payment">
-                <div className="landing-container">
-                    <div className="landing-payment-card">
-                        <div className="landing-payment-header">
-                            <div>
-                                <p className="landing-section-label" style={{ marginBottom: '0.4rem' }}>
-                                    Billing flexibility
-                                </p>
-                                <h2 className="landing-section-title" style={{ marginBottom: 0 }}>
-                                    Flexible payment options
-                                </h2>
-                            </div>
-                            <p className="landing-payment-note">
-                                Clinics on PhysioCore support a range of payment methods.
-                                Confirm preferred billing with your clinic once access is approved.
-                            </p>
-                        </div>
-
-                        <div className="landing-payment-methods">
-                            {[
-                                { icon: <IconCard />,      label: 'Credit & Debit Card' },
-                                { icon: <IconCash />,      label: 'Cash Payment' },
-                                { icon: <IconInsurance />, label: 'Health Insurance' },
-                                { icon: <IconBank />,      label: 'Bank Transfer' },
-                                { icon: <IconMobile />,    label: 'Mobile Payment' },
-                            ].map(({ icon, label }) => (
-                                <div key={label} className="landing-payment-method">
-                                    <div className="landing-payment-method-icon">{icon}</div>
-                                    <span className="landing-payment-method-label">{label}</span>
-                                </div>
-                            ))}
-                        </div>
+            {/* ── 4. CTA ──────────────────────────────────────────── */}
+            <section className="landing-cta" ref={ctaRef}>
+                <div className={`lp-cta-inner ${ctaInView ? 'is-visible' : ''}`}>
+                    <p className="lp-cta-label">Get started today</p>
+                    <h2 className="lp-cta-title">Ready to start your recovery?</h2>
+                    <p className="lp-cta-sub">
+                        Browse verified clinics and connect with your physiotherapist today.
+                        No commitment required — explore freely as a guest.
+                    </p>
+                    <div className="lp-cta-actions">
+                        <Button variant="primary" size="lg" onClick={() => navigate('/clinics')}>
+                            <IconSearch /> Browse clinics
+                        </Button>
+                        <button className="lp-cta-outline-btn" onClick={() => navigate('/register')}>
+                            Create account <IconArrowRight />
+                        </button>
                     </div>
                 </div>
             </section>
 
-            {/* ── Footer ─────────────────────────────────────────── */}
+            {/* ── Footer ──────────────────────────────────────────── */}
             <footer className="landing-footer">
                 <div className="landing-footer-logo">PhysioCore</div>
                 <p className="landing-footer-text">
                     &copy; {new Date().getFullYear()} PhysioCore. All rights reserved.
                 </p>
             </footer>
+
         </GuestLayout>
     );
 }
