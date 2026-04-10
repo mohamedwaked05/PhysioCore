@@ -2,6 +2,8 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import NavBar from './NavBar';
+import MobileMenu from './MobileMenu';
+import useMobileMenu from '../hooks/useMobileMenu';
 import '../styles/client.css';
 import '../styles/guest.css';
 
@@ -51,6 +53,14 @@ function FindClinicIcon() {
         </svg>
     );
 }
+function HomeIcon() {
+    return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+    );
+}
 
 /* ── Guest-only theme toggle (no dropdown, no user) ─────── */
 function GuestThemeToggle() {
@@ -64,14 +74,14 @@ function GuestThemeToggle() {
             {theme === 'dark' ? (
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <circle cx="12" cy="12" r="5"/>
-                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="1"  x2="12" y2="3"/>
                     <line x1="12" y1="21" x2="12" y2="23"/>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="4.22" y1="4.22"   x2="5.64" y2="5.64"/>
                     <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="1"  y1="12" x2="3"  y2="12"/>
                     <line x1="21" y1="12" x2="23" y2="12"/>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    <line x1="4.22"  y1="19.78" x2="5.64"  y2="18.36"/>
+                    <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
                 </svg>
             ) : (
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -98,10 +108,16 @@ function EcgLogo() {
     );
 }
 
+const GUEST_LINKS = [
+    { to: '/',       label: 'Home',          icon: <HomeIcon />        },
+    { to: '/clinics', label: 'Find a Clinic', icon: <FindClinicIcon /> },
+];
+
 export default function GuestLayout({ children }) {
     const { user }   = useAuth();
     const navigate   = useNavigate();
     const location   = useLocation();
+    const { isOpen: menuOpen, toggle: menuToggle, close: menuClose } = useMobileMenu();
 
     /* ── Authenticated client ───────────────────────────── */
     if (user?.role === 'client') {
@@ -149,6 +165,7 @@ export default function GuestLayout({ children }) {
                     <span className="client-nav-logo-text">PhysioCore</span>
                 </NavLink>
 
+                {/* Desktop links */}
                 <div className="client-nav-links">
                     <NavLink
                         to="/clinics"
@@ -159,16 +176,40 @@ export default function GuestLayout({ children }) {
                     </NavLink>
                 </div>
 
+                {/* Desktop right actions */}
                 <div className="client-nav-right">
-                    <GuestThemeToggle />
+                    <div className="client-nav-desktop-actions">
+                        <GuestThemeToggle />
+                        <button
+                            className="guest-signin-btn"
+                            onClick={() => navigate('/login', { state: { from: location } })}
+                        >
+                            Sign in
+                        </button>
+                    </div>
+
+                    {/* Mobile burger */}
                     <button
-                        className="guest-signin-btn"
-                        onClick={() => navigate('/login', { state: { from: location } })}
+                        className={`burger-btn${menuOpen ? ' open' : ''}`}
+                        onClick={menuToggle}
+                        aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                        aria-expanded={menuOpen}
                     >
-                        Sign in
+                        <span className="burger-bar" />
+                        <span className="burger-bar" />
+                        <span className="burger-bar" />
                     </button>
                 </div>
             </nav>
+
+            {/* Mobile menu (guest mode) */}
+            <MobileMenu
+                isOpen={menuOpen}
+                onClose={menuClose}
+                links={GUEST_LINKS}
+                homeRoute="/"
+                profileRoute={null}
+            />
 
             <main className="guest-main">{children}</main>
         </div>

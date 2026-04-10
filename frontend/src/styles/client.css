@@ -229,6 +229,20 @@
   gap: 0.75rem;
 }
 
+/* User chip (avatar + name) */
+.client-nav-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+/* Desktop-only actions (theme toggle + sign in) in guest nav */
+.client-nav-desktop-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .client-nav-user {
   font-size: 0.83rem;
   color: rgba(255, 255, 255, 0.75);
@@ -1477,10 +1491,22 @@
 
 /* ─── Responsive ──────────────────────────────────────────── */
 @media (max-width: 768px) {
+  /* Navbar */
   .client-content {
-    padding: 1.25rem;
+    padding: 1.25rem 1rem;
   }
 
+  .client-nav-links {
+    display: none;
+  }
+
+  /* Hide desktop user chip + settings gear on mobile */
+  .client-nav-user-chip,
+  .nav-settings-wrap {
+    display: none;
+  }
+
+  /* Dashboard grid → single column */
   .client-dashboard-grid {
     grid-template-columns: 1fr;
   }
@@ -1489,6 +1515,7 @@
     grid-column: span 1;
   }
 
+  /* Profile form → single column */
   .profile-form-grid {
     grid-template-columns: 1fr;
   }
@@ -1497,10 +1524,7 @@
     grid-column: span 1;
   }
 
-  .client-nav-links {
-    display: none;
-  }
-
+  /* Clinic filter bar */
   .clinic-filter-bar {
     flex-direction: column;
     align-items: stretch;
@@ -1512,5 +1536,59 @@
 
   .clinic-filter-select {
     min-width: unset;
+  }
+
+  /* Cards full width */
+  .client-card {
+    padding: 1.1rem;
+  }
+
+  /* Actions row stack on very small screens */
+  .client-actions-row {
+    flex-direction: column;
+  }
+
+  .client-action-btn {
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* Page header tighter on mobile */
+  .client-page-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .client-page-title {
+    font-size: 1.3rem;
+  }
+
+  /* Desktop-only actions in guest nav */
+  .client-nav-desktop-actions {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .client-content {
+    padding: 1rem 0.85rem;
+  }
+
+  .client-nav {
+    padding: 0 1rem;
+  }
+
+  .client-card {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .request-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .client-summary-label {
+    width: 110px;
   }
 }

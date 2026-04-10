@@ -3,7 +3,9 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useProfilePhoto } from '../hooks/useProfilePhoto';
+import useMobileMenu from '../hooks/useMobileMenu';
 import Avatar from './ui/Avatar';
+import MobileMenu from './MobileMenu';
 
 /* ── Brand logo (ECG pulse line) ──────────────────────────── */
 function EcgLogo() {
@@ -74,16 +76,17 @@ function SignOutIcon() {
 
 /* ── Shared NavBar component ──────────────────────────────── */
 export default function NavBar({ homeRoute, links, profileRoute }) {
-    const { user, logout } = useAuth();
-    const { theme, toggle } = useTheme();
-    const photoUrl          = useProfilePhoto(user?.role);
-    const navigate          = useNavigate();
-    const [open, setOpen]   = useState(false);
-    const wrapRef           = useRef(null);
+    const { user, logout }          = useAuth();
+    const { theme, toggle }         = useTheme();
+    const photoUrl                  = useProfilePhoto(user?.role);
+    const navigate                  = useNavigate();
+    const [open, setOpen]           = useState(false);
+    const wrapRef                   = useRef(null);
+    const { isOpen: menuOpen, toggle: menuToggle, close: menuClose } = useMobileMenu();
 
     const fullName = `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim();
 
-    /* Close on outside click */
+    /* Close settings dropdown on outside click */
     useEffect(() => {
         if (!open) return;
         const handler = (e) => {
@@ -96,88 +99,113 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
     }, [open]);
 
     return (
-        <nav className="client-nav">
-            {/* ── Logo ── */}
-            <NavLink to={homeRoute} className="client-nav-logo">
-                <div className="client-nav-logo-icon">
-                    <EcgLogo />
-                </div>
-                <span className="client-nav-logo-text">PhysioCore</span>
-            </NavLink>
+        <>
+            <nav className="client-nav">
+                {/* ── Logo ── */}
+                <NavLink to={homeRoute} className="client-nav-logo">
+                    <div className="client-nav-logo-icon">
+                        <EcgLogo />
+                    </div>
+                    <span className="client-nav-logo-text">PhysioCore</span>
+                </NavLink>
 
-            {/* ── Nav links with icons ── */}
-            <div className="client-nav-links">
-                {links.map(({ to, label, icon }) => (
-                    <NavLink
-                        key={to}
-                        to={to}
-                        className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}
-                    >
-                        <span className="nav-link-icon">{icon}</span>
-                        {label}
-                    </NavLink>
-                ))}
-            </div>
-
-            {/* ── Right: avatar + settings ── */}
-            <div className="client-nav-right">
-                <div className="client-nav-user-chip">
-                    <Avatar size="sm" name={fullName} src={photoUrl} />
-                    <span className="client-nav-user">{fullName}</span>
+                {/* ── Nav links (desktop only) ── */}
+                <div className="client-nav-links">
+                    {links.map(({ to, label, icon }) => (
+                        <NavLink
+                            key={to}
+                            to={to}
+                            className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}
+                        >
+                            <span className="nav-link-icon">{icon}</span>
+                            {label}
+                        </NavLink>
+                    ))}
                 </div>
 
-                <div className="nav-settings-wrap" ref={wrapRef}>
+                {/* ── Right: avatar + settings (desktop) + burger (mobile) ── */}
+                <div className="client-nav-right">
+                    {/* Desktop: user chip + settings */}
+                    <div className="client-nav-user-chip">
+                        <Avatar size="sm" name={fullName} src={photoUrl} />
+                        <span className="client-nav-user">{fullName}</span>
+                    </div>
+
+                    <div className="nav-settings-wrap" ref={wrapRef}>
+                        <button
+                            className={`nav-settings-btn${open ? ' open' : ''}`}
+                            onClick={() => setOpen(o => !o)}
+                            aria-label="Settings"
+                            title="Settings"
+                        >
+                            <GearIcon />
+                        </button>
+
+                        {open && (
+                            <div className="nav-settings-dropdown" role="menu">
+                                {/* Night Mode */}
+                                <button
+                                    className="nav-settings-item"
+                                    role="menuitem"
+                                    onClick={() => toggle()}
+                                >
+                                    <span className="nav-settings-item-icon">
+                                        {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+                                    </span>
+                                    <span>Night Mode</span>
+                                    <span className={`nav-settings-pill${theme === 'dark' ? ' on' : ''}`}>
+                                        {theme === 'dark' ? 'ON' : 'OFF'}
+                                    </span>
+                                </button>
+
+                                {/* Profile */}
+                                <button
+                                    className="nav-settings-item"
+                                    role="menuitem"
+                                    onClick={() => { navigate(profileRoute); setOpen(false); }}
+                                >
+                                    <span className="nav-settings-item-icon"><ProfileIcon /></span>
+                                    <span>Profile</span>
+                                </button>
+
+                                <div className="nav-settings-divider" />
+
+                                {/* Sign Out */}
+                                <button
+                                    className="nav-settings-item danger"
+                                    role="menuitem"
+                                    onClick={() => { setOpen(false); logout(); }}
+                                >
+                                    <span className="nav-settings-item-icon"><SignOutIcon /></span>
+                                    <span>Sign Out</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Mobile burger button */}
                     <button
-                        className={`nav-settings-btn${open ? ' open' : ''}`}
-                        onClick={() => setOpen(o => !o)}
-                        aria-label="Settings"
-                        title="Settings"
+                        className={`burger-btn${menuOpen ? ' open' : ''}`}
+                        onClick={menuToggle}
+                        aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                        aria-expanded={menuOpen}
+                        aria-controls="mobile-menu"
                     >
-                        <GearIcon />
+                        <span className="burger-bar" />
+                        <span className="burger-bar" />
+                        <span className="burger-bar" />
                     </button>
-
-                    {open && (
-                        <div className="nav-settings-dropdown" role="menu">
-                            {/* Night Mode */}
-                            <button
-                                className="nav-settings-item"
-                                role="menuitem"
-                                onClick={() => toggle()}
-                            >
-                                <span className="nav-settings-item-icon">
-                                    {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-                                </span>
-                                <span>Night Mode</span>
-                                <span className={`nav-settings-pill${theme === 'dark' ? ' on' : ''}`}>
-                                    {theme === 'dark' ? 'ON' : 'OFF'}
-                                </span>
-                            </button>
-
-                            {/* Profile */}
-                            <button
-                                className="nav-settings-item"
-                                role="menuitem"
-                                onClick={() => { navigate(profileRoute); setOpen(false); }}
-                            >
-                                <span className="nav-settings-item-icon"><ProfileIcon /></span>
-                                <span>Profile</span>
-                            </button>
-
-                            <div className="nav-settings-divider" />
-
-                            {/* Sign Out */}
-                            <button
-                                className="nav-settings-item danger"
-                                role="menuitem"
-                                onClick={() => { setOpen(false); logout(); }}
-                            >
-                                <span className="nav-settings-item-icon"><SignOutIcon /></span>
-                                <span>Sign Out</span>
-                            </button>
-                        </div>
-                    )}
                 </div>
-            </div>
-        </nav>
+            </nav>
+
+            {/* Mobile slide-in menu */}
+            <MobileMenu
+                isOpen={menuOpen}
+                onClose={menuClose}
+                links={links}
+                homeRoute={homeRoute}
+                profileRoute={profileRoute}
+            />
+        </>
     );
 }
