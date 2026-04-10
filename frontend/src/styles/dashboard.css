@@ -1,0 +1,998 @@
+/* ============================================================
+   PhysioCore — Client Dashboard Styles
+   Prefix: cd-  (client dashboard)
+   ============================================================ */
+
+/* ── Page Entry Animation ───────────────────────────────────── */
+@keyframes cd-fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes cd-fill {
+    from { width: 0; }
+}
+
+/* ── Dashboard Layout ────────────────────────────────────────── */
+.cd-layout {
+    padding: 2rem 2rem 3rem;
+    max-width: 1160px;
+    margin: 0 auto;
+}
+
+.cd-header {
+    margin-bottom: 1.75rem;
+    animation: cd-fade-up 0.22s ease both;
+}
+
+.cd-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+    margin: 0 0 0.3rem;
+}
+
+.cd-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── Sub-navigation Tabs ─────────────────────────────────────── */
+.cd-subnav-wrapper {
+    margin-bottom: 2rem;
+    animation: cd-fade-up 0.22s 0.04s ease both;
+}
+
+.cd-subnav {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.3rem;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.cd-subnav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.855rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+
+.cd-subnav-link:hover {
+    color: var(--text);
+    background: var(--surface-dim);
+}
+
+.cd-subnav-link.active {
+    color: var(--primary);
+    background: var(--bg);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+.cd-subnav-icon {
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+}
+
+.cd-subnav-link:hover .cd-subnav-icon,
+.cd-subnav-link.active .cd-subnav-icon {
+    opacity: 1;
+}
+
+/* ── Page Wrapper ─────────────────────────────────────────────── */
+.cd-page {
+    animation: cd-fade-up 0.22s ease both;
+}
+
+/* ── Section Spacing ─────────────────────────────────────────── */
+.cd-section {
+    margin-bottom: 1.75rem;
+}
+
+/* ── Metrics Grid ─────────────────────────────────────────────── */
+.cd-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.cd-metric-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+    cursor: default;
+}
+
+.cd-metric-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.cd-metric-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cd-metric-icon--primary  { background: rgba(62, 71, 114, 0.09);  color: var(--primary); }
+.cd-metric-icon--success  { background: rgba(22, 163, 74, 0.09);  color: #16a34a; }
+.cd-metric-icon--warning  { background: rgba(217, 119, 6, 0.09);  color: #d97706; }
+.cd-metric-icon--danger   { background: rgba(220, 38, 38, 0.09);  color: #dc2626; }
+
+.cd-metric-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.cd-metric-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+}
+
+.cd-metric-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+}
+
+.cd-metric-trend {
+    font-size: 0.78rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.cd-metric-trend--up   { color: #16a34a; }
+.cd-metric-trend--down { color: #dc2626; }
+.cd-metric-trend--neutral { color: var(--text-muted); }
+
+/* ── Progress Bar ─────────────────────────────────────────────── */
+.cd-progress {
+    width: 100%;
+}
+
+.cd-progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.45rem;
+}
+
+.cd-progress-label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.cd-progress-pct {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.cd-progress-track {
+    width: 100%;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+}
+
+.cd-progress-track--sm { height: 6px;  background: var(--border); }
+.cd-progress-track--md { height: 10px; background: var(--border); }
+.cd-progress-track--lg { height: 14px; background: var(--border); }
+
+.cd-progress-fill {
+    height: 100%;
+    border-radius: var(--radius-pill);
+    transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cd-progress-fill--primary { background: linear-gradient(90deg, var(--primary-light), var(--primary)); }
+.cd-progress-fill--success  { background: linear-gradient(90deg, #4ade80, #16a34a); }
+.cd-progress-fill--warning  { background: linear-gradient(90deg, #fcd34d, #d97706); }
+.cd-progress-fill--danger   { background: linear-gradient(90deg, #f87171, #dc2626); }
+
+/* ── Day Tracker ──────────────────────────────────────────────── */
+.cd-day-tracker {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.65rem;
+}
+
+.cd-day-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: default;
+}
+
+.cd-day-block-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.cd-day-block-bar {
+    width: 100%;
+    height: 52px;
+    border-radius: var(--radius-md);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s ease;
+}
+
+.cd-day-block:hover .cd-day-block-bar {
+    transform: scaleY(1.04);
+}
+
+.cd-day-block-bar--complete  { background: linear-gradient(180deg, #4ade80 0%, #16a34a 100%); box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25); }
+.cd-day-block-bar--partial   { background: linear-gradient(180deg, #fde68a 0%, #d97706 100%); box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2); }
+.cd-day-block-bar--rest      { background: var(--surface-dim); border: 0.5px solid var(--border); }
+.cd-day-block-bar--upcoming  { background: var(--surface-dim); border: 0.5px dashed var(--border); }
+
+.cd-day-block-pct {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* ── Pain Trend ───────────────────────────────────────────────── */
+.cd-pain-trend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.cd-pain-row {
+    display: grid;
+    align-items: center;
+    grid-template-columns: 60px 1fr 32px;
+    gap: 0.85rem;
+}
+
+.cd-pain-week {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.cd-pain-value {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+    text-align: right;
+}
+
+/* ── Milestones ───────────────────────────────────────────────── */
+.cd-milestones {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.cd-milestone-item {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.85rem 0;
+    border-bottom: 0.5px solid var(--border-light);
+}
+
+.cd-milestone-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.cd-milestone-item:first-child {
+    padding-top: 0;
+}
+
+.cd-milestone-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cd-milestone-icon--achieved {
+    background: rgba(22, 163, 74, 0.09);
+    color: #16a34a;
+}
+
+.cd-milestone-icon--pending {
+    background: var(--surface-dim);
+    color: var(--text-muted);
+}
+
+.cd-milestone-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.cd-milestone-label {
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0.1rem;
+}
+
+.cd-milestone-value {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.cd-milestone-check {
+    flex-shrink: 0;
+    color: #16a34a;
+}
+
+.cd-milestone-check--pending {
+    color: var(--border);
+}
+
+/* ── Workout Summary ──────────────────────────────────────────── */
+.cd-workout-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.cd-workout-stat {
+    background: var(--surface-dim);
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border-light);
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.cd-workout-stat-icon {
+    display: flex;
+    align-items: center;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.cd-workout-stat-body {}
+
+.cd-workout-stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+}
+
+.cd-workout-stat-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+}
+
+/* ── Exercise Item ────────────────────────────────────────────── */
+.cd-exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.cd-exercise-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.95rem 0;
+    border-bottom: 0.5px solid var(--border-light);
+    transition: background 0.12s ease;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    margin: 0 -0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.cd-exercise-item:last-child {
+    border-bottom: none;
+}
+
+.cd-exercise-item:hover {
+    background: var(--surface-dim);
+}
+
+.cd-exercise-item--done {
+    opacity: 0.55;
+}
+
+.cd-exercise-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.cd-exercise-checkbox--checked {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.cd-exercise-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.cd-exercise-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.22rem;
+    transition: color 0.15s;
+}
+
+.cd-exercise-item--done .cd-exercise-name {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.cd-exercise-meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 0.35rem;
+}
+
+.cd-exercise-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.cd-exercise-tag {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.18rem 0.55rem;
+    border-radius: var(--radius-pill);
+    background: rgba(62, 71, 114, 0.08);
+    color: var(--primary);
+    letter-spacing: 0.02em;
+}
+
+.cd-exercise-difficulty {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.22rem 0.6rem;
+    border-radius: var(--radius-pill);
+    flex-shrink: 0;
+}
+
+.cd-exercise-difficulty--easy     { background: rgba(22, 163, 74, 0.09);  color: #16a34a; }
+.cd-exercise-difficulty--moderate { background: rgba(217, 119, 6, 0.09);  color: #d97706; }
+.cd-exercise-difficulty--hard     { background: rgba(220, 38, 38, 0.09);  color: #dc2626; }
+
+/* ── Feedback Section ────────────────────────────────────────── */
+.cd-feedback {
+    background: var(--surface-dim);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border-light);
+    padding: 1.25rem 1.4rem;
+}
+
+.cd-feedback-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+}
+
+.cd-feedback textarea {
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    line-height: 1.55;
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+}
+
+.cd-feedback textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(62, 71, 114, 0.1);
+}
+
+.cd-feedback-footer {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ── Quick Action Cards ──────────────────────────────────────── */
+.cd-quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.cd-quick-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: box-shadow 0.15s, transform 0.15s;
+    cursor: pointer;
+}
+
+.cd-quick-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+    color: var(--text);
+}
+
+.cd-quick-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    background: rgba(62, 71, 114, 0.09);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cd-quick-card-body {
+    flex: 1;
+}
+
+.cd-quick-card-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.15rem;
+}
+
+.cd-quick-card-sub {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+}
+
+.cd-quick-card-arrow {
+    color: var(--text-muted);
+    transition: transform 0.15s, color 0.15s;
+}
+
+.cd-quick-card:hover .cd-quick-card-arrow {
+    transform: translateX(3px);
+    color: var(--primary);
+}
+
+/* ── Weekly Plan Layout ───────────────────────────────────────── */
+.cd-weekly-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.cd-day-list {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.cd-day-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem;
+    border-bottom: 0.5px solid var(--border-light);
+    cursor: pointer;
+    transition: background 0.12s;
+    gap: 0.65rem;
+}
+
+.cd-day-list-item:last-child {
+    border-bottom: none;
+}
+
+.cd-day-list-item:hover {
+    background: var(--surface-dim);
+}
+
+.cd-day-list-item--active {
+    background: rgba(62, 71, 114, 0.07);
+}
+
+.cd-day-list-item--active:hover {
+    background: rgba(62, 71, 114, 0.1);
+}
+
+.cd-day-list-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+}
+
+.cd-day-list-item--active .cd-day-list-name {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.cd-day-list-date {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.cd-day-list-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.cd-day-list-dot--complete  { background: #16a34a; }
+.cd-day-list-dot--partial   { background: #d97706; }
+.cd-day-list-dot--rest      { background: var(--border); }
+.cd-day-list-dot--upcoming  { background: var(--border); border: 1.5px dashed var(--text-muted); width: 6px; height: 6px; }
+
+.cd-day-list-rest-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--surface-dim);
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-pill);
+    border: 0.5px solid var(--border);
+}
+
+/* ── Weekly Detail Panel ─────────────────────────────────────── */
+.cd-weekly-detail {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem 1.6rem;
+}
+
+.cd-weekly-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+}
+
+.cd-weekly-detail-day {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+}
+
+.cd-weekly-detail-date {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.cd-weekly-rest-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    gap: 0.75rem;
+}
+
+.cd-weekly-rest-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--surface-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-disabled);
+}
+
+.cd-weekly-rest-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.cd-weekly-rest-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+/* ── Today Progress Banner ────────────────────────────────────── */
+.cd-today-header {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+}
+
+.cd-today-progress-block {
+    flex: 1;
+    min-width: 0;
+}
+
+.cd-today-progress-text {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.cd-today-count {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.cd-today-count span {
+    color: var(--primary);
+}
+
+/* ── Card header / section header reuse ─────────────────────── */
+.cd-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.1rem;
+}
+
+.cd-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.01em;
+}
+
+.cd-card-action {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--primary);
+    text-decoration: none;
+    padding: 0.28rem 0.7rem;
+    border-radius: var(--radius-pill);
+    border: 0.5px solid var(--border);
+    transition: background 0.15s, color 0.15s;
+}
+
+.cd-card-action:hover {
+    background: rgba(62, 71, 114, 0.07);
+    color: var(--primary);
+}
+
+/* ── Two-column grid ─────────────────────────────────────────── */
+.cd-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+/* ── Dark mode overrides ─────────────────────────────────────── */
+[data-theme="dark"] .cd-metric-icon--primary  { background: rgba(123, 143, 232, 0.12); }
+[data-theme="dark"] .cd-metric-icon--success  { background: rgba(74, 222, 128, 0.1);  }
+[data-theme="dark"] .cd-metric-icon--warning  { background: rgba(252, 211, 77, 0.1);  }
+[data-theme="dark"] .cd-metric-icon--danger   { background: rgba(248, 113, 113, 0.1); }
+
+[data-theme="dark"] .cd-milestone-icon--achieved { background: rgba(74, 222, 128, 0.1); }
+
+[data-theme="dark"] .cd-exercise-tag {
+    background: rgba(123, 143, 232, 0.12);
+    color: var(--primary);
+}
+
+[data-theme="dark"] .cd-exercise-difficulty--easy     { background: rgba(74, 222, 128, 0.1); }
+[data-theme="dark"] .cd-exercise-difficulty--moderate { background: rgba(252, 211, 77, 0.1);  }
+[data-theme="dark"] .cd-exercise-difficulty--hard     { background: rgba(248, 113, 113, 0.1); }
+
+[data-theme="dark"] .cd-quick-card-icon {
+    background: rgba(123, 143, 232, 0.12);
+}
+
+[data-theme="dark"] .cd-day-list-item--active {
+    background: rgba(123, 143, 232, 0.08);
+}
+
+[data-theme="dark"] .cd-day-list-item--active:hover {
+    background: rgba(123, 143, 232, 0.12);
+}
+
+[data-theme="dark"] .cd-workout-stat {
+    background: var(--surface-dim);
+    border-color: var(--border-light);
+}
+
+[data-theme="dark"] .cd-day-block-bar--rest,
+[data-theme="dark"] .cd-day-block-bar--upcoming {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .cd-subnav-link.active {
+    background: var(--surface-dim);
+}
+
+[data-theme="dark"] .cd-feedback {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .cd-feedback textarea {
+    background: var(--surface-dim);
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 860px) {
+    .cd-layout {
+        padding: 1.5rem 1.25rem 2.5rem;
+    }
+
+    .cd-metrics-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .cd-metrics-grid > :last-child {
+        grid-column: 1 / -1;
+    }
+
+    .cd-two-col {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-weekly-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-day-list {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+    }
+
+    .cd-day-list-item {
+        flex-direction: column;
+        gap: 0.3rem;
+        padding: 0.6rem 0.4rem;
+        text-align: center;
+        border-bottom: none;
+        border-right: 0.5px solid var(--border-light);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .cd-day-list-item:last-child {
+        border-right: none;
+    }
+
+    .cd-day-list-date {
+        display: none;
+    }
+
+    .cd-day-list-rest-label {
+        display: none;
+    }
+
+    .cd-quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-workout-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .cd-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cd-metrics-grid > :last-child {
+        grid-column: auto;
+    }
+
+    .cd-day-tracker {
+        gap: 0.4rem;
+    }
+
+    .cd-day-block-bar {
+        height: 40px;
+    }
+
+    .cd-title {
+        font-size: 1.45rem;
+    }
+
+    .cd-today-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cd-subnav {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .cd-subnav-link {
+        flex: 1;
+        justify-content: center;
+        padding: 0.5rem 0.5rem;
+    }
+}

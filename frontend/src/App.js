@@ -21,7 +21,10 @@ import ClinicListingPage from './pages/client/ClinicListingPage';
 import ClinicDetailsPage from './pages/client/ClinicDetailsPage';
 
 // Client pages (protected)
-import ClientDashboardPage from './pages/client/ClientDashboardPage';
+import DashboardLayout from './pages/client/dashboard/DashboardLayout';
+import StatusPage from './pages/client/dashboard/pages/StatusPage';
+import TodayPage from './pages/client/dashboard/pages/TodayPage';
+import WeeklyPage from './pages/client/dashboard/pages/WeeklyPage';
 import ClientProfilePage from './pages/client/ClientProfilePage';
 
 // Clinic pages (protected)
@@ -60,10 +63,15 @@ function App() {
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="/reset-password"  element={<ResetPasswordPage />} />
 
-                    {/* Client protected routes */}
+                    {/* Client protected routes — dashboard with nested sub-pages */}
                     <Route path="/client/dashboard" element={
-                        <ProtectedRoute role="client"><ClientDashboardPage /></ProtectedRoute>
-                    } />
+                        <ProtectedRoute role="client"><DashboardLayout /></ProtectedRoute>
+                    }>
+                        <Route index element={<Navigate to="status" replace />} />
+                        <Route path="status" element={<StatusPage />} />
+                        <Route path="today"  element={<TodayPage />}  />
+                        <Route path="weekly" element={<WeeklyPage />} />
+                    </Route>
                     <Route path="/client/profile" element={
                         <ProtectedRoute role="client"><ClientProfilePage /></ProtectedRoute>
                     } />
