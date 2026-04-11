@@ -33,12 +33,12 @@ export const mockMilestones = [
 ];
 
 export const mockTodayExercises = [
-    { id: 1, name: 'Hip Flexor Stretch',    sets: 3, reps: 15,   duration: '2 min',  tags: ['mobility', 'hip'],           difficulty: 'easy'     },
-    { id: 2, name: 'Quad Strengthening',    sets: 4, reps: 12,   duration: '4 min',  tags: ['strength', 'quad'],          difficulty: 'moderate' },
-    { id: 3, name: 'Calf Raises',           sets: 3, reps: 20,   duration: '3 min',  tags: ['strength', 'balance'],       difficulty: 'easy'     },
-    { id: 4, name: 'Balance Board',         sets: 2, reps: null, duration: '5 min',  tags: ['balance', 'core'],           difficulty: 'moderate' },
-    { id: 5, name: 'Hamstring Curl',        sets: 3, reps: 10,   duration: '3 min',  tags: ['strength', 'hamstring'],     difficulty: 'hard'     },
-    { id: 6, name: 'Seated Leg Press',      sets: 3, reps: 12,   duration: '4 min',  tags: ['strength', 'knee'],          difficulty: 'moderate' },
+    { id: 1, name: 'Hip Flexor Stretch',  sets: 3, reps: 15,   duration: '2 min', tags: ['mobility', 'hip'],       difficulty: 'easy',     substitute: 'Supine Hip Flexor Stretch', restTime: 1 },
+    { id: 2, name: 'Quad Strengthening',  sets: 4, reps: 12,   duration: '4 min', tags: ['strength', 'quad'],      difficulty: 'moderate', substitute: 'Wall Sit',                  restTime: 2 },
+    { id: 3, name: 'Calf Raises',         sets: 3, reps: 20,   duration: '3 min', tags: ['strength', 'balance'],   difficulty: 'easy',     substitute: 'Seated Calf Raises',        restTime: 1 },
+    { id: 4, name: 'Balance Board',       sets: 2, reps: null, duration: '5 min', tags: ['balance', 'core'],       difficulty: 'moderate', substitute: 'Single Leg Stand',          restTime: 2 },
+    { id: 5, name: 'Hamstring Curl',      sets: 3, reps: 10,   duration: '3 min', tags: ['strength', 'hamstring'], difficulty: 'hard',     substitute: 'Prone Hip Extension',      restTime: 2 },
+    { id: 6, name: 'Seated Leg Press',    sets: 3, reps: 12,   duration: '4 min', tags: ['strength', 'knee'],      difficulty: 'moderate', substitute: 'Bodyweight Squat',          restTime: 2 },
 ];
 
 export const mockWeeklySchedule = {
