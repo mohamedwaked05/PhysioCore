@@ -35,9 +35,13 @@ export default function GoogleCallbackPage() {
                     }
                     // Normal (full-page) mode
                     login(data, token);
-                    if (role === 'client') navigate('/client/dashboard');
-                    else if (role === 'clinic') navigate('/clinic/dashboard');
-                    else navigate('/dashboard');
+                    if (role === 'client') {
+                        navigate('/client/dashboard');
+                    } else if (role === 'clinic') {
+                        navigate('/clinic/dashboard');
+                    } else {
+                        navigate('/dashboard');
+                    }
                 })
                 .catch(() => {
                     localStorage.removeItem('token');

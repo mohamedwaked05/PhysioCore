@@ -373,6 +373,7 @@ export default function ClinicProfilePage() {
             setLicenseUrl(d.license_file_url ?? licenseUrl);
             setCertFileUrl(d.cert_file_url ?? certFileUrl);
             setPhotoPreview(d.profile_photo_url ?? photoPreview);
+
             setIsRegistered(true);
             setLicenseFile(null);
             setCertFile(null);

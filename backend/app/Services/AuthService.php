@@ -179,7 +179,7 @@ class AuthService
      * Complete Google registration: retrieve cached Google data, create the user
      * with the chosen role, and fire the Registered event (sends verification email).
      */
-    public function completeGoogleRegistration(string $setupToken, string $role, ?string $password = null): User
+    public function completeGoogleRegistration(string $setupToken, string $role, ?string $password = null, array $clinicData = []): User
     {
         $googleData = Cache::get('google_setup_' . $setupToken);
 
@@ -202,9 +202,9 @@ class AuthService
             'google_id'     => $googleData['google_id'],
         ]);
 
-        $this->initializeProfile($user);
+        $this->initializeProfile($user, $clinicData);
 
-        // Send verification email just like email/password registration
+        // Same as email registration — send verification email for all roles.
         event(new Registered($user));
 
         return $user;

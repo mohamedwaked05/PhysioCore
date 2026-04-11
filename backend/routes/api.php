@@ -41,8 +41,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/resend-verification', [EmailVerificationController::class, 'resend']);
 
-    // Authenticated user info (used for token verification / debugging)
-    Route::get('/user', fn () => response()->json(auth()->user()));
+    // Authenticated user info
+    Route::get('/user', function () {
+        $user = auth()->user();
+        return response()->json([
+            'id'         => $user->id,
+            'first_name' => $user->first_name,
+            'last_name'  => $user->last_name,
+            'email'      => $user->email,
+            'role'       => $user->role,
+            'status'     => $user->status,
+        ]);
+    });
 });
 
 /*

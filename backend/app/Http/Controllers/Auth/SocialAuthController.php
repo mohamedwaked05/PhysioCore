@@ -7,6 +7,8 @@ use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialAuthController extends Controller
@@ -59,22 +61,45 @@ class SocialAuthController extends Controller
     /**
      * POST /api/auth/google/complete
      *
-     * Completes Google registration: creates the account with the chosen role
-     * and sends a verification email.
+     * Completes Google registration: creates the account with the chosen role.
+     * For clinics, also accepts the same verification fields as email registration
+     * (phone, payment methods, license file, cert file) so they don't need a
+     * separate profile-completion step after sign-up.
+     *
+     * All roles: verification email sent immediately; frontend shows "check inbox" screen.
      */
     public function completeGoogleRegistration(Request $request): JsonResponse
     {
         $request->validate([
-            'setup_token' => 'required|string',
-            'role'        => 'required|in:client,clinic',
-            'password'    => 'nullable|string|min:8|confirmed',
+            'setup_token'     => 'required|string',
+            'role'            => 'required|in:client,clinic',
+            'password'        => 'nullable|string|min:8|confirmed',
+            // Clinic-only fields
+            'clinic_mobile'   => 'required_if:role,clinic|nullable|string|max:30',
+            'payment_methods' => 'required_if:role,clinic|nullable|string',
+            'license_file'    => 'required_if:role,clinic|nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'cert_file'       => 'required_if:role,clinic|nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
+
+        $clinicData = [];
+        if ($request->role === 'clinic') {
+            $clinicData['clinic_mobile']   = $request->clinic_mobile;
+            $clinicData['payment_methods'] = $request->payment_methods;
+
+            if ($request->hasFile('license_file')) {
+                $clinicData['license_file_url'] = $this->storeFile($request, 'license_file', 'licenses');
+            }
+            if ($request->hasFile('cert_file')) {
+                $clinicData['cert_file_url'] = $this->storeFile($request, 'cert_file', 'certifications');
+            }
+        }
 
         try {
             $this->authService->completeGoogleRegistration(
                 $request->setup_token,
                 $request->role,
-                $request->password
+                $request->password,
+                $clinicData
             );
         } catch (\RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
@@ -83,5 +108,14 @@ class SocialAuthController extends Controller
         return response()->json([
             'message' => 'Account created. Please check your email to verify your account.',
         ]);
+    }
+
+    private function storeFile(Request $request, string $field, string $folder): string
+    {
+        $file     = $request->file($field);
+        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $path     = $file->storeAs($folder, $filename, 'public');
+
+        return Storage::disk('public')->url($path);
     }
 }
