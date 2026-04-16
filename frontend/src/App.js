@@ -28,7 +28,12 @@ import WeeklyPage from './pages/client/dashboard/pages/WeeklyPage';
 import ClientProfilePage from './pages/client/ClientProfilePage';
 
 // Clinic pages (protected)
-import ClinicDashboardPage from './pages/clinic/ClinicDashboardPage';
+import ClinicDashboardLayout from './pages/clinic/dashboard/ClinicDashboardLayout';
+import OverviewPage from './pages/clinic/dashboard/pages/OverviewPage';
+import RequestsPage from './pages/clinic/dashboard/pages/RequestsPage';
+import SafetyFlagsPage from './pages/clinic/dashboard/pages/SafetyFlagsPage';
+import PatientsPage from './pages/clinic/dashboard/pages/PatientsPage';
+import PatientFeedbackPage from './pages/clinic/dashboard/pages/PatientFeedbackPage';
 import ClinicProfilePage from './pages/clinic/ClinicProfilePage';
 
 // Forwards /client/clinics/:id → /clinics/:id preserving the param
@@ -80,10 +85,16 @@ function App() {
                     <Route path="/client/clinics"     element={<Navigate to="/clinics" replace />} />
                     <Route path="/client/clinics/:id" element={<ClinicIdRedirect />} />
 
-                    {/* Clinic protected routes */}
+                    {/* Clinic protected routes — dashboard with nested sub-pages */}
                     <Route path="/clinic/dashboard" element={
-                        <ProtectedRoute role="clinic"><ClinicDashboardPage /></ProtectedRoute>
-                    } />
+                        <ProtectedRoute role="clinic"><ClinicDashboardLayout /></ProtectedRoute>
+                    }>
+                        <Route index element={<OverviewPage />} />
+                        <Route path="requests" element={<RequestsPage />} />
+                        <Route path="flags"    element={<SafetyFlagsPage />} />
+                        <Route path="patients" element={<PatientsPage />} />
+                        <Route path="patients/:patientId/feedback" element={<PatientFeedbackPage />} />
+                    </Route>
                     <Route path="/clinic/profile" element={
                         <ProtectedRoute role="clinic"><ClinicProfilePage /></ProtectedRoute>
                     } />
