@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { getClinicProfile } from '../../../api/clinic';
+import { getClinicProfile, getDashboardCounts } from '../../../api/clinic';
 import ClinicLayout from '../../../components/ClinicLayout';
 import '../../../styles/clinic-dashboard.css';
 
@@ -53,22 +53,19 @@ function InquiriesIcon() {
     );
 }
 
-const subnav = [
-    { to: '.',           end: true,  label: 'Overview',      icon: <OverviewIcon />,   badge: null },
-    { to: 'requests',    end: false, label: 'Requests',      icon: <RequestsIcon />,   badge: 7    },
-    { to: 'flags',       end: false, label: 'Safety Flags',  icon: <FlagsIcon />,      badge: 3    },
-    { to: 'patients',    end: false, label: 'Patients',      icon: <PatientsIcon />,   badge: null },
-    { to: 'inquiries',   end: false, label: 'Inquiries',     icon: <InquiriesIcon />,  badge: null },
-];
-
 export default function ClinicDashboardLayout() {
     const { user } = useAuth();
     const [verificationStatus, setVerificationStatus] = useState(null);
+    const [counts, setCounts] = useState(null);
 
     useEffect(() => {
         getClinicProfile()
             .then(res => setVerificationStatus(res.data?.verification_status ?? 'pending'))
             .catch(() => {});
+
+        getDashboardCounts()
+            .then(res => setCounts(res.data))
+            .catch(() => setCounts(null));
     }, []);
 
     // Poll while pending
@@ -84,6 +81,14 @@ export default function ClinicDashboardLayout() {
         }, 8000);
         return () => clearInterval(interval);
     }, [verificationStatus]);
+
+    const subnav = [
+        { to: '.',         end: true,  label: 'Overview',     icon: <OverviewIcon />,  badge: null },
+        { to: 'requests',  end: false, label: 'Requests',     icon: <RequestsIcon />,  badge: counts?.requests_count     || null },
+        { to: 'flags',     end: false, label: 'Safety Flags', icon: <FlagsIcon />,     badge: counts?.safety_flags_count || null },
+        { to: 'patients',  end: false, label: 'Patients',     icon: <PatientsIcon />,  badge: counts?.patients_count     || null },
+        { to: 'inquiries', end: false, label: 'Inquiries',    icon: <InquiriesIcon />, badge: counts?.inquiries_count    || null },
+    ];
 
     return (
         <ClinicLayout>

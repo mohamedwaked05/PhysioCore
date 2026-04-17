@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class SessionFeedback extends Model
 {
+    protected $table = 'session_feedbacks';
+
     protected $fillable = [
         'client_profile_id',
         'clinic_id',

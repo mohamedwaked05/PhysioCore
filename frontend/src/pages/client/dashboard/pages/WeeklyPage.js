@@ -1,9 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ExerciseItem from '../components/ExerciseItem';
 import WorkoutSummary from '../components/WorkoutSummary';
-import { mockWeeklySchedule } from '../data/mockData';
+import Skeleton from '../../../../components/ui/Skeleton';
+import { getAccessRequests } from '../../../../api/client';
+import { getMyRehabPlan } from '../../../../api/rehabPlans';
 
-const DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const DAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+const TODAY_DAY = DAY_NAMES[new Date().getDay()];
+
+const WEEK_DAYS = [
+    { key: 'monday',    label: 'Monday',    short: 'M' },
+    { key: 'tuesday',   label: 'Tuesday',   short: 'T' },
+    { key: 'wednesday', label: 'Wednesday', short: 'W' },
+    { key: 'thursday',  label: 'Thursday',  short: 'T' },
+    { key: 'friday',    label: 'Friday',    short: 'F' },
+    { key: 'saturday',  label: 'Saturday',  short: 'S' },
+    { key: 'sunday',    label: 'Sunday',    short: 'S' },
+];
+
+function mapExercise(ex) {
+    return {
+        id:         ex.id,
+        name:       ex.name,
+        sets:       ex.sets,
+        reps:       ex.reps,
+        duration:   null,
+        tags:       [],
+        difficulty: null,
+        substitute: ex.alternative_exercise || null,
+        restTime:   2,
+    };
+}
+
+function dayStatus(exercises, progress) {
+    if (exercises.length === 0) return 'rest';
+    if (progress?.completed) return 'complete';
+    return 'upcoming';
+}
 
 function StatusDot({ status }) {
     return <span className={`cd-day-list-dot cd-day-list-dot--${status}`} />;
@@ -17,55 +50,134 @@ function MoonIcon() {
     );
 }
 
-function PlayIcon() {
-    return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-        </svg>
-    );
-}
+const statusLabel = { complete: 'Done', upcoming: 'Pending', rest: 'Rest' };
+
+const statusBadgeStyle = (status) => ({
+    fontSize: '0.75rem', fontWeight: 600,
+    padding: '0.28rem 0.75rem',
+    borderRadius: 'var(--radius-pill)',
+    background: status === 'complete' ? 'rgba(22,163,74,0.09)' : 'rgba(62,71,114,0.08)',
+    color:      status === 'complete' ? '#16a34a' : 'var(--primary)',
+    border: '0.5px solid currentColor',
+});
 
 export default function WeeklyPage() {
-    const [selectedDay, setSelectedDay] = useState('thu'); // Today (Apr 10)
+    const [selectedDay,  setSelectedDay]  = useState(TODAY_DAY);
+    const [plan,         setPlan]         = useState(null);
+    const [loading,      setLoading]      = useState(true);
+    const [clinicId,     setClinicId]     = useState('');
+    const [clinics,      setClinics]      = useState([]);
 
-    const dayData = mockWeeklySchedule[selectedDay];
+    // Fetch approved clinics → then load plan
+    useEffect(() => {
+        getAccessRequests()
+            .then(res => {
+                const approved = res.data
+                    .filter(r => r.status === 'approved' && r.clinic)
+                    .map(r => r.clinic);
+                setClinics(approved);
+                if (approved.length >= 1) setClinicId(String(approved[0].id));
+                else setLoading(false);
+            })
+            .catch(() => setLoading(false));
+    }, []);
 
-    const statusLabel = {
-        complete:  'Done',
-        partial:   'Partial',
-        rest:      'Rest',
-        upcoming:  'Upcoming',
-    };
+    useEffect(() => {
+        if (!clinicId) return;
+        setLoading(true);
+        getMyRehabPlan(clinicId)
+            .then(res => setPlan(res.data ?? null))
+            .catch(() => setPlan(null))
+            .finally(() => setLoading(false));
+    }, [clinicId]);
+
+    const exercisesByDay = plan?.exercises_by_day ?? {};
+    const progress       = plan?.progress ?? {};
+
+    const selectedExercises = (exercisesByDay[selectedDay] ?? []).map(mapExercise);
+    const selectedProgress  = progress[selectedDay];
+    const selectedStatus    = dayStatus(exercisesByDay[selectedDay] ?? [], selectedProgress);
+    const selectedLabel     = WEEK_DAYS.find(d => d.key === selectedDay)?.label ?? selectedDay;
+
+    const injuryLabel = plan?.injury_type
+        ? plan.injury_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        : null;
+
+    if (loading) {
+        return (
+            <div className="cd-page">
+                <div className="cd-weekly-layout">
+                    <div className="cd-day-list">
+                        {WEEK_DAYS.map(d => <Skeleton key={d.key} height="52px" radius="8px" style={{ marginBottom: '0.35rem' }} />)}
+                    </div>
+                    <div className="cd-weekly-detail">
+                        <Skeleton height="28px" width="140px" radius="6px" />
+                        <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {[1,2,3].map(i => <Skeleton key={i} height="56px" radius="8px" />)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!plan) {
+        return (
+            <div className="cd-page">
+                <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+                    {clinics.length === 0
+                        ? 'You need an approved clinic to view your weekly plan.'
+                        : 'Your clinic has not assigned a rehab plan yet.'}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="cd-page">
+            {/* Clinic selector */}
+            {clinics.length > 1 && (
+                <div style={{ marginBottom: '1.25rem' }}>
+                    <select className="ui-select" value={clinicId} onChange={e => setClinicId(e.target.value)}>
+                        {clinics.map(c => (
+                            <option key={c.id} value={c.id}>{c.commercial_name || c.legal_name}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
             <div className="cd-weekly-layout">
                 {/* ── Left Sidebar ─── */}
                 <div className="cd-day-list">
-                    {DAY_ORDER.map(key => {
-                        const day = mockWeeklySchedule[key];
-                        const isActive = selectedDay === key;
+                    {WEEK_DAYS.map(d => {
+                        const dayExs   = exercisesByDay[d.key] ?? [];
+                        const dayProg  = progress[d.key];
+                        const status   = dayStatus(dayExs, dayProg);
+                        const isActive = selectedDay === d.key;
+                        const isToday  = d.key === TODAY_DAY;
                         return (
                             <div
-                                key={key}
+                                key={d.key}
                                 className={`cd-day-list-item${isActive ? ' cd-day-list-item--active' : ''}`}
-                                onClick={() => setSelectedDay(key)}
+                                onClick={() => setSelectedDay(d.key)}
                                 role="button"
                                 tabIndex={0}
-                                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSelectedDay(key)}
+                                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSelectedDay(d.key)}
                                 aria-selected={isActive}
                             >
-                                <StatusDot status={day.status} />
+                                <StatusDot status={status} />
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div className="cd-day-list-name">{day.label}</div>
-                                    <div className="cd-day-list-date">{day.date}</div>
+                                    <div className="cd-day-list-name">
+                                        {d.label}
+                                        {isToday && <span style={{ marginLeft: '0.4rem', fontSize: '0.65rem', fontWeight: 600, color: 'var(--primary)', verticalAlign: 'middle' }}>TODAY</span>}
+                                    </div>
+                                    <div className="cd-day-list-date">
+                                        {dayExs.length > 0 ? `${dayExs.length} exercise${dayExs.length !== 1 ? 's' : ''}` : 'Rest'}
+                                    </div>
                                 </div>
-                                {day.isRest
-                                    ? <span className="cd-day-list-rest-label">Rest</span>
-                                    : <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                                        {statusLabel[day.status]}
-                                      </span>
-                                }
+                                <span style={{ fontSize: '0.7rem', color: status === 'complete' ? '#16a34a' : 'var(--text-muted)', fontWeight: status === 'complete' ? 600 : 400 }}>
+                                    {statusLabel[status]}
+                                </span>
                             </div>
                         );
                     })}
@@ -75,31 +187,24 @@ export default function WeeklyPage() {
                 <div className="cd-weekly-detail">
                     <div className="cd-weekly-detail-header">
                         <div>
-                            <div className="cd-weekly-detail-day">{dayData.label}</div>
-                            <div className="cd-weekly-detail-date">{dayData.date}</div>
+                            <div className="cd-weekly-detail-day">
+                                {selectedLabel}
+                                {selectedDay === TODAY_DAY && (
+                                    <span style={{ marginLeft: '0.5rem', fontSize: '0.72rem', fontWeight: 600, color: 'var(--primary)', verticalAlign: 'middle' }}>Today</span>
+                                )}
+                            </div>
+                            {injuryLabel && (
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{injuryLabel}</div>
+                            )}
                         </div>
-                        {!dayData.isRest && (
-                            <span
-                                style={{
-                                    fontSize: '0.75rem',
-                                    fontWeight: 600,
-                                    padding: '0.28rem 0.75rem',
-                                    borderRadius: 'var(--radius-pill)',
-                                    background: dayData.status === 'complete' ? 'rgba(22,163,74,0.09)' :
-                                                dayData.status === 'partial'  ? 'rgba(217,119,6,0.09)'  :
-                                                'rgba(62,71,114,0.08)',
-                                    color: dayData.status === 'complete' ? '#16a34a' :
-                                           dayData.status === 'partial'  ? '#d97706'  :
-                                           'var(--primary)',
-                                    border: '0.5px solid currentColor',
-                                }}
-                            >
-                                {statusLabel[dayData.status]}
+                        {selectedStatus !== 'rest' && (
+                            <span style={statusBadgeStyle(selectedStatus)}>
+                                {statusLabel[selectedStatus]}
                             </span>
                         )}
                     </div>
 
-                    {dayData.isRest ? (
+                    {selectedStatus === 'rest' ? (
                         <div className="cd-weekly-rest-block">
                             <div className="cd-weekly-rest-icon"><MoonIcon /></div>
                             <div className="cd-weekly-rest-title">Rest Day</div>
@@ -108,33 +213,26 @@ export default function WeeklyPage() {
                     ) : (
                         <>
                             <WorkoutSummary
-                                totalExercises={dayData.exercises.length}
-                                estimatedTime={dayData.estimatedTime}
-                                difficulty={dayData.difficulty}
+                                totalExercises={selectedExercises.length}
+                                estimatedTime={`~${selectedExercises.length * 3} min`}
+                                difficulty={injuryLabel ?? '—'}
                             />
 
                             <div className="cd-card-header" style={{ marginBottom: '0.25rem' }}>
                                 <span className="cd-card-title">Exercises</span>
                                 <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                                    {dayData.exercises.length} total
+                                    {selectedExercises.length} total
                                 </span>
                             </div>
-                            <div className="cd-exercise-list">
-                                {dayData.exercises.map(ex => (
-                                    <ExerciseItem key={ex.id} exercise={ex} />
-                                ))}
-                            </div>
 
-                            <div style={{ marginTop: '1.5rem', borderTop: '0.5px solid var(--border-light)', paddingTop: '1.25rem' }}>
-                                <button
-                                    className="ui-btn ui-btn--primary"
-                                    style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-                                    onClick={() => {}}
-                                    disabled={dayData.status === 'complete'}
-                                >
-                                    <PlayIcon />
-                                    {dayData.status === 'complete' ? 'Workout Complete' : 'Start Workout'}
-                                </button>
+                            <div className="cd-exercise-list">
+                                {selectedExercises.map(ex => (
+                                    <ExerciseItem
+                                        key={ex.id}
+                                        exercise={ex}
+                                        completed={selectedProgress?.completed ?? false}
+                                    />
+                                ))}
                             </div>
                         </>
                     )}

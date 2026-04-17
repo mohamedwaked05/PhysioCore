@@ -4,36 +4,59 @@ import ProgressBar from '../components/ProgressBar';
 import ExerciseItem from '../components/ExerciseItem';
 import WorkoutTimer from '../components/WorkoutTimer';
 import WorkoutRating from '../components/WorkoutRating';
-import { mockTodayExercises } from '../data/mockData';
+import Skeleton from '../../../../components/ui/Skeleton';
 import { getAccessRequests, submitSessionFeedback } from '../../../../api/client';
+import { getMyRehabPlan, markDayComplete, resetDayProgress } from '../../../../api/rehabPlans';
 import { useToast } from '../../../../context/ToastContext';
+
+const DAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+const TODAY_DAY = DAY_NAMES[new Date().getDay()];
+
+function mapExercise(ex) {
+    return {
+        id:         ex.id,
+        name:       ex.name,
+        sets:       ex.sets,
+        reps:       ex.reps,
+        duration:   null,
+        tags:       [],
+        difficulty: null,
+        substitute: ex.alternative_exercise || null,
+        restTime:   2,
+    };
+}
 
 export default function TodayPage() {
     const { addToast } = useToast();
 
-    const [completed,     setCompleted]     = useState(new Set());
-    const [resetKey,      setResetKey]      = useState(0);
-    const [rating,        setRating]        = useState(0);
-    const [feedback,      setFeedback]      = useState('');
+    // Plan / clinic state
+    const [clinics,      setClinics]      = useState([]);
+    const [clinicId,     setClinicId]     = useState('');
+    const [plan,         setPlan]         = useState(null);
+    const [exercises,    setExercises]    = useState([]);
+    const [todayDone,    setTodayDone]    = useState(false);
+    const [doneAt,       setDoneAt]       = useState(null);
+    const [planLoading,  setPlanLoading]  = useState(true);
 
-    // Timer state
-    const [timerElapsed,  setTimerElapsed]  = useState(0);
-    const [timerRunning,  setTimerRunning]  = useState(false);
-    const [sessionEnded,  setSessionEnded]  = useState(false);
-
-    // Feedback submission state
-    const [clinics,       setClinics]       = useState([]);   // approved clinics
-    const [clinicId,      setClinicId]      = useState('');
-    const [submitting,    setSubmitting]    = useState(false);
-    const [submitted,     setSubmitted]     = useState(false);
+    // Session state (local — tracks current in-progress session)
+    const [completed,    setCompleted]    = useState(new Set());
+    const [resetKey,     setResetKey]     = useState(0);
+    const [timerElapsed, setTimerElapsed] = useState(0);
+    const [timerRunning, setTimerRunning] = useState(false);
+    const [sessionEnded, setSessionEnded] = useState(false);
+    const [rating,       setRating]       = useState(0);
+    const [feedback,     setFeedback]     = useState('');
+    const [submitting,   setSubmitting]   = useState(false);
+    const [submitted,    setSubmitted]    = useState(false);
 
     const completedCount = completed.size;
-    const totalCount     = mockTodayExercises.length;
+    const totalCount     = exercises.length;
     const progressPct    = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-    const allDone        = completedCount === totalCount;
-    const showRating     = allDone || sessionEnded;
+    const allDone        = totalCount > 0 && completedCount === totalCount;
+    const showRating     = (allDone || sessionEnded) && !todayDone;
+    const canSubmit      = !submitted && !submitting && !!clinicId && (rating > 0 || feedback.trim().length > 0);
 
-    // Fetch approved clinics so we know where to send feedback
+    // 1. Fetch approved clinics
     useEffect(() => {
         getAccessRequests()
             .then(res => {
@@ -41,10 +64,39 @@ export default function TodayPage() {
                     .filter(r => r.status === 'approved' && r.clinic)
                     .map(r => r.clinic);
                 setClinics(approved);
-                if (approved.length === 1) setClinicId(approved[0].id);
+                if (approved.length >= 1) setClinicId(String(approved[0].id));
+                else setPlanLoading(false);
             })
-            .catch(() => {});
+            .catch(() => setPlanLoading(false));
     }, []);
+
+    // 2. Load plan when clinic selected
+    useEffect(() => {
+        if (!clinicId) return;
+        setPlanLoading(true);
+        setCompleted(new Set());
+        setResetKey(k => k + 1);
+        setSubmitted(false);
+        getMyRehabPlan(clinicId)
+            .then(res => {
+                const p = res.data;
+                if (p && p.exercises_by_day) {
+                    setPlan(p);
+                    const todayExs = (p.exercises_by_day[TODAY_DAY] ?? []).map(mapExercise);
+                    setExercises(todayExs);
+                    const prog = p.progress?.[TODAY_DAY];
+                    setTodayDone(prog?.completed ?? false);
+                    setDoneAt(prog?.completed_at ?? null);
+                } else {
+                    setPlan(null);
+                    setExercises([]);
+                    setTodayDone(false);
+                    setDoneAt(null);
+                }
+            })
+            .catch(() => { setPlan(null); setExercises([]); })
+            .finally(() => setPlanLoading(false));
+    }, [clinicId]);
 
     // Timer tick
     useEffect(() => {
@@ -53,15 +105,13 @@ export default function TodayPage() {
         return () => clearInterval(id);
     }, [timerRunning]);
 
-    // Auto-stop when every exercise is finished
     useEffect(() => {
         if (allDone && timerRunning) setTimerRunning(false);
-    }, [allDone]);
+    }, [allDone]); // eslint-disable-line
 
     const handleAutoStart = () => {
         if (!timerRunning && timerElapsed === 0 && !sessionEnded) setTimerRunning(true);
     };
-
     const handleEndSession = () => { setTimerRunning(false); setSessionEnded(true); };
     const handleTimerReset = () => { setTimerRunning(false); setTimerElapsed(0); setSessionEnded(false); };
 
@@ -78,39 +128,126 @@ export default function TodayPage() {
 
     const complete = (id) => setCompleted(prev => new Set([...prev, id]));
 
-    const canSubmit = !submitted && !submitting && !!clinicId && (rating > 0 || feedback.trim().length > 0);
+    // Redo today — reset server-side progress, re-enable interactive mode
+    const handleRedo = async () => {
+        if (!plan) return;
+        try {
+            await resetDayProgress(plan.id, TODAY_DAY);
+            setTodayDone(false);
+            setDoneAt(null);
+            handleReset();
+        } catch {
+            addToast('Failed to reset today\'s progress.', 'error');
+        }
+    };
 
+    // Submit feedback + mark day complete
     const handleSubmit = async () => {
         if (!clinicId) { addToast('Please select a clinic.', 'warning'); return; }
         if (!rating && !feedback.trim()) { addToast('Please add a rating or feedback note.', 'warning'); return; }
 
         setSubmitting(true);
         try {
-            await submitSessionFeedback({
-                clinic_id:            parseInt(clinicId),
-                rating:               rating || null,
-                feedback_text:        feedback.trim() || null,
-                exercises_completed:  completedCount,
-                exercises_total:      totalCount,
-            });
+            await Promise.all([
+                submitSessionFeedback({
+                    clinic_id:           parseInt(clinicId),
+                    rating:              rating || null,
+                    feedback_text:       feedback.trim() || null,
+                    exercises_completed: completedCount,
+                    exercises_total:     totalCount,
+                }),
+                ...(plan ? [markDayComplete(plan.id, TODAY_DAY)] : []),
+            ]);
             setSubmitted(true);
-            addToast('Feedback submitted successfully.', 'success');
+            setTodayDone(true);
+            setDoneAt(new Date().toISOString());
+            addToast('Feedback submitted. Great work!', 'success');
         } catch (err) {
-            addToast(err.response?.data?.message ?? 'Failed to submit feedback. Please try again.', 'error');
+            addToast(err.response?.data?.message ?? 'Failed to submit. Please try again.', 'error');
         } finally {
             setSubmitting(false);
         }
     };
 
+    const injuryLabel = plan?.injury_type
+        ? plan.injury_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        : '—';
+
+    const clinicSelector = clinics.length > 1 && (
+        <div style={{ marginBottom: '1.25rem' }}>
+            <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                Viewing plan from:
+            </label>
+            <select className="ui-select" value={clinicId} onChange={e => setClinicId(e.target.value)}>
+                {clinics.map(c => (
+                    <option key={c.id} value={c.id}>{c.commercial_name || c.legal_name}</option>
+                ))}
+            </select>
+        </div>
+    );
+
+    // ── Already completed today ────────────────────────────────
+    if (!planLoading && todayDone) {
+        const fmtTime = doneAt ? new Date(doneAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+        return (
+            <div className="cd-page">
+                {clinicSelector}
+                <div className="cd-section">
+                    <div className="ui-card" style={{ padding: '2.5rem', textAlign: 'center' }}>
+                        <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', color: '#16a34a' }}>
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                        <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1.05rem', color: 'var(--text)', marginBottom: '0.35rem' }}>
+                            Today's Workout Complete
+                        </p>
+                        <p style={{ fontSize: '0.83rem', color: 'var(--text-secondary)', marginBottom: '0.2rem' }}>
+                            {injuryLabel} · {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
+                        </p>
+                        {fmtTime && (
+                            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
+                                Completed at {fmtTime}
+                            </p>
+                        )}
+                        <button className="cld-btn-action"
+                            style={{ fontSize: '0.82rem', padding: '0.45rem 1.1rem', margin: '0 auto' }}
+                            onClick={handleRedo}>
+                            Redo Today's Workout
+                        </button>
+                    </div>
+                </div>
+
+                {/* Show today's exercises as read-only reference */}
+                {exercises.length > 0 && (
+                    <div className="cd-section">
+                        <div className="ui-card">
+                            <div className="cd-card-header">
+                                <span className="cd-card-title">Today's Exercises</span>
+                                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{exercises.length} total</span>
+                            </div>
+                            <div className="cd-exercise-list">
+                                {exercises.map(ex => (
+                                    <ExerciseItem key={ex.id} exercise={ex} completed={true} />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // ── Normal interactive view ────────────────────────────────
     return (
         <div className="cd-page">
+            {clinicSelector}
 
-            {/* ── Workout Summary + Timer ─── */}
             <div className="cd-section cd-today-top">
                 <WorkoutSummary
                     totalExercises={totalCount}
-                    estimatedTime="29 min"
-                    difficulty="Moderate"
+                    estimatedTime={totalCount > 0 ? `~${totalCount * 3} min` : '—'}
+                    difficulty={injuryLabel}
                 />
                 <WorkoutTimer
                     elapsed={timerElapsed}
@@ -122,19 +259,14 @@ export default function TodayPage() {
                 />
             </div>
 
-            {/* ── Progress banner ─── */}
             <div className="cd-today-header cd-section">
                 <div className="cd-today-progress-block">
                     <div className="cd-today-count">
                         <span>{completedCount}</span> of {totalCount} exercises completed
                     </div>
                     <div style={{ marginTop: '0.65rem' }}>
-                        <ProgressBar
-                            value={progressPct}
-                            label="Session progress"
-                            color={allDone ? 'success' : 'primary'}
-                            size="md"
-                        />
+                        <ProgressBar value={progressPct} label="Session progress"
+                            color={allDone ? 'success' : 'primary'} size="md" />
                     </div>
                 </div>
                 {allDone && (
@@ -145,7 +277,6 @@ export default function TodayPage() {
                 )}
             </div>
 
-            {/* ── Exercise list ─── */}
             <div className="cd-section">
                 <div className="ui-card">
                     <div className="cd-card-header">
@@ -154,21 +285,35 @@ export default function TodayPage() {
                             <button className="cd-card-reset-btn" onClick={handleReset}>Reset all</button>
                         )}
                     </div>
-                    <div className="cd-exercise-list">
-                        {mockTodayExercises.map(ex => (
-                            <ExerciseItem
-                                key={`${ex.id}-${resetKey}`}
-                                exercise={ex}
-                                completed={completed.has(ex.id)}
-                                onComplete={() => complete(ex.id)}
-                                onSessionStart={handleAutoStart}
-                            />
-                        ))}
-                    </div>
+
+                    {planLoading ? (
+                        <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            {[1,2,3].map(i => <Skeleton key={i} height="56px" radius="8px" />)}
+                        </div>
+                    ) : exercises.length === 0 ? (
+                        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                            {clinics.length === 0
+                                ? 'You need an approved clinic to view your rehab plan.'
+                                : plan
+                                    ? 'No exercises scheduled for today — enjoy your rest day.'
+                                    : 'Your clinic has not assigned a rehab plan yet.'}
+                        </div>
+                    ) : (
+                        <div className="cd-exercise-list">
+                            {exercises.map(ex => (
+                                <ExerciseItem
+                                    key={`${ex.id}-${resetKey}`}
+                                    exercise={ex}
+                                    completed={completed.has(ex.id)}
+                                    onComplete={() => complete(ex.id)}
+                                    onSessionStart={handleAutoStart}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* ── Rating + Feedback (combined submission) ─── */}
             {showRating && (
                 <div className="cd-section">
                     <div className="ui-card">
@@ -179,14 +324,11 @@ export default function TodayPage() {
                                         <polyline points="20 6 9 17 4 12"/>
                                     </svg>
                                 </span>
-                                <span className="cd-rating-done-text">
-                                    Feedback submitted — great work!
-                                </span>
+                                <span className="cd-rating-done-text">Feedback submitted — great work!</span>
                             </div>
                         ) : (
                             <>
                                 <WorkoutRating value={rating} onChange={setRating} />
-
                                 <div className="cd-feedback" style={{ marginTop: '1rem' }}>
                                     <div className="cd-feedback-title">Session Notes</div>
                                     <textarea
@@ -196,19 +338,14 @@ export default function TodayPage() {
                                         maxLength={600}
                                     />
                                     <div className="cd-feedback-footer">
-                                        {/* Clinic selector — only shown when patient of multiple clinics */}
                                         {clinics.length > 1 && (
-                                            <select
-                                                className="ui-select"
+                                            <select className="ui-select"
                                                 style={{ fontSize: '0.82rem', padding: '0.4rem 0.65rem' }}
                                                 value={clinicId}
-                                                onChange={e => setClinicId(e.target.value)}
-                                            >
+                                                onChange={e => setClinicId(e.target.value)}>
                                                 <option value="">Select clinic…</option>
                                                 {clinics.map(c => (
-                                                    <option key={c.id} value={c.id}>
-                                                        {c.commercial_name || c.legal_name}
-                                                    </option>
+                                                    <option key={c.id} value={c.id}>{c.commercial_name || c.legal_name}</option>
                                                 ))}
                                             </select>
                                         )}
@@ -217,11 +354,8 @@ export default function TodayPage() {
                                                 You need an approved clinic to submit feedback.
                                             </span>
                                         )}
-                                        <button
-                                            className="ui-btn ui-btn--primary ui-btn--sm"
-                                            disabled={!canSubmit}
-                                            onClick={handleSubmit}
-                                        >
+                                        <button className="ui-btn ui-btn--primary ui-btn--sm"
+                                            disabled={!canSubmit} onClick={handleSubmit}>
                                             {submitting ? 'Submitting…' : 'Submit Feedback'}
                                         </button>
                                     </div>
@@ -231,7 +365,6 @@ export default function TodayPage() {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }

@@ -9,7 +9,10 @@ use App\Http\Controllers\Client\ClientProfileController;
 use App\Http\Controllers\Client\ClinicController;
 use App\Http\Controllers\Clinic\ClinicProfileController;
 use App\Http\Controllers\Clinic\AccessRequestController as ClinicAccessRequestController;
+use App\Http\Controllers\Clinic\DashboardController;
 use App\Http\Controllers\Clinic\PatientFeedbackController;
+use App\Http\Controllers\Clinic\RehabPlanController;
+use App\Http\Controllers\Client\RehabPlanController as ClientRehabPlanController;
 use App\Http\Controllers\Client\SessionFeedbackController;
 use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Route;
@@ -66,6 +69,8 @@ Route::middleware('auth:sanctum')->group(function () {
 */
 
 Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(function () {
+    Route::get('/dashboard/counts', [DashboardController::class, 'counts']);
+
     Route::get('/profile',          [ClinicProfileController::class, 'show']);
     Route::post('/profile',         [ClinicProfileController::class, 'store']);
     Route::post('/profile/update',  [ClinicProfileController::class, 'update']);
@@ -75,7 +80,18 @@ Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(func
     Route::patch('/access-requests/{accessRequest}',    [ClinicAccessRequestController::class, 'update']);
 
     // Patient session feedback (clinic reads)
-    Route::get('/patients/{clientProfileId}/feedback',  [PatientFeedbackController::class, 'index']);
+    Route::get('/patients/{clientProfileId}/feedback',   [PatientFeedbackController::class, 'index']);
+
+    // Rehab plans
+    Route::get('/patients/{clientProfileId}/rehab-plan', [RehabPlanController::class, 'showForPatient']);
+    Route::post('/rehab-plans',                          [RehabPlanController::class, 'store']);
+    Route::put('/rehab-plans/{rehabPlan}',               [RehabPlanController::class, 'update']);
+    Route::delete('/rehab-plans/{rehabPlan}',            [RehabPlanController::class, 'destroy']);
+    Route::post('/rehab-plans/{rehabPlan}/copy',         [RehabPlanController::class, 'copy']);
+    Route::post('/rehab-plans/{rehabPlan}/exercises',                        [RehabPlanController::class, 'storeExercise']);
+    Route::put('/rehab-plans/{rehabPlan}/exercises/{exercise}',              [RehabPlanController::class, 'updateExercise']);
+    Route::delete('/rehab-plans/{rehabPlan}/exercises/{exercise}',           [RehabPlanController::class, 'destroyExercise']);
+    Route::get('/exercise-library',                      [RehabPlanController::class, 'exerciseLibrary']);
 });
 
 /*
@@ -108,6 +124,11 @@ Route::middleware(['auth:sanctum', 'role:client'])->prefix('client')->group(func
 
     // Session feedback (client submits)
     Route::post('/session-feedback', [SessionFeedbackController::class, 'store']);
+
+    // Rehab plan (client reads + progress)
+    Route::get('/rehab-plan',           [ClientRehabPlanController::class, 'show']);
+    Route::post('/rehab-plan/progress', [ClientRehabPlanController::class, 'markDay']);
+    Route::delete('/rehab-plan/progress', [ClientRehabPlanController::class, 'resetDay']);
 });
 
 /*
