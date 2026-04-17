@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useProfilePhoto } from '../hooks/useProfilePhoto';
 import useMobileMenu from '../hooks/useMobileMenu';
+import { getNotifications } from '../api/messages';
 import Avatar from './ui/Avatar';
 import MobileMenu from './MobileMenu';
+
+const NOTIF_POLL = 12000;
 
 /* ── Brand logo (ECG pulse line) ──────────────────────────── */
 function EcgLogo() {
@@ -74,6 +77,16 @@ function SignOutIcon() {
     );
 }
 
+/* ── Bell icon ────────────────────────────────────────────── */
+function BellIcon() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+        </svg>
+    );
+}
+
 /* ── Shared NavBar component ──────────────────────────────── */
 export default function NavBar({ homeRoute, links, profileRoute }) {
     const { user, logout }          = useAuth();
@@ -81,8 +94,25 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
     const photoUrl                  = useProfilePhoto(user?.role);
     const navigate                  = useNavigate();
     const [open, setOpen]           = useState(false);
+    const [hasMessages, setHasMessages] = useState(false);
     const wrapRef                   = useRef(null);
     const { isOpen: menuOpen, toggle: menuToggle, close: menuClose } = useMobileMenu();
+
+    const pollNotifications = useCallback(async () => {
+        if (!user) return;
+        try {
+            const res = await getNotifications();
+            setHasMessages(res.data.has_new_messages);
+        } catch {
+            // silent
+        }
+    }, [user]);
+
+    useEffect(() => {
+        pollNotifications();
+        const id = setInterval(pollNotifications, NOTIF_POLL);
+        return () => clearInterval(id);
+    }, [pollNotifications]);
 
     const fullName = `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim();
 
@@ -129,6 +159,29 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
                     <div className="client-nav-user-chip">
                         <Avatar size="sm" name={fullName} src={photoUrl} />
                         <span className="client-nav-user">{fullName}</span>
+                    </div>
+
+                    {/* Notification bell */}
+                    <div style={{ position: 'relative', display: 'flex' }}>
+                        <button
+                            className="nav-settings-btn"
+                            aria-label="Notifications"
+                            title="Messages"
+                            onClick={() => navigate(
+                                user?.role === 'client' ? '/client/dashboard/messages' : '/clinic/dashboard'
+                            )}
+                            style={{ position: 'relative' }}
+                        >
+                            <BellIcon />
+                            {hasMessages && (
+                                <span style={{
+                                    position: 'absolute', top: 6, right: 6,
+                                    width: 7, height: 7, borderRadius: '50%',
+                                    background: '#ef4444',
+                                    border: '1.5px solid var(--surface)',
+                                }} />
+                            )}
+                        </button>
                     </div>
 
                     <div className="nav-settings-wrap" ref={wrapRef}>

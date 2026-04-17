@@ -13,7 +13,7 @@ class AccessRequestController extends Controller
         $requests = $request->user()
             ->clientProfile
             ->accessRequests()
-            ->with('clinic:id,legal_name,commercial_name,specialty_text,address')
+            ->with('clinic:id,user_id,legal_name,commercial_name,specialty_text,address')
             ->latest()
             ->get();
 
@@ -38,7 +38,7 @@ class AccessRequestController extends Controller
         $accessRequest = $profile->accessRequests()->create($request->validated());
 
         return response()->json(
-            $accessRequest->load('clinic:id,name,specialty,address'),
+            $accessRequest->load('clinic:id,user_id,legal_name,commercial_name,specialty_text,address'),
             201
         );
     }

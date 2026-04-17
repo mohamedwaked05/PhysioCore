@@ -12,9 +12,11 @@ import Button from '../../components/ui/Button';
 import SectionHeader from '../../components/ui/SectionHeader';
 import StatusBadge from '../../components/ui/StatusBadge';
 import Skeleton from '../../components/ui/Skeleton';
+import ChatBox from '../../components/chat/ChatBox';
 import '../../styles/ui.css';
 import '../../styles/client.css';
 import '../../styles/guest.css';
+import '../../styles/chat.css';
 
 /* ── Skeleton ───────────────────────────────────────────────── */
 function ClinicDetailSkeleton() {
@@ -232,20 +234,8 @@ function HowPaymentWorksCard() {
     );
 }
 
-/* ── Discuss card — guest-aware ─────────────────────────────── */
-function DiscussCard({ onGuestAction }) {
-    const { user }              = useAuth();
-    const [message, setMessage] = useState('');
-
-    const handleSend = () => {
-        if (!message.trim()) return;
-        if (!user) {
-            onGuestAction();
-            return;
-        }
-        // Messaging sprint — placeholder
-    };
-
+/* ── Discuss card — powered by ChatBox ──────────────────────── */
+function DiscussCard({ clinic, onGuestAction }) {
     return (
         <Card style={{ marginBottom: '1.25rem' }}>
             <SectionHeader title="Discuss Your Case" />
@@ -253,30 +243,12 @@ function DiscussCard({ onGuestAction }) {
                 Have questions before committing? Send the clinic a brief message to describe
                 your condition and what you're looking for.
             </p>
-            <div className="cd-message-wrap">
-                <textarea
-                    className="ui-textarea"
-                    placeholder=""
-                    value={message}
-                    onChange={e => setMessage(e.target.value)}
-                    rows={4}
-                />
-                <div className="cd-message-footer">
-                    <span className="cd-message-hint">
-                        {user
-                            ? 'Messages are reviewed once your access request is processed.'
-                            : 'Sign in to send your message to the clinic.'}
-                    </span>
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        disabled={!message.trim()}
-                        onClick={handleSend}
-                    >
-                        Send Message
-                    </Button>
-                </div>
-            </div>
+            <ChatBox
+                context="inquiry"
+                referenceId={clinic.id}
+                receiverId={clinic.user_id}
+                onGuestAction={onGuestAction}
+            />
         </Card>
     );
 }
@@ -442,7 +414,7 @@ export default function ClinicDetailsPage() {
                 </div>
 
                 <HowPaymentWorksCard />
-                <DiscussCard onGuestAction={() => openAuthModal()} />
+                <DiscussCard clinic={clinic} onGuestAction={() => openAuthModal()} />
                 <WhyDiscussCard />
                 <GettingStartedCard />
             </div>

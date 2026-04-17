@@ -8,4 +8,5 @@ export const updateProfile     = (formData) =>
 export const getClinics        = ()     => api.get('/client/clinics');
 export const getClinic         = (id)   => api.get(`/client/clinics/${id}`);
 export const getAccessRequests = ()     => api.get('/client/access-requests');
-export const createAccessRequest = (data) => api.post('/client/access-request', data);
+export const createAccessRequest   = (data) => api.post('/client/access-request', data);
+export const submitSessionFeedback = (data) => api.post('/client/session-feedback', data);

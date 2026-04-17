@@ -45,11 +45,20 @@ function PatientsIcon() {
     );
 }
 
+function InquiriesIcon() {
+    return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+    );
+}
+
 const subnav = [
-    { to: '.',         end: true,  label: 'Overview',      icon: <OverviewIcon />,  badge: null },
-    { to: 'requests',  end: false, label: 'Requests',      icon: <RequestsIcon />,  badge: 7   },
-    { to: 'flags',     end: false, label: 'Safety Flags',  icon: <FlagsIcon />,     badge: 3   },
-    { to: 'patients',  end: false, label: 'Patients',      icon: <PatientsIcon />,  badge: null },
+    { to: '.',           end: true,  label: 'Overview',      icon: <OverviewIcon />,   badge: null },
+    { to: 'requests',    end: false, label: 'Requests',      icon: <RequestsIcon />,   badge: 7    },
+    { to: 'flags',       end: false, label: 'Safety Flags',  icon: <FlagsIcon />,      badge: 3    },
+    { to: 'patients',    end: false, label: 'Patients',      icon: <PatientsIcon />,   badge: null },
+    { to: 'inquiries',   end: false, label: 'Inquiries',     icon: <InquiriesIcon />,  badge: null },
 ];
 
 export default function ClinicDashboardLayout() {

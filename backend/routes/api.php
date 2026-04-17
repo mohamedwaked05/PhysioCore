@@ -8,6 +8,10 @@ use App\Http\Controllers\Client\AccessRequestController;
 use App\Http\Controllers\Client\ClientProfileController;
 use App\Http\Controllers\Client\ClinicController;
 use App\Http\Controllers\Clinic\ClinicProfileController;
+use App\Http\Controllers\Clinic\AccessRequestController as ClinicAccessRequestController;
+use App\Http\Controllers\Clinic\PatientFeedbackController;
+use App\Http\Controllers\Client\SessionFeedbackController;
+use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -65,6 +69,13 @@ Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(func
     Route::get('/profile',          [ClinicProfileController::class, 'show']);
     Route::post('/profile',         [ClinicProfileController::class, 'store']);
     Route::post('/profile/update',  [ClinicProfileController::class, 'update']);
+
+    // Access requests from clients
+    Route::get('/access-requests',                      [ClinicAccessRequestController::class, 'index']);
+    Route::patch('/access-requests/{accessRequest}',    [ClinicAccessRequestController::class, 'update']);
+
+    // Patient session feedback (clinic reads)
+    Route::get('/patients/{clientProfileId}/feedback',  [PatientFeedbackController::class, 'index']);
 });
 
 /*
@@ -94,4 +105,19 @@ Route::middleware(['auth:sanctum', 'role:client'])->prefix('client')->group(func
     // Access requests
     Route::get('/access-requests',  [AccessRequestController::class, 'index']);
     Route::post('/access-request',  [AccessRequestController::class, 'store']);
+
+    // Session feedback (client submits)
+    Route::post('/session-feedback', [SessionFeedbackController::class, 'store']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Messages (clients + clinics)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth:sanctum')->prefix('messages')->group(function () {
+    Route::get('/',               [MessageController::class, 'index']);
+    Route::post('/',              [MessageController::class, 'store']);
+    Route::get('/notifications',  [MessageController::class, 'notifications']);
 });

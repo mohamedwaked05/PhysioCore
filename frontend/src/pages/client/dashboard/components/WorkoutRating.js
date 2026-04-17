@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 const LABELS = ['', 'Too easy', 'Easy', 'Just right', 'Hard', 'Too hard'];
 
 function StarIcon({ filled }) {
@@ -10,28 +8,8 @@ function StarIcon({ filled }) {
     );
 }
 
-export default function WorkoutRating() {
-    const [hover,     setHover]     = useState(0);
-    const [rating,    setRating]    = useState(0);
-    const [submitted, setSubmitted] = useState(false);
-
-    const active = hover || rating;
-
-    if (submitted) {
-        return (
-            <div className="cd-rating cd-rating--done">
-                <span className="cd-rating-check">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                </span>
-                <span className="cd-rating-done-text">
-                    Workout rated {rating}/5 — great work!
-                </span>
-            </div>
-        );
-    }
-
+// Controlled component — parent owns `value` and `onChange`
+export default function WorkoutRating({ value = 0, onChange }) {
     return (
         <div className="cd-rating">
             <div className="cd-rating-label">How was today's workout?</div>
@@ -40,27 +18,16 @@ export default function WorkoutRating() {
                     <button
                         key={n}
                         type="button"
-                        className={`cd-rating-star${n <= active ? ' cd-rating-star--active' : ''}`}
-                        onClick={() => setRating(n)}
-                        onMouseEnter={() => setHover(n)}
-                        onMouseLeave={() => setHover(0)}
+                        className={`cd-rating-star${n <= value ? ' cd-rating-star--active' : ''}`}
+                        onClick={() => onChange(n)}
                         aria-label={`Rate ${n} out of 5`}
                     >
-                        <StarIcon filled={n <= active} />
+                        <StarIcon filled={n <= value} />
                     </button>
                 ))}
             </div>
-            {active > 0 && (
-                <p className="cd-rating-hint">{LABELS[active]}</p>
-            )}
-            {rating > 0 && (
-                <button
-                    type="button"
-                    className="ui-btn ui-btn--primary ui-btn--sm"
-                    onClick={() => setSubmitted(true)}
-                >
-                    Save Rating
-                </button>
+            {value > 0 && (
+                <p className="cd-rating-hint">{LABELS[value]}</p>
             )}
         </div>
     );

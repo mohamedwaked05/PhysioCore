@@ -25,6 +25,7 @@ import DashboardLayout from './pages/client/dashboard/DashboardLayout';
 import StatusPage from './pages/client/dashboard/pages/StatusPage';
 import TodayPage from './pages/client/dashboard/pages/TodayPage';
 import WeeklyPage from './pages/client/dashboard/pages/WeeklyPage';
+import MessagesPage from './pages/client/dashboard/pages/MessagesPage';
 import ClientProfilePage from './pages/client/ClientProfilePage';
 
 // Clinic pages (protected)
@@ -34,6 +35,7 @@ import RequestsPage from './pages/clinic/dashboard/pages/RequestsPage';
 import SafetyFlagsPage from './pages/clinic/dashboard/pages/SafetyFlagsPage';
 import PatientsPage from './pages/clinic/dashboard/pages/PatientsPage';
 import PatientFeedbackPage from './pages/clinic/dashboard/pages/PatientFeedbackPage';
+import InquiriesPage from './pages/clinic/dashboard/pages/InquiriesPage';
 import ClinicProfilePage from './pages/clinic/ClinicProfilePage';
 
 // Forwards /client/clinics/:id → /clinics/:id preserving the param
@@ -73,9 +75,10 @@ function App() {
                         <ProtectedRoute role="client"><DashboardLayout /></ProtectedRoute>
                     }>
                         <Route index element={<Navigate to="status" replace />} />
-                        <Route path="status" element={<StatusPage />} />
-                        <Route path="today"  element={<TodayPage />}  />
-                        <Route path="weekly" element={<WeeklyPage />} />
+                        <Route path="status"   element={<StatusPage />}   />
+                        <Route path="today"    element={<TodayPage />}    />
+                        <Route path="weekly"   element={<WeeklyPage />}   />
+                        <Route path="messages" element={<MessagesPage />} />
                     </Route>
                     <Route path="/client/profile" element={
                         <ProtectedRoute role="client"><ClientProfilePage /></ProtectedRoute>
@@ -94,6 +97,7 @@ function App() {
                         <Route path="flags"    element={<SafetyFlagsPage />} />
                         <Route path="patients" element={<PatientsPage />} />
                         <Route path="patients/:patientId/feedback" element={<PatientFeedbackPage />} />
+                        <Route path="inquiries" element={<InquiriesPage />} />
                     </Route>
                     <Route path="/clinic/profile" element={
                         <ProtectedRoute role="clinic"><ClinicProfilePage /></ProtectedRoute>

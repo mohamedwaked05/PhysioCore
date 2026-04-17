@@ -37,4 +37,9 @@ class Clinic extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function accessRequests()
+    {
+        return $this->hasMany(AccessRequest::class);
+    }
 }

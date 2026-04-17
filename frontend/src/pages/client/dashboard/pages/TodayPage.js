@@ -5,21 +5,46 @@ import ExerciseItem from '../components/ExerciseItem';
 import WorkoutTimer from '../components/WorkoutTimer';
 import WorkoutRating from '../components/WorkoutRating';
 import { mockTodayExercises } from '../data/mockData';
+import { getAccessRequests, submitSessionFeedback } from '../../../../api/client';
+import { useToast } from '../../../../context/ToastContext';
 
 export default function TodayPage() {
+    const { addToast } = useToast();
+
     const [completed,     setCompleted]     = useState(new Set());
     const [resetKey,      setResetKey]      = useState(0);
+    const [rating,        setRating]        = useState(0);
     const [feedback,      setFeedback]      = useState('');
 
-    // ── Timer state (owned here so exercises + allDone can control it) ──
+    // Timer state
     const [timerElapsed,  setTimerElapsed]  = useState(0);
     const [timerRunning,  setTimerRunning]  = useState(false);
     const [sessionEnded,  setSessionEnded]  = useState(false);
+
+    // Feedback submission state
+    const [clinics,       setClinics]       = useState([]);   // approved clinics
+    const [clinicId,      setClinicId]      = useState('');
+    const [submitting,    setSubmitting]    = useState(false);
+    const [submitted,     setSubmitted]     = useState(false);
 
     const completedCount = completed.size;
     const totalCount     = mockTodayExercises.length;
     const progressPct    = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
     const allDone        = completedCount === totalCount;
+    const showRating     = allDone || sessionEnded;
+
+    // Fetch approved clinics so we know where to send feedback
+    useEffect(() => {
+        getAccessRequests()
+            .then(res => {
+                const approved = res.data
+                    .filter(r => r.status === 'approved' && r.clinic)
+                    .map(r => r.clinic);
+                setClinics(approved);
+                if (approved.length === 1) setClinicId(approved[0].id);
+            })
+            .catch(() => {});
+    }, []);
 
     // Timer tick
     useEffect(() => {
@@ -33,23 +58,12 @@ export default function TodayPage() {
         if (allDone && timerRunning) setTimerRunning(false);
     }, [allDone]);
 
-    // Auto-start on first Set Done if the user hasn't touched the timer yet
     const handleAutoStart = () => {
-        if (!timerRunning && timerElapsed === 0 && !sessionEnded) {
-            setTimerRunning(true);
-        }
+        if (!timerRunning && timerElapsed === 0 && !sessionEnded) setTimerRunning(true);
     };
 
-    const handleEndSession = () => {
-        setTimerRunning(false);
-        setSessionEnded(true);
-    };
-
-    const handleTimerReset = () => {
-        setTimerRunning(false);
-        setTimerElapsed(0);
-        setSessionEnded(false);
-    };
+    const handleEndSession = () => { setTimerRunning(false); setSessionEnded(true); };
+    const handleTimerReset = () => { setTimerRunning(false); setTimerElapsed(0); setSessionEnded(false); };
 
     const handleReset = () => {
         setCompleted(new Set());
@@ -57,11 +71,36 @@ export default function TodayPage() {
         setTimerRunning(false);
         setTimerElapsed(0);
         setSessionEnded(false);
+        setRating(0);
+        setFeedback('');
+        setSubmitted(false);
     };
 
     const complete = (id) => setCompleted(prev => new Set([...prev, id]));
 
-    const showRating = allDone || sessionEnded;
+    const canSubmit = !submitted && !submitting && !!clinicId && (rating > 0 || feedback.trim().length > 0);
+
+    const handleSubmit = async () => {
+        if (!clinicId) { addToast('Please select a clinic.', 'warning'); return; }
+        if (!rating && !feedback.trim()) { addToast('Please add a rating or feedback note.', 'warning'); return; }
+
+        setSubmitting(true);
+        try {
+            await submitSessionFeedback({
+                clinic_id:            parseInt(clinicId),
+                rating:               rating || null,
+                feedback_text:        feedback.trim() || null,
+                exercises_completed:  completedCount,
+                exercises_total:      totalCount,
+            });
+            setSubmitted(true);
+            addToast('Feedback submitted successfully.', 'success');
+        } catch (err) {
+            addToast(err.response?.data?.message ?? 'Failed to submit feedback. Please try again.', 'error');
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     return (
         <div className="cd-page">
@@ -98,7 +137,6 @@ export default function TodayPage() {
                         />
                     </div>
                 </div>
-
                 {allDone && (
                     <div className="cd-today-done-badge">
                         <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>🎉</span>
@@ -113,9 +151,7 @@ export default function TodayPage() {
                     <div className="cd-card-header">
                         <span className="cd-card-title">Today's Exercises</span>
                         {completedCount > 0 && (
-                            <button className="cd-card-reset-btn" onClick={handleReset}>
-                                Reset all
-                            </button>
+                            <button className="cd-card-reset-btn" onClick={handleReset}>Reset all</button>
                         )}
                     </div>
                     <div className="cd-exercise-list">
@@ -132,36 +168,69 @@ export default function TodayPage() {
                 </div>
             </div>
 
-            {/* ── Rating (all done or session ended early) ─── */}
+            {/* ── Rating + Feedback (combined submission) ─── */}
             {showRating && (
                 <div className="cd-section">
                     <div className="ui-card">
-                        <WorkoutRating />
+                        {submitted ? (
+                            <div className="cd-rating cd-rating--done">
+                                <span className="cd-rating-check">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </span>
+                                <span className="cd-rating-done-text">
+                                    Feedback submitted — great work!
+                                </span>
+                            </div>
+                        ) : (
+                            <>
+                                <WorkoutRating value={rating} onChange={setRating} />
+
+                                <div className="cd-feedback" style={{ marginTop: '1rem' }}>
+                                    <div className="cd-feedback-title">Session Notes</div>
+                                    <textarea
+                                        value={feedback}
+                                        onChange={e => setFeedback(e.target.value)}
+                                        placeholder="How did this session feel? Note any pain, difficulty, or progress..."
+                                        maxLength={600}
+                                    />
+                                    <div className="cd-feedback-footer">
+                                        {/* Clinic selector — only shown when patient of multiple clinics */}
+                                        {clinics.length > 1 && (
+                                            <select
+                                                className="ui-select"
+                                                style={{ fontSize: '0.82rem', padding: '0.4rem 0.65rem' }}
+                                                value={clinicId}
+                                                onChange={e => setClinicId(e.target.value)}
+                                            >
+                                                <option value="">Select clinic…</option>
+                                                {clinics.map(c => (
+                                                    <option key={c.id} value={c.id}>
+                                                        {c.commercial_name || c.legal_name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                        {clinics.length === 0 && (
+                                            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                                You need an approved clinic to submit feedback.
+                                            </span>
+                                        )}
+                                        <button
+                                            className="ui-btn ui-btn--primary ui-btn--sm"
+                                            disabled={!canSubmit}
+                                            onClick={handleSubmit}
+                                        >
+                                            {submitting ? 'Submitting…' : 'Submit Feedback'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
-
-            {/* ── Session Feedback ─── */}
-            <div className="cd-section">
-                <div className="cd-feedback">
-                    <div className="cd-feedback-title">Session Feedback</div>
-                    <textarea
-                        value={feedback}
-                        onChange={e => setFeedback(e.target.value)}
-                        placeholder="How did this session feel? Note any pain, difficulty, or progress..."
-                        maxLength={600}
-                    />
-                    <div className="cd-feedback-footer">
-                        <button
-                            className="ui-btn ui-btn--primary ui-btn--sm"
-                            disabled
-                            title="Feedback submission will be available in the next sprint"
-                        >
-                            Submit Feedback
-                        </button>
-                    </div>
-                </div>
-            </div>
 
         </div>
     );

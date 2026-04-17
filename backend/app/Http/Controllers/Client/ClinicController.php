@@ -11,7 +11,7 @@ class ClinicController extends Controller
     {
         $clinic = Clinic::where('verification_status', 'approved')
             ->select([
-                'id', 'legal_name', 'commercial_name', 'description',
+                'id', 'user_id', 'legal_name', 'commercial_name', 'description',
                 'specialty_text', 'address', 'clinic_mobile',
                 'profile_photo_url', 'services', 'working_hours',
                 'payment_methods', 'min_price', 'max_price',
