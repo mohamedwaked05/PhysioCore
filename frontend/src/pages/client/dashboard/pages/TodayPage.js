@@ -153,7 +153,22 @@ export default function TodayPage() {
         criticalSentRef.current = false;
     };
 
-    const complete = (id) => setCompleted(prev => new Set([...prev, id]));
+    const complete = (id, exercisePain = 0, exerciseEffort = 0) => {
+        setCompleted(prev => new Set([...prev, id]));
+
+        if (exercisePain >= 9 && !criticalSentRef.current && clinicId) {
+            criticalSentRef.current = true;
+            setEscalating(true);
+            escalateSafety({
+                clinic_id:    parseInt(clinicId),
+                pain_level:   exercisePain,
+                effort_level: exerciseEffort,
+            })
+                .then(res => setSafetyResult(res.data))
+                .catch(() => {})
+                .finally(() => setEscalating(false));
+        }
+    };
 
     // Redo today — reset server-side progress, re-enable interactive mode
     const handleRedo = async () => {
@@ -341,7 +356,7 @@ export default function TodayPage() {
                                     key={`${ex.id}-${resetKey}`}
                                     exercise={ex}
                                     completed={completed.has(ex.id)}
-                                    onComplete={() => complete(ex.id)}
+                                    onComplete={(pain, effort) => complete(ex.id, pain, effort)}
                                     onSessionStart={handleAutoStart}
                                 />
                             ))}

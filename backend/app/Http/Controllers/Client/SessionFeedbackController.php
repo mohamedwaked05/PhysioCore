@@ -35,6 +35,7 @@ class SessionFeedbackController extends Controller
         if (!empty($request->exercise_ids)) {
             $plan = RehabPlan::where('client_profile_id', $profile->id)
                 ->where('clinic_id', $clinicId)
+                ->latest()
                 ->first();
 
             if (!$plan) {

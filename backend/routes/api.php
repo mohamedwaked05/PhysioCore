@@ -155,7 +155,9 @@ Route::middleware(['auth:sanctum', 'role:client'])->prefix('client')->group(func
 */
 
 Route::middleware('auth:sanctum')->prefix('messages')->group(function () {
-    Route::get('/',               [MessageController::class, 'index']);
-    Route::post('/',              [MessageController::class, 'store']);
-    Route::get('/notifications',  [MessageController::class, 'notifications']);
+    Route::get('/',                      [MessageController::class, 'index']);
+    Route::post('/',                     [MessageController::class, 'store']);
+    Route::get('/notifications',         [MessageController::class, 'notifications']);
+    Route::post('/notifications/read',   [MessageController::class, 'markAllRead']);
+    Route::patch('/{id}/read',           [MessageController::class, 'markOneRead']);
 });

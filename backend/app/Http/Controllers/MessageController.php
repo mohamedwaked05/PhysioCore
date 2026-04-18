@@ -80,10 +80,46 @@ class MessageController extends Controller
 
     public function notifications(Request $request)
     {
-        $has_new_messages = Message::where('receiver_id', $request->user()->id)
-            ->where('is_read', false)
-            ->exists();
+        $userId = $request->user()->id;
 
-        return response()->json(['has_new_messages' => $has_new_messages]);
+        $unread = Message::where('receiver_id', $userId)
+            ->where('is_read', false)
+            ->with('sender:id,first_name,last_name')
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'has_new_messages' => $unread->isNotEmpty(),
+            'count'            => $unread->count(),
+            'items'            => $unread->map(fn($m) => [
+                'id'           => $m->id,
+                'context'      => $m->context,
+                'content'      => $m->content,
+                'reference_id' => $m->reference_id,
+                'sender'       => $m->sender
+                    ? trim($m->sender->first_name . ' ' . $m->sender->last_name)
+                    : 'System',
+                'created_at'   => $m->created_at,
+            ]),
+        ]);
+    }
+
+    public function markAllRead(Request $request)
+    {
+        Message::where('receiver_id', $request->user()->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function markOneRead(Request $request, int $id)
+    {
+        Message::where('id', $id)
+            ->where('receiver_id', $request->user()->id)
+            ->update(['is_read' => true]);
+
+        return response()->json(['ok' => true]);
     }
 }

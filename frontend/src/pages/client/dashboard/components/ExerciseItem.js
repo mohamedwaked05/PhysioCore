@@ -127,7 +127,7 @@ export default function ExerciseItem({ exercise, completed = false, onComplete, 
             setLogErrors(true);
             return;
         }
-        onComplete?.();
+        onComplete?.(pain, effort);
     };
 
     const currentSet = doneCount + 1;

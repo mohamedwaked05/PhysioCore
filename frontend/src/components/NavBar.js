@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useProfilePhoto } from '../hooks/useProfilePhoto';
 import useMobileMenu from '../hooks/useMobileMenu';
-import { getNotifications } from '../api/messages';
+import { getNotifications, markAllNotificationsRead, markMessageRead } from '../api/messages';
 import Avatar from './ui/Avatar';
 import MobileMenu from './MobileMenu';
 
@@ -87,6 +87,40 @@ function BellIcon() {
     );
 }
 
+/* ── Notification context helpers ────────────────────────── */
+function notifIcon(context) {
+    if (context === 'safety_alert') return (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+    );
+    if (context === 'inquiry') return (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+    );
+    return (
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7b8fe8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+    );
+}
+
+function notifRoute(item) {
+    if (item.context === 'safety_alert') return '/clinic/dashboard/flags';
+    if (item.context === 'inquiry')      return '/clinic/dashboard/inquiries';
+    return '/clinic/dashboard/patients';
+}
+
+function timeAgo(iso) {
+    const diff = Math.floor((Date.now() - new Date(iso)) / 1000);
+    if (diff < 60)    return 'just now';
+    if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+}
+
 /* ── Shared NavBar component ──────────────────────────────── */
 export default function NavBar({ homeRoute, links, profileRoute }) {
     const { user, logout }          = useAuth();
@@ -94,15 +128,17 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
     const photoUrl                  = useProfilePhoto(user?.role);
     const navigate                  = useNavigate();
     const [open, setOpen]           = useState(false);
-    const [hasMessages, setHasMessages] = useState(false);
+    const [notifOpen, setNotifOpen] = useState(false);
+    const [notifData, setNotifData] = useState({ count: 0, has_new_messages: false, items: [] });
     const wrapRef                   = useRef(null);
+    const notifRef                  = useRef(null);
     const { isOpen: menuOpen, toggle: menuToggle, close: menuClose } = useMobileMenu();
 
     const pollNotifications = useCallback(async () => {
         if (!user) return;
         try {
             const res = await getNotifications();
-            setHasMessages(res.data.has_new_messages);
+            setNotifData(res.data);
         } catch {
             // silent
         }
@@ -120,13 +156,40 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
     useEffect(() => {
         if (!open) return;
         const handler = (e) => {
-            if (wrapRef.current && !wrapRef.current.contains(e.target)) {
-                setOpen(false);
-            }
+            if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, [open]);
+
+    /* Close notification dropdown on outside click */
+    useEffect(() => {
+        if (!notifOpen) return;
+        const handler = (e) => {
+            if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [notifOpen]);
+
+    const handleMarkAllRead = async () => {
+        try {
+            await markAllNotificationsRead();
+            setNotifData({ count: 0, has_new_messages: false, items: [] });
+        } catch {
+            // silent
+        }
+    };
+
+    const handleNotifClick = (item) => {
+        markMessageRead(item.id).catch(() => {});
+        setNotifData(prev => {
+            const items = prev.items.filter(n => n.id !== item.id);
+            return { items, count: items.length, has_new_messages: items.length > 0 };
+        });
+        setNotifOpen(false);
+        navigate(notifRoute(item));
+    };
 
     return (
         <>
@@ -162,26 +225,165 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
                     </div>
 
                     {/* Notification bell */}
-                    <div style={{ position: 'relative', display: 'flex' }}>
+                    <div style={{ position: 'relative', display: 'flex' }} ref={notifRef}>
                         <button
                             className="nav-settings-btn"
                             aria-label="Notifications"
-                            title="Messages"
-                            onClick={() => navigate(
-                                user?.role === 'client' ? '/client/dashboard/messages' : '/clinic/dashboard'
-                            )}
+                            title="Notifications"
+                            onClick={() => {
+                                if (user?.role === 'clinic') {
+                                    setNotifOpen(o => !o);
+                                } else {
+                                    navigate('/client/dashboard/messages');
+                                }
+                            }}
                             style={{ position: 'relative' }}
                         >
                             <BellIcon />
-                            {hasMessages && (
+                            {notifData.count > 0 && (
                                 <span style={{
-                                    position: 'absolute', top: 6, right: 6,
-                                    width: 7, height: 7, borderRadius: '50%',
+                                    position: 'absolute', top: 3, right: 3,
+                                    minWidth: 16, height: 16, borderRadius: 999,
                                     background: '#ef4444',
                                     border: '1.5px solid var(--surface)',
-                                }} />
+                                    fontSize: '0.6rem', fontWeight: 700,
+                                    color: '#fff', display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center',
+                                    lineHeight: 1, padding: '0 3px',
+                                }}>
+                                    {notifData.count > 99 ? '99+' : notifData.count}
+                                </span>
                             )}
                         </button>
+
+                        {/* Clinic notification dropdown */}
+                        {user?.role === 'clinic' && notifOpen && (
+                            <div style={{
+                                position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                                width: 320, background: 'var(--surface)',
+                                border: '0.5px solid var(--border)',
+                                borderRadius: 'var(--radius-lg)',
+                                boxShadow: 'var(--shadow-lg)',
+                                zIndex: 1000, overflow: 'hidden',
+                            }}>
+                                {/* Header */}
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    padding: '0.75rem 1rem',
+                                    borderBottom: '0.5px solid var(--border-light)',
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                                        <span style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>
+                                            Notifications
+                                        </span>
+                                        {notifData.count > 0 && (
+                                            <span style={{
+                                                background: '#ef4444', color: '#fff',
+                                                fontSize: '0.65rem', fontWeight: 700,
+                                                padding: '1px 6px', borderRadius: 999,
+                                            }}>
+                                                {notifData.count}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {notifData.count > 0 && (
+                                        <button
+                                            onClick={handleMarkAllRead}
+                                            style={{
+                                                fontSize: '0.73rem', color: 'var(--primary)',
+                                                background: 'none', border: 'none',
+                                                cursor: 'pointer', fontWeight: 600, padding: 0,
+                                            }}
+                                        >
+                                            Mark all read
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Items */}
+                                <div style={{ maxHeight: 360, overflowY: 'auto' }}>
+                                    {notifData.items.length === 0 ? (
+                                        <div style={{
+                                            padding: '2rem 1rem', textAlign: 'center',
+                                            color: 'var(--text-muted)', fontSize: '0.82rem',
+                                        }}>
+                                            No new notifications
+                                        </div>
+                                    ) : (
+                                        notifData.items.map((item, i) => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => handleNotifClick(item)}
+                                                style={{
+                                                    width: '100%', display: 'flex', gap: '0.75rem',
+                                                    alignItems: 'flex-start', padding: '0.75rem 1rem',
+                                                    background: 'none', border: 'none', cursor: 'pointer',
+                                                    textAlign: 'left',
+                                                    borderBottom: i < notifData.items.length - 1
+                                                        ? '0.5px solid var(--border-light)' : 'none',
+                                                    transition: 'background 0.12s',
+                                                }}
+                                                onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-dim)'}
+                                                onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                            >
+                                                {/* Icon bubble */}
+                                                <div style={{
+                                                    flexShrink: 0, width: 30, height: 30,
+                                                    borderRadius: '50%',
+                                                    background: item.context === 'safety_alert'
+                                                        ? 'rgba(220,38,38,0.1)'
+                                                        : item.context === 'inquiry'
+                                                            ? 'rgba(59,130,246,0.1)'
+                                                            : 'rgba(123,143,232,0.1)',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                }}>
+                                                    {notifIcon(item.context)}
+                                                </div>
+
+                                                {/* Text */}
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.4rem', marginBottom: '0.2rem' }}>
+                                                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                            {item.sender}
+                                                        </span>
+                                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', flexShrink: 0 }}>
+                                                            {timeAgo(item.created_at)}
+                                                        </span>
+                                                    </div>
+                                                    <p style={{
+                                                        fontSize: '0.75rem', color: 'var(--text-secondary)',
+                                                        margin: 0, lineHeight: 1.4,
+                                                        display: '-webkit-box', WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                                                    }}>
+                                                        {item.content}
+                                                    </p>
+                                                    <span style={{
+                                                        marginTop: '0.3rem', display: 'inline-block',
+                                                        fontSize: '0.68rem', fontWeight: 600,
+                                                        color: item.context === 'safety_alert' ? '#dc2626'
+                                                            : item.context === 'inquiry' ? '#3b82f6'
+                                                            : 'var(--primary)',
+                                                    }}>
+                                                        {item.context === 'safety_alert' ? '⚠ Safety Alert'
+                                                            : item.context === 'inquiry' ? 'Inquiry'
+                                                            : item.context === 'treatment' ? 'Treatment'
+                                                            : 'Feedback'}
+                                                    </span>
+                                                </div>
+
+                                                {/* Unread dot */}
+                                                <div style={{
+                                                    flexShrink: 0, width: 7, height: 7,
+                                                    borderRadius: '50%', background: '#ef4444',
+                                                    marginTop: 6,
+                                                }} />
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="nav-settings-wrap" ref={wrapRef}>
