@@ -14,6 +14,10 @@ use App\Http\Controllers\Clinic\PatientFeedbackController;
 use App\Http\Controllers\Clinic\RehabPlanController;
 use App\Http\Controllers\Client\RehabPlanController as ClientRehabPlanController;
 use App\Http\Controllers\Client\SessionFeedbackController;
+use App\Http\Controllers\Client\TrackingController;
+use App\Http\Controllers\Client\AiInsightController;
+use App\Http\Controllers\Clinic\AnalyticsController;
+use App\Http\Controllers\Clinic\AiInsightController as ClinicAiInsightController;
 use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Route;
 
@@ -69,7 +73,13 @@ Route::middleware('auth:sanctum')->group(function () {
 */
 
 Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(function () {
-    Route::get('/dashboard/counts', [DashboardController::class, 'counts']);
+    Route::get('/dashboard/counts',      [DashboardController::class, 'counts']);
+    Route::get('/dashboard/analytics',  [AnalyticsController::class, 'index']);
+    Route::get('/dashboard/ai-summary',    [ClinicAiInsightController::class, 'summary']);
+    Route::get('/dashboard/safety-flags',  [ClinicAiInsightController::class, 'flags']);
+
+    Route::get('/patients/{clientProfileId}/ai-insights', [ClinicAiInsightController::class, 'show']);
+    Route::patch('/ai-insights/{id}/resolve', [ClinicAiInsightController::class, 'resolve']);
 
     Route::get('/profile',          [ClinicProfileController::class, 'show']);
     Route::post('/profile',         [ClinicProfileController::class, 'store']);
@@ -124,6 +134,13 @@ Route::middleware(['auth:sanctum', 'role:client'])->prefix('client')->group(func
 
     // Session feedback (client submits)
     Route::post('/session-feedback', [SessionFeedbackController::class, 'store']);
+
+    // Tracking & progress status
+    Route::get('/tracking/status',  [TrackingController::class, 'status']);
+
+    // AI insights
+    Route::post('/ai/escalate',    [AiInsightController::class, 'escalate']);
+    Route::get('/ai/latest',       [AiInsightController::class, 'latest']);
 
     // Rehab plan (client reads + progress)
     Route::get('/rehab-plan',           [ClientRehabPlanController::class, 'show']);

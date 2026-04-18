@@ -1,11 +1,4 @@
 // Mock data — Clinic Dashboard
-// Replace with real API calls in Sprint 4
-
-export const mockClinicStats = {
-    activePatients: 24,
-    pendingRequests: 7,
-    safetyFlags: 3,
-};
 
 export const mockAccessRequests = [
     { id: 1, clientName: 'Ahmad Khalil',   initials: 'AK', condition: 'Knee rehabilitation post ACL surgery', payment: 'Cash',             requestedAt: '2h ago'  },
@@ -15,17 +8,6 @@ export const mockAccessRequests = [
     { id: 5, clientName: 'Tarek Nassif',   initials: 'TN', condition: 'Hip flexor strain recovery',           payment: 'Cash',             requestedAt: '2d ago'  },
     { id: 6, clientName: 'Lara Khoury',    initials: 'LK', condition: 'Cervical spine physiotherapy',         payment: 'Bank Transfer',    requestedAt: '2d ago'  },
     { id: 7, clientName: 'Georges Azar',   initials: 'GA', condition: 'Sports injury — hamstring tear',       payment: 'Cash',             requestedAt: '3d ago'  },
-];
-
-export const mockSafetyFlags = [
-    { id: 1,  patientName: 'Sara Mansour',   initials: 'SM', issue: 'Reported sudden pain spike (9/10) after session',         priority: 'high',   flaggedAt: '1h ago'   },
-    { id: 2,  patientName: 'Omar Diab',      initials: 'OD', issue: 'Missed 4 consecutive sessions without contact',            priority: 'high',   flaggedAt: '3h ago'   },
-    { id: 3,  patientName: 'Hana Frem',      initials: 'HF', issue: 'Reported dizziness during prescribed exercises',           priority: 'medium', flaggedAt: '6h ago'   },
-    { id: 4,  patientName: 'Ziad Tawk',      initials: 'ZT', issue: 'Pain levels not improving after 3 weeks of treatment',     priority: 'medium', flaggedAt: '1d ago'   },
-    { id: 5,  patientName: 'Maya Karam',     initials: 'MK', issue: 'Reported difficulty completing warm-up routine',           priority: 'medium', flaggedAt: '1d ago'   },
-    { id: 6,  patientName: 'Fares Noun',     initials: 'FN', issue: 'Minor adherence drop (−12%) this week',                    priority: 'low',    flaggedAt: '2d ago'   },
-    { id: 7,  patientName: 'Celine Aoun',    initials: 'CA', issue: 'Skipped cool-down exercises twice this week',              priority: 'low',    flaggedAt: '2d ago'   },
-    { id: 8,  patientName: 'Elias Gerges',   initials: 'EG', issue: 'Has not submitted feedback for 5 days',                    priority: 'low',    flaggedAt: '3d ago'   },
 ];
 
 export const mockActivePatients = [

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../../../api/axios';
+import { getPatientAiInsights } from '../../../../api/clinic';
 import Skeleton from '../../../../components/ui/Skeleton';
 
 function PainDot({ level }) {
@@ -38,13 +39,20 @@ function formatDate(iso) {
 export default function PatientFeedbackPage() {
     const { patientId } = useParams(); // this is client_profile_id
 
-    const [data, setData]     = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [notFound, setNotFound] = useState(false);
+    const [data,      setData]      = useState(null);
+    const [aiData,    setAiData]    = useState(null);
+    const [loading,   setLoading]   = useState(true);
+    const [notFound,  setNotFound]  = useState(false);
 
     useEffect(() => {
-        api.get(`/clinic/patients/${patientId}/feedback`)
-            .then(res => setData(res.data))
+        Promise.all([
+            api.get(`/clinic/patients/${patientId}/feedback`),
+            getPatientAiInsights(patientId).catch(() => ({ data: null })),
+        ])
+            .then(([feedRes, aiRes]) => {
+                setData(feedRes.data);
+                setAiData(aiRes.data);
+            })
             .catch(err => {
                 if (err.response?.status === 404) setNotFound(true);
             })
@@ -124,6 +132,56 @@ export default function PatientFeedbackPage() {
                     </div>
                 </div>
             </div>
+
+            {/* ── AI Insights Card ─── */}
+            {(aiData?.latest || (aiData?.safety_history?.length > 0)) && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                    <p style={{ fontFamily: 'Syne', fontSize: '0.88rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.75rem', letterSpacing: '0.01em' }}>
+                        AI Recovery Analysis
+                    </p>
+                    <div className="client-card" style={{ padding: '1.1rem 1.25rem' }}>
+                        {aiData.latest && (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.6rem', marginBottom: aiData.safety_history?.length > 0 ? '1rem' : 0 }}>
+                                <div style={{ textAlign: 'center', padding: '0.6rem', background: 'var(--surface-dim)', borderRadius: 'var(--radius-sm)' }}>
+                                    <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1.2rem', color: aiData.latest.adherence_score >= 70 ? '#16a34a' : aiData.latest.adherence_score >= 40 ? '#d97706' : '#dc2626' }}>
+                                        {aiData.latest.adherence_score ?? '—'}%
+                                    </div>
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Adherence</div>
+                                </div>
+                                <div style={{ textAlign: 'center', padding: '0.6rem', background: 'var(--surface-dim)', borderRadius: 'var(--radius-sm)' }}>
+                                    <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.88rem', color: aiData.latest.pain_trend === 'improving' ? '#16a34a' : aiData.latest.pain_trend === 'worsening' ? '#dc2626' : '#d97706' }}>
+                                        {aiData.latest.pain_trend === 'improving' ? '↓ Improving' : aiData.latest.pain_trend === 'worsening' ? '↑ Worsening' : '→ Stable'}
+                                    </div>
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Pain Trend</div>
+                                </div>
+                                <div style={{ textAlign: 'center', padding: '0.6rem', background: 'var(--surface-dim)', borderRadius: 'var(--radius-sm)' }}>
+                                    <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.88rem', color: aiData.latest.recovery_status === 'good' ? '#16a34a' : aiData.latest.recovery_status === 'poor' ? '#dc2626' : '#d97706' }}>
+                                        {aiData.latest.recovery_status
+                                            ? aiData.latest.recovery_status.charAt(0).toUpperCase() + aiData.latest.recovery_status.slice(1)
+                                            : '—'}
+                                    </div>
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Recovery</div>
+                                </div>
+                            </div>
+                        )}
+                        {aiData.safety_history?.length > 0 && (
+                            <div style={{ borderTop: aiData.latest ? '0.5px solid var(--border-light)' : 'none', paddingTop: aiData.latest ? '0.75rem' : 0 }}>
+                                <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#dc2626', marginBottom: '0.4rem' }}>
+                                    ⚠️ {aiData.safety_history.length} Safety Alert{aiData.safety_history.length !== 1 ? 's' : ''} (last 10)
+                                </p>
+                                {aiData.safety_history.slice(0, 3).map((f, i) => (
+                                    <p key={i} style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.15rem' }}>
+                                        <span style={{ color: f.severity === 'critical' ? '#dc2626' : '#d97706', fontWeight: 600 }}>
+                                            {f.severity === 'critical' ? '🚨' : '⚠️'}
+                                        </span>{' '}
+                                        {f.flag_reason} · <span style={{ color: 'var(--text-muted)' }}>{new Date(f.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                                    </p>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* ── Latest Report ─── */}
             {latest && (

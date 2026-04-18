@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import WorkoutSummary from '../components/WorkoutSummary';
 import ProgressBar from '../components/ProgressBar';
 import ExerciseItem from '../components/ExerciseItem';
 import WorkoutTimer from '../components/WorkoutTimer';
 import WorkoutRating from '../components/WorkoutRating';
 import Skeleton from '../../../../components/ui/Skeleton';
-import { getAccessRequests, submitSessionFeedback } from '../../../../api/client';
+import { getAccessRequests, submitSessionFeedback, escalateSafety } from '../../../../api/client';
 import { getMyRehabPlan, markDayComplete, resetDayProgress } from '../../../../api/rehabPlans';
 import { useToast } from '../../../../context/ToastContext';
 
@@ -39,22 +39,29 @@ export default function TodayPage() {
     const [planLoading,  setPlanLoading]  = useState(true);
 
     // Session state (local — tracks current in-progress session)
-    const [completed,    setCompleted]    = useState(new Set());
-    const [resetKey,     setResetKey]     = useState(0);
-    const [timerElapsed, setTimerElapsed] = useState(0);
-    const [timerRunning, setTimerRunning] = useState(false);
-    const [sessionEnded, setSessionEnded] = useState(false);
-    const [rating,       setRating]       = useState(0);
-    const [feedback,     setFeedback]     = useState('');
-    const [submitting,   setSubmitting]   = useState(false);
-    const [submitted,    setSubmitted]    = useState(false);
+    const [completed,       setCompleted]       = useState(new Set());
+    const [resetKey,        setResetKey]        = useState(0);
+    const [timerElapsed,    setTimerElapsed]    = useState(0);
+    const [timerRunning,    setTimerRunning]    = useState(false);
+    const [sessionEnded,    setSessionEnded]    = useState(false);
+    const [rating,          setRating]          = useState(0);
+    const [feedback,        setFeedback]        = useState('');
+    const [painLevel,       setPainLevel]       = useState(0);
+    const [effortLevel,     setEffortLevel]     = useState(0);
+    const [submitting,      setSubmitting]      = useState(false);
+    const [submitted,       setSubmitted]       = useState(false);
+
+    // AI safety state
+    const [safetyResult,    setSafetyResult]    = useState(null);  // {safety_flag, flag_reason, severity}
+    const [escalating,      setEscalating]      = useState(false);
+    const criticalSentRef = useRef(false); // prevents duplicate critical escalations per session
 
     const completedCount = completed.size;
     const totalCount     = exercises.length;
     const progressPct    = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
     const allDone        = totalCount > 0 && completedCount === totalCount;
     const showRating     = (allDone || sessionEnded) && !todayDone;
-    const canSubmit      = !submitted && !submitting && !!clinicId && (rating > 0 || feedback.trim().length > 0);
+    const canSubmit      = !submitted && !submitting && !!clinicId && painLevel > 0 && effortLevel > 0;
 
     // 1. Fetch approved clinics
     useEffect(() => {
@@ -109,6 +116,22 @@ export default function TodayPage() {
         if (allDone && timerRunning) setTimerRunning(false);
     }, [allDone]); // eslint-disable-line
 
+    // Real-time CRITICAL escalation — fires once when pain crosses ≥9
+    useEffect(() => {
+        if (painLevel >= 9 && !criticalSentRef.current && clinicId) {
+            criticalSentRef.current = true;
+            setEscalating(true);
+            escalateSafety({
+                clinic_id:    parseInt(clinicId),
+                pain_level:   painLevel,
+                effort_level: effortLevel || 0,
+            })
+                .then(res => setSafetyResult(res.data))
+                .catch(() => {})
+                .finally(() => setEscalating(false));
+        }
+    }, [painLevel, clinicId]); // eslint-disable-line
+
     const handleAutoStart = () => {
         if (!timerRunning && timerElapsed === 0 && !sessionEnded) setTimerRunning(true);
     };
@@ -123,7 +146,11 @@ export default function TodayPage() {
         setSessionEnded(false);
         setRating(0);
         setFeedback('');
+        setPainLevel(0);
+        setEffortLevel(0);
         setSubmitted(false);
+        setSafetyResult(null);
+        criticalSentRef.current = false;
     };
 
     const complete = (id) => setCompleted(prev => new Set([...prev, id]));
@@ -144,20 +171,29 @@ export default function TodayPage() {
     // Submit feedback + mark day complete
     const handleSubmit = async () => {
         if (!clinicId) { addToast('Please select a clinic.', 'warning'); return; }
-        if (!rating && !feedback.trim()) { addToast('Please add a rating or feedback note.', 'warning'); return; }
+        if (!painLevel) { addToast('Please rate your pain level before submitting.', 'warning'); return; }
+        if (!effortLevel) { addToast('Please rate your effort level before submitting.', 'warning'); return; }
 
         setSubmitting(true);
         try {
-            await Promise.all([
+            const [feedbackRes] = await Promise.all([
                 submitSessionFeedback({
                     clinic_id:           parseInt(clinicId),
                     rating:              rating || null,
+                    pain_level:          painLevel || null,
+                    effort_level:        effortLevel || null,
                     feedback_text:       feedback.trim() || null,
                     exercises_completed: completedCount,
                     exercises_total:     totalCount,
+                    exercise_ids:        [...completed],
                 }),
                 ...(plan ? [markDayComplete(plan.id, TODAY_DAY)] : []),
             ]);
+
+            // Capture AI safety result from session feedback response
+            if (feedbackRes?.data?.ai?.safety_flag) {
+                setSafetyResult(feedbackRes.data.ai);
+            }
             setSubmitted(true);
             setTodayDone(true);
             setDoneAt(new Date().toISOString());
@@ -314,6 +350,35 @@ export default function TodayPage() {
                 </div>
             </div>
 
+            {/* ── AI Safety Banners ─── */}
+            {showRating && painLevel >= 8 && !safetyResult?.safety_flag && (
+                <div className="cd-section">
+                    <div style={{ padding: '0.85rem 1.1rem', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 'var(--radius-md)', display: 'flex', gap: '0.65rem', alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: '1.1rem', lineHeight: 1, flexShrink: 0 }}>⚠️</span>
+                        <div>
+                            <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#92400e', margin: 0 }}>High Pain Detected</p>
+                            <p style={{ fontSize: '0.78rem', color: '#78350f', marginTop: '0.15rem' }}>Pain level {painLevel}/10 — your clinic has been notified if this persists.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showRating && safetyResult?.safety_flag && (
+                <div className="cd-section">
+                    <div style={{ padding: '0.85rem 1.1rem', background: safetyResult.severity === 'critical' ? '#fef2f2' : '#fffbeb', border: `1px solid ${safetyResult.severity === 'critical' ? '#fca5a5' : '#fcd34d'}`, borderRadius: 'var(--radius-md)', display: 'flex', gap: '0.65rem', alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: '1.1rem', lineHeight: 1, flexShrink: 0 }}>{safetyResult.severity === 'critical' ? '🚨' : '⚠️'}</span>
+                        <div>
+                            <p style={{ fontSize: '0.82rem', fontWeight: 700, color: safetyResult.severity === 'critical' ? '#991b1b' : '#92400e', margin: 0 }}>
+                                {safetyResult.severity === 'critical' ? 'Critical Pain Alert' : 'Safety Alert'}
+                            </p>
+                            <p style={{ fontSize: '0.78rem', color: safetyResult.severity === 'critical' ? '#7f1d1d' : '#78350f', marginTop: '0.15rem' }}>
+                                {safetyResult.flag_reason} — your clinic has been notified.
+                            </p>
+                            {escalating && <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Notifying clinic…</p>}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showRating && (
                 <div className="cd-section">
                     <div className="ui-card">
@@ -329,6 +394,37 @@ export default function TodayPage() {
                         ) : (
                             <>
                                 <WorkoutRating value={rating} onChange={setRating} />
+
+                                {/* Pain & Effort sliders */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '1rem 1.25rem 0' }}>
+                                    <div>
+                                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                                            Pain Level <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>({painLevel || '—'}/10)</span>
+                                        </div>
+                                        <input
+                                            type="range" min="0" max="10" value={painLevel}
+                                            onChange={e => setPainLevel(Number(e.target.value))}
+                                            style={{ width: '100%', accentColor: '#ef4444' }}
+                                        />
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                                            <span>No pain</span><span>Severe</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                                            Effort Level <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>({effortLevel || '—'}/10)</span>
+                                        </div>
+                                        <input
+                                            type="range" min="0" max="10" value={effortLevel}
+                                            onChange={e => setEffortLevel(Number(e.target.value))}
+                                            style={{ width: '100%', accentColor: '#3E4772' }}
+                                        />
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                                            <span>Easy</span><span>Max effort</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="cd-feedback" style={{ marginTop: '1rem' }}>
                                     <div className="cd-feedback-title">Session Notes</div>
                                     <textarea

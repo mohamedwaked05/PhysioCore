@@ -1,10 +1,7 @@
-import {
-    mockClinicStats,
-    mockAdherenceTrend,
-    mockPainTrend,
-    mockActivityData,
-} from '../data/mockData';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getDashboardCounts, getDashboardAnalytics, getDashboardAiSummary } from '../../../../api/clinic';
+import Skeleton from '../../../../components/ui/Skeleton';
 
 // ── Inline SVG Charts ─────────────────────────────────────────
 function LineChart({ data, color, height = 64 }) {
@@ -17,7 +14,7 @@ function LineChart({ data, color, height = 64 }) {
     const PAD = 6;
 
     const pts = values.map((v, i) => ({
-        x: PAD + (i / (values.length - 1)) * (W - PAD * 2),
+        x: PAD + (i / Math.max(values.length - 1, 1)) * (W - PAD * 2),
         y: PAD + (1 - (v - min) / range) * (H - PAD * 2),
     }));
 
@@ -68,7 +65,7 @@ function BarChart({ data, color, height = 64 }) {
                         x={x}
                         y={H - barH - PAD}
                         width={w}
-                        height={barH}
+                        height={Math.max(barH, 0)}
                         rx="3"
                         fill={color}
                         opacity={d.value === max ? '1' : '0.55'}
@@ -81,6 +78,44 @@ function BarChart({ data, color, height = 64 }) {
 
 // ── Overview Page ─────────────────────────────────────────────
 export default function OverviewPage() {
+    const [counts,    setCounts]    = useState(null);
+    const [analytics, setAnalytics] = useState(null);
+    const [aiSummary, setAiSummary] = useState(null);
+    const [loading,   setLoading]   = useState(true);
+
+    useEffect(() => {
+        Promise.all([
+            getDashboardCounts(),
+            getDashboardAnalytics(),
+            getDashboardAiSummary().catch(() => ({ data: null })),
+        ])
+            .then(([countsRes, analyticsRes, aiRes]) => {
+                setCounts(countsRes.data);
+                setAnalytics(analyticsRes.data);
+                setAiSummary(aiRes.data);
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
+    }, []);
+
+    const adherenceTrend = analytics?.adherence_trend ?? [];
+    const painTrend      = analytics?.pain_trend ?? [];
+    const activityData   = analytics?.activity_data ?? [];
+    const summary        = analytics?.summary ?? {};
+
+    const currentAdherence = summary.current_adherence ?? 0;
+    const adherenceDiff    = summary.adherence_diff ?? 0;
+    const totalSessions    = summary.total_sessions_this_week ?? 0;
+    const sessionsDiff     = summary.sessions_diff ?? 0;
+    const avgPain          = summary.avg_pain;
+    const painDiff         = summary.pain_diff;
+
+    const formatDiff = (val, suffix = '') => {
+        if (!val && val !== 0) return null;
+        const sign = val >= 0 ? '↑ +' : '↓ ';
+        return `${sign}${Math.abs(val)}${suffix}`;
+    };
+
     return (
         <div className="cld-page">
 
@@ -94,7 +129,7 @@ export default function OverviewPage() {
                         </svg>
                     </div>
                     <div className="cld-stat-body">
-                        <p className="cld-stat-value">{mockClinicStats.activePatients}</p>
+                        <p className="cld-stat-value">{loading ? '—' : (counts?.patients_count ?? 0)}</p>
                         <p className="cld-stat-label">Active Patients</p>
                     </div>
                     <span className="cld-stat-arrow">
@@ -109,7 +144,7 @@ export default function OverviewPage() {
                         </svg>
                     </div>
                     <div className="cld-stat-body">
-                        <p className="cld-stat-value">{mockClinicStats.pendingRequests}</p>
+                        <p className="cld-stat-value">{loading ? '—' : (counts?.requests_count ?? 0)}</p>
                         <p className="cld-stat-label">Pending Requests</p>
                     </div>
                     <span className="cld-stat-arrow">
@@ -126,8 +161,8 @@ export default function OverviewPage() {
                         </svg>
                     </div>
                     <div className="cld-stat-body">
-                        <p className="cld-stat-value">{mockClinicStats.safetyFlags}</p>
-                        <p className="cld-stat-label">Safety Flags</p>
+                        <p className="cld-stat-value">{loading ? '—' : (aiSummary?.active_flags ?? counts?.safety_flags_count ?? 0)}</p>
+                        <p className="cld-stat-label">Safety Flags {!loading && aiSummary?.critical_flags > 0 && <span style={{ color: '#dc2626', fontSize: '0.72rem' }}>({aiSummary.critical_flags} critical)</span>}</p>
                     </div>
                     <span className="cld-stat-arrow">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -136,64 +171,99 @@ export default function OverviewPage() {
             </div>
 
             {/* ── Charts ─── */}
-            <div className="cld-charts-grid">
-                <div className="cld-chart-card">
-                    <div className="cld-chart-header">
-                        <div>
-                            <p className="cld-chart-title">Adherence Trend</p>
-                            <p className="cld-chart-subtitle">Avg across all patients</p>
-                        </div>
-                        <div>
-                            <p className="cld-chart-value">88<span className="cld-chart-value-unit">%</span></p>
-                            <p className="cld-chart-trend up">↑ +5% vs last week</p>
-                        </div>
-                    </div>
-                    <div className="cld-chart-svg-wrap">
-                        <LineChart data={mockAdherenceTrend} color="#3E4772" />
-                    </div>
-                    <div className="cld-chart-labels">
-                        {mockAdherenceTrend.map(d => <span key={d.label}>{d.label}</span>)}
-                    </div>
+            {loading ? (
+                <div className="cld-charts-grid">
+                    {[1, 2, 3].map(i => <Skeleton key={i} height="160px" radius="10px" />)}
                 </div>
+            ) : (
+                <div className="cld-charts-grid">
+                    <div className="cld-chart-card">
+                        <div className="cld-chart-header">
+                            <div>
+                                <p className="cld-chart-title">Adherence Trend</p>
+                                <p className="cld-chart-subtitle">Avg across all patients</p>
+                            </div>
+                            <div>
+                                <p className="cld-chart-value">{currentAdherence}<span className="cld-chart-value-unit">%</span></p>
+                                {adherenceDiff !== 0 && (
+                                    <p className={`cld-chart-trend ${adherenceDiff >= 0 ? 'up' : 'down'}`}>
+                                        {adherenceDiff >= 0 ? '↑' : '↓'} {adherenceDiff >= 0 ? '+' : ''}{adherenceDiff}% vs last week
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="cld-chart-svg-wrap">
+                            <LineChart data={adherenceTrend.length ? adherenceTrend : [{label:'',value:0}]} color="#3E4772" />
+                        </div>
+                        <div className="cld-chart-labels">
+                            {adherenceTrend.map(d => <span key={d.label}>{d.label}</span>)}
+                        </div>
+                    </div>
 
-                <div className="cld-chart-card">
-                    <div className="cld-chart-header">
-                        <div>
-                            <p className="cld-chart-title">Avg Pain Level</p>
-                            <p className="cld-chart-subtitle">Lower is better</p>
+                    <div className="cld-chart-card">
+                        <div className="cld-chart-header">
+                            <div>
+                                <p className="cld-chart-title">Avg Pain Level</p>
+                                <p className="cld-chart-subtitle">Lower is better</p>
+                            </div>
+                            <div>
+                                <p className="cld-chart-value">{avgPain ?? '—'}<span className="cld-chart-value-unit">/10</span></p>
+                                {painDiff != null && (
+                                    <p className={`cld-chart-trend ${painDiff > 0 ? 'up' : 'down'}`}>
+                                        {painDiff > 0 ? '↓' : '↑'} {painDiff > 0 ? '−' : '+'}{Math.abs(painDiff)} vs W1
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                        <div>
-                            <p className="cld-chart-value">3.5<span className="cld-chart-value-unit">/10</span></p>
-                            <p className="cld-chart-trend up">↓ −2.1 vs W1</p>
+                        <div className="cld-chart-svg-wrap">
+                            <LineChart data={painTrend.length ? painTrend : [{label:'',value:0}]} color="#dc2626" />
+                        </div>
+                        <div className="cld-chart-labels">
+                            {painTrend.map(d => <span key={d.label}>{d.label}</span>)}
                         </div>
                     </div>
-                    <div className="cld-chart-svg-wrap">
-                        <LineChart data={mockPainTrend} color="#dc2626" />
-                    </div>
-                    <div className="cld-chart-labels">
-                        {mockPainTrend.map(d => <span key={d.label}>{d.label}</span>)}
-                    </div>
-                </div>
 
-                <div className="cld-chart-card">
-                    <div className="cld-chart-header">
-                        <div>
-                            <p className="cld-chart-title">Patient Activity</p>
-                            <p className="cld-chart-subtitle">Sessions this week</p>
+                    <div className="cld-chart-card">
+                        <div className="cld-chart-header">
+                            <div>
+                                <p className="cld-chart-title">Patient Activity</p>
+                                <p className="cld-chart-subtitle">Sessions this week</p>
+                            </div>
+                            <div>
+                                <p className="cld-chart-value">{totalSessions}<span className="cld-chart-value-unit"> sessions</span></p>
+                                {sessionsDiff !== 0 && (
+                                    <p className={`cld-chart-trend ${sessionsDiff >= 0 ? 'up' : 'down'}`}>
+                                        {sessionsDiff >= 0 ? '↑' : '↓'} {sessionsDiff >= 0 ? '+' : ''}{sessionsDiff} vs last week
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                        <div>
-                            <p className="cld-chart-value">28<span className="cld-chart-value-unit"> sessions</span></p>
-                            <p className="cld-chart-trend up">↑ +4 vs last week</p>
+                        <div className="cld-chart-svg-wrap">
+                            <BarChart data={activityData.length ? activityData : [{label:'',value:0}]} color="#3E4772" />
                         </div>
-                    </div>
-                    <div className="cld-chart-svg-wrap">
-                        <BarChart data={mockActivityData} color="#3E4772" />
-                    </div>
-                    <div className="cld-chart-labels">
-                        {mockActivityData.map(d => <span key={d.label}>{d.label}</span>)}
+                        <div className="cld-chart-labels">
+                            {activityData.map(d => <span key={d.label}>{d.label}</span>)}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
+
+            {/* ── AI Clinic Summary ─── */}
+            {!loading && aiSummary && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: '0.75rem', marginTop: '0.75rem' }}>
+                    {[
+                        { label: 'Avg Adherence (AI)', value: aiSummary.avg_adherence != null ? `${aiSummary.avg_adherence}%` : '—', color: aiSummary.avg_adherence >= 70 ? '#16a34a' : aiSummary.avg_adherence >= 40 ? '#d97706' : '#dc2626' },
+                        { label: 'Improving Pain', value: aiSummary.trend_counts?.improving ?? 0, color: '#16a34a' },
+                        { label: 'Stable Pain',    value: aiSummary.trend_counts?.stable    ?? 0, color: '#d97706' },
+                        { label: 'Worsening Pain', value: aiSummary.trend_counts?.worsening ?? 0, color: '#dc2626' },
+                    ].map(item => (
+                        <div key={item.label} style={{ padding: '0.9rem 1rem', background: 'var(--surface)', border: '0.5px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+                            <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1.25rem', color: item.color, margin: 0 }}>{item.value}</p>
+                            <p style={{ fontSize: '0.73rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{item.label}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
 
         </div>
     );

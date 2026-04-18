@@ -17,9 +17,12 @@ class StoreSessionFeedbackRequest extends FormRequest
             'clinic_id'            => ['required', 'integer', 'exists:clinics,id'],
             'rating'               => ['nullable', 'integer', 'min:1', 'max:5'],
             'pain_level'           => ['nullable', 'integer', 'min:1', 'max:10'],
+            'effort_level'         => ['nullable', 'integer', 'min:1', 'max:10'],
             'feedback_text'        => ['nullable', 'string', 'max:600'],
             'exercises_completed'  => ['required', 'integer', 'min:0'],
             'exercises_total'      => ['required', 'integer', 'min:0'],
+            'exercise_ids'         => ['nullable', 'array'],
+            'exercise_ids.*'       => ['integer', 'exists:rehab_plan_exercises,id'],
         ];
     }
 }
