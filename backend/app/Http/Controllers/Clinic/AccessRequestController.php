@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Clinic;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Clinic\UpdateAccessRequestRequest;
 use App\Models\AccessRequest;
+use App\Models\Message;
 use Illuminate\Http\Request;
 
 class AccessRequestController extends Controller
@@ -35,6 +36,27 @@ class AccessRequestController extends Controller
 
         $newStatus = $request->action === 'approve' ? 'approved' : 'rejected';
         $accessRequest->update(['status' => $newStatus]);
+
+        // Notify the client
+        try {
+            $clinic      = $request->user()->clinic;
+            $clientUser  = $accessRequest->clientProfile?->user;
+            $clinicName  = $clinic->commercial_name ?? $clinic->legal_name ?? 'The clinic';
+            $body        = $newStatus === 'approved'
+                ? "{$clinicName} has approved your access request. You can now start your sessions."
+                : "{$clinicName} has reviewed your request and it was not approved at this time.";
+
+            if ($clientUser) {
+                Message::create([
+                    'sender_id'    => $request->user()->id,
+                    'receiver_id'  => $clientUser->id,
+                    'context'      => 'inquiry',
+                    'reference_id' => $clinic->id,
+                    'content'      => $body,
+                    'is_read'      => false,
+                ]);
+            }
+        } catch (\Throwable) {}
 
         return response()->json(
             $accessRequest->load('clientProfile.user:id,first_name,last_name')

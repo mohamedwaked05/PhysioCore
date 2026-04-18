@@ -18,6 +18,7 @@ use App\Http\Controllers\Client\TrackingController;
 use App\Http\Controllers\Client\AiInsightController;
 use App\Http\Controllers\Clinic\AnalyticsController;
 use App\Http\Controllers\Clinic\AiInsightController as ClinicAiInsightController;
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Route;
 
@@ -146,6 +147,24 @@ Route::middleware(['auth:sanctum', 'role:client'])->prefix('client')->group(func
     Route::get('/rehab-plan',           [ClientRehabPlanController::class, 'show']);
     Route::post('/rehab-plan/progress', [ClientRehabPlanController::class, 'markDay']);
     Route::delete('/rehab-plan/progress', [ClientRehabPlanController::class, 'resetDay']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/stats',                          [AdminController::class, 'stats']);
+    Route::get('/clinics',                        [AdminController::class, 'clinics']);
+    Route::get('/clinics/{id}',                   [AdminController::class, 'showClinic']);
+    Route::post('/clinics/{id}/approve',          [AdminController::class, 'approveClinic']);
+    Route::post('/clinics/{id}/reject',           [AdminController::class, 'rejectClinic']);
+    Route::get('/users',                          [AdminController::class, 'users']);
+    Route::patch('/users/{id}/status',            [AdminController::class, 'toggleUserStatus']);
+    Route::get('/safety-flags',                   [AdminController::class, 'safetyFlags']);
+    Route::patch('/safety-flags/{id}/resolve',    [AdminController::class, 'resolveFlag']);
 });
 
 /*

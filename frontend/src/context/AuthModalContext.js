@@ -38,7 +38,7 @@ export function AuthModalProvider({ children }) {
             return;
         }
         if (loggedInUser?.role === 'admin') {
-            navigate('/dashboard', { replace: true });
+            navigate('/admin/dashboard', { replace: true });
             return;
         }
         const cb = pendingCallbackRef.current;

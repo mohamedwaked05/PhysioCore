@@ -28,6 +28,13 @@ import WeeklyPage from './pages/client/dashboard/pages/WeeklyPage';
 import MessagesPage from './pages/client/dashboard/pages/MessagesPage';
 import ClientProfilePage from './pages/client/ClientProfilePage';
 
+// Admin pages (protected)
+import AdminDashboardLayout from './pages/admin/dashboard/AdminDashboardLayout';
+import AdminOverviewPage    from './pages/admin/dashboard/pages/OverviewPage';
+import AdminClinicsPage     from './pages/admin/dashboard/pages/ClinicsPage';
+import AdminUsersPage       from './pages/admin/dashboard/pages/UsersPage';
+import AdminSafetyPage      from './pages/admin/dashboard/pages/SafetyPage';
+
 // Clinic pages (protected)
 import ClinicDashboardLayout from './pages/clinic/dashboard/ClinicDashboardLayout';
 import OverviewPage from './pages/clinic/dashboard/pages/OverviewPage';
@@ -107,8 +114,17 @@ function App() {
                     <Route path="/onboarding" element={<Navigate to="/client/dashboard" replace />} />
                     <Route path="/setup"      element={<Navigate to="/clinic/dashboard" replace />} />
 
-                    {/* Admin placeholder */}
-                    <Route path="/dashboard" element={<h1>Admin Dashboard (Sprint 4)</h1>} />
+                    {/* Admin protected routes */}
+                    <Route path="/admin/dashboard" element={
+                        <ProtectedRoute role="admin"><AdminDashboardLayout /></ProtectedRoute>
+                    }>
+                        <Route index          element={<AdminOverviewPage />} />
+                        <Route path="clinics" element={<AdminClinicsPage />}  />
+                        <Route path="users"   element={<AdminUsersPage />}    />
+                        <Route path="safety"  element={<AdminSafetyPage />}   />
+                    </Route>
+                    {/* Legacy admin redirect */}
+                    <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
                 </Routes>
             </AuthModalProvider>
             </BrowserRouter>

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\StoreAccessRequestRequest;
+use App\Models\Clinic;
+use App\Models\Message;
 use Illuminate\Http\Request;
 
 class AccessRequestController extends Controller
@@ -36,6 +38,25 @@ class AccessRequestController extends Controller
         }
 
         $accessRequest = $profile->accessRequests()->create($request->validated());
+
+        // Notify the clinic
+        try {
+            $clinic    = Clinic::find($request->clinic_id);
+            $sender    = $request->user();
+            $firstName = $sender->first_name ?? 'A client';
+            $lastName  = $sender->last_name  ?? '';
+
+            if ($clinic?->user_id) {
+                Message::create([
+                    'sender_id'    => $sender->id,
+                    'receiver_id'  => $clinic->user_id,
+                    'context'      => 'inquiry',
+                    'reference_id' => $clinic->id,
+                    'content'      => "{$firstName} {$lastName} has sent you an access request and is waiting for your approval.",
+                    'is_read'      => false,
+                ]);
+            }
+        } catch (\Throwable) {}
 
         return response()->json(
             $accessRequest->load('clinic:id,user_id,legal_name,commercial_name,specialty_text,address'),

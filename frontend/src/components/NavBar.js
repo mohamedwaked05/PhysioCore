@@ -107,7 +107,11 @@ function notifIcon(context) {
     );
 }
 
-function notifRoute(item) {
+function notifRoute(item, role) {
+    if (role === 'admin') {
+        if (item.context === 'safety_alert') return '/admin/dashboard/safety';
+        return '/admin/dashboard';
+    }
     if (item.context === 'safety_alert') return '/clinic/dashboard/flags';
     if (item.context === 'inquiry')      return '/clinic/dashboard/inquiries';
     return '/clinic/dashboard/patients';
@@ -188,7 +192,7 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
             return { items, count: items.length, has_new_messages: items.length > 0 };
         });
         setNotifOpen(false);
-        navigate(notifRoute(item));
+        navigate(notifRoute(item, user?.role));
     };
 
     return (
@@ -231,7 +235,7 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
                             aria-label="Notifications"
                             title="Notifications"
                             onClick={() => {
-                                if (user?.role === 'clinic') {
+                                if (user?.role === 'clinic' || user?.role === 'admin') {
                                     setNotifOpen(o => !o);
                                 } else {
                                     navigate('/client/dashboard/messages');
@@ -256,8 +260,8 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
                             )}
                         </button>
 
-                        {/* Clinic notification dropdown */}
-                        {user?.role === 'clinic' && notifOpen && (
+                        {/* Notification dropdown (clinic + admin) */}
+                        {(user?.role === 'clinic' || user?.role === 'admin') && notifOpen && (
                             <div style={{
                                 position: 'absolute', top: 'calc(100% + 8px)', right: 0,
                                 width: 320, background: 'var(--surface)',
