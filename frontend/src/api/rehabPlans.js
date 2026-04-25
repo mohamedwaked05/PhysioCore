@@ -1,5 +1,9 @@
 import api from './axios';
 
+// Clinic — all clients with their plans (multi-week overview)
+export const getClinicPlans = () =>
+    api.get('/clinic/plans');
+
 // Clinic — create plan with exercises (each exercise has day_of_week)
 export const createRehabPlan = (data) =>
     api.post('/clinic/rehab-plans', data);

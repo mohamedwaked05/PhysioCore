@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\User;
 
 class AiInsight extends Model
 {
@@ -20,6 +21,9 @@ class AiInsight extends Model
         'safety_flag',
         'flag_reason',
         'severity',
+        'resolved_at',
+        'resolved_by',
+        'resolution_note',
     ];
 
     protected $casts = [
@@ -36,5 +40,10 @@ class AiInsight extends Model
     public function clinic(): BelongsTo
     {
         return $this->belongsTo(Clinic::class);
+    }
+
+    public function resolvedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resolved_by');
     }
 }

@@ -8,6 +8,7 @@ import Skeleton from '../../../../components/ui/Skeleton';
 import { getAccessRequests, submitSessionFeedback, escalateSafety } from '../../../../api/client';
 import { getMyRehabPlan, markDayComplete, resetDayProgress } from '../../../../api/rehabPlans';
 import { useToast } from '../../../../context/ToastContext';
+import { getEcho } from '../../../../services/echo';
 
 const DAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 const TODAY_DAY = DAY_NAMES[new Date().getDay()];
@@ -104,6 +105,34 @@ export default function TodayPage() {
             .catch(() => { setPlan(null); setExercises([]); })
             .finally(() => setPlanLoading(false));
     }, [clinicId]);
+
+    // 3. Real-time plan updates — re-fetch when clinic edits the plan
+    useEffect(() => {
+        if (!plan?.client_profile_id) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const echo = getEcho(token);
+        const ch   = echo.private(`rehab-plan.${plan.client_profile_id}`);
+        ch.listen('.RehabPlanUpdated', ({ plan: updated }) => {
+            if (updated?.deleted) {
+                // Clinic deleted this plan — clear the view immediately
+                setPlan(null);
+                setExercises([]);
+                setTodayDone(false);
+                setDoneAt(null);
+                return;
+            }
+            if (!updated?.exercises_by_day) return;
+            setPlan(updated);
+            setExercises((updated.exercises_by_day[TODAY_DAY] ?? []).map(mapExercise));
+            const prog = updated.progress?.[TODAY_DAY];
+            setTodayDone(prog?.completed ?? false);
+            setDoneAt(prog?.completed_at ?? null);
+        });
+        return () => {
+            try { echo.leave(`rehab-plan.${plan.client_profile_id}`); } catch {}
+        };
+    }, [plan?.client_profile_id]); // eslint-disable-line
 
     // Timer tick
     useEffect(() => {

@@ -1,27 +1,35 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { getMessages, sendMessage } from '../../api/messages';
+import { getMessages, sendMessage, markDelivered, markSeen } from '../../api/messages';
+import { getEcho } from '../../services/echo';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Button from '../ui/Button';
 import Spinner from '../Spinner';
 import '../../styles/chat.css';
 
-const POLL_INTERVAL = 10000;
+// Fallback poll — WebSocket handles new messages in real-time via NotificationCreated;
+// this is a safety net for missed events only.
+const POLL_INTERVAL = 30000;
 
 function formatTime(iso) {
     const d = new Date(iso);
     return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+/* ── Status tick for sent messages ───────────────────────── */
+function MessageTick({ msg }) {
+    if (msg.seen_at)      return <span className="chat-tick chat-tick--seen"      aria-label="Seen">✓✓</span>;
+    if (msg.delivered_at) return <span className="chat-tick chat-tick--delivered" aria-label="Delivered">✓✓</span>;
+    return                       <span className="chat-tick chat-tick--sent"      aria-label="Sent">✓</span>;
+}
+
 /* ── MessageList ──────────────────────────────────────────── */
 function MessageList({ messages, currentUserId, loading, newCount }) {
-    const bottomRef     = useRef(null);
-    const initialRef    = useRef(true);
+    const bottomRef  = useRef(null);
+    const initialRef = useRef(true);
 
     useEffect(() => {
         if (!bottomRef.current) return;
-        // First load: jump instantly so the user lands at the bottom without animation.
-        // Every subsequent message: smooth scroll.
         bottomRef.current.scrollIntoView({ behavior: initialRef.current ? 'instant' : 'smooth' });
         initialRef.current = false;
     }, [messages.length]);
@@ -71,7 +79,10 @@ function MessageList({ messages, currentUserId, loading, newCount }) {
                             <div className={`chat-bubble chat-bubble--${isSent ? 'sent' : 'received'}`}>
                                 {msg.content}
                             </div>
-                            <div className="chat-bubble-meta">{formatTime(msg.created_at)}</div>
+                            <div className="chat-bubble-meta">
+                                {formatTime(msg.created_at)}
+                                {isSent && <MessageTick msg={msg} />}
+                            </div>
                         </div>
                     </div>
                 );
@@ -134,19 +145,55 @@ function MessageInput({ onSend, sending }) {
  * Props:
  *   context     — 'inquiry' | 'treatment' | 'feedback'
  *   referenceId — clinic_id or access_request_id
- *   receiverId  — user_id of the other party
+ *   receiverId  — user_id of the other party (for sending messages)
+ *   withUserId  — user_id of the other party (for filtering fetch)
  *   onGuestAction — called when guest tries to interact (optional)
  */
 export default function ChatBox({ context, referenceId, receiverId, withUserId, onGuestAction }) {
-    const { user } = useAuth();
+    const { user }     = useAuth();
     const { addToast } = useToast();
 
-    const [messages, setMessages]   = useState([]);
-    const [loading, setLoading]     = useState(true);
-    const [sending, setSending]     = useState(false);
-    const [newCount, setNewCount]   = useState(0);
-    const prevCountRef              = useRef(0);
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading]   = useState(true);
+    const [sending, setSending]   = useState(false);
+    const [newCount, setNewCount] = useState(0);
+    const prevCountRef            = useRef(0);
 
+    // The other party's user id (used for markSeen sender filter)
+    const otherUserId = withUserId || receiverId;
+
+    /* ── Optimistic status patch helpers ─────────────────── */
+    const applySeen = useCallback((messageIds, seenAt) => {
+        const idSet = new Set(messageIds);
+        setMessages(prev => prev.map(m =>
+            idSet.has(m.id) && !m.seen_at
+                ? { ...m, delivered_at: m.delivered_at ?? seenAt, seen_at: seenAt }
+                : m
+        ));
+    }, []);
+
+    /* ── After fetch: side-effects for delivery/seen ─────── */
+    const processFetch = useCallback(async (fetched) => {
+        if (!user) return;
+
+        // Mark received messages as delivered (batch, no downgrade — backend handles it)
+        const undelivered = fetched
+            .filter(m => m.sender_id !== user.id && !m.delivered_at)
+            .map(m => m.id);
+        if (undelivered.length > 0) {
+            try { await markDelivered(undelivered); } catch {}
+        }
+
+        // Mark received messages as seen (user opened the chat)
+        const unseen = fetched.filter(m => m.sender_id !== user.id && !m.seen_at);
+        if (unseen.length > 0) {
+            try {
+                await markSeen({ sender_id: otherUserId, context, reference_id: referenceId });
+            } catch {}
+        }
+    }, [user, otherUserId, context, referenceId]);
+
+    /* ── Fetch messages ───────────────────────────────────── */
     const fetchMessages = useCallback(async (silent = false) => {
         if (!user) return;
         try {
@@ -160,13 +207,14 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
             }
             prevCountRef.current = fetched.length;
             setMessages(fetched);
-            if (!silent) setNewCount(0); // clear indicator on open
+            if (!silent) setNewCount(0);
+            await processFetch(fetched);
         } catch {
             // silent failure on poll
         } finally {
             if (!silent) setLoading(false);
         }
-    }, [user, context, referenceId, withUserId]);
+    }, [user, context, referenceId, withUserId, processFetch]);
 
     // Initial load
     useEffect(() => {
@@ -181,6 +229,60 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
         return () => clearInterval(id);
     }, [fetchMessages, user]);
 
+    /* ── WebSocket: new messages + delivery/seen acks ────── */
+    useEffect(() => {
+        if (!user) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const echo = getEcho(token);
+        const ch   = echo.private(`user.${user.id}`);
+
+        // Instant new-message delivery via NotificationCreated.
+        // The backend embeds the full message object in notification.data.message,
+        // so we can append it directly to state with no HTTP round-trip.
+        // Falls back to fetchMessages(true) only for legacy events without the payload.
+        ch.listen('.NotificationCreated', ({ notification }) => {
+            if (notification?.type !== 'message') return;
+            const d = notification.data ?? {};
+            if (String(d.context) !== String(context) || String(d.reference_id) !== String(referenceId)) return;
+
+            if (d.message?.id) {
+                // Direct append — no refetch needed
+                setMessages(prev =>
+                    prev.some(m => m.id === d.message.id) ? prev : [...prev, d.message]
+                );
+                prevCountRef.current += 1;
+                setNewCount(c => c + 1);
+                setTimeout(() => setNewCount(0), 4000);
+                // Fire delivery + seen side-effects in the background (same as processFetch)
+                processFetch([d.message]);
+            } else {
+                // Fallback: event predates the message payload addition
+                fetchMessages(true);
+            }
+        });
+
+        // Delivery / seen ACKs for outgoing messages
+        ch.listen('.MessageDelivered', ({ message_ids, delivered_at }) => {
+            const idSet = new Set(message_ids);
+            setMessages(prev => prev.map(m =>
+                idSet.has(m.id) && !m.delivered_at ? { ...m, delivered_at } : m
+            ));
+        });
+
+        ch.listen('.MessageSeen', ({ message_ids, seen_at }) => {
+            applySeen(message_ids, seen_at);
+        });
+
+        return () => {
+            try { ch.stopListening('.NotificationCreated'); } catch {}
+            try { ch.stopListening('.MessageDelivered'); } catch {}
+            try { ch.stopListening('.MessageSeen'); } catch {}
+        };
+    }, [user?.id, context, referenceId, fetchMessages, applySeen, processFetch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    /* ── Send ─────────────────────────────────────────────── */
     const handleSend = async (content) => {
         if (!user) { onGuestAction?.(); return; }
         setSending(true);

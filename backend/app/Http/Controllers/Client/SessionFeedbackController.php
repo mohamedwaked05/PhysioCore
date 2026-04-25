@@ -107,8 +107,13 @@ class SessionFeedbackController extends Controller
             $safetyResult = $this->runSessionAnalysis($profile, $clinicId, $request, $today, $feedback->id);
         }
 
-        // ── AI: progress analysis (runs regardless of safety) ─
-        $this->runProgressAnalysis($profile, $clinicId, $today);
+        // ── AI: progress analysis — deferred after response ──
+        // runProgressAnalysis makes a blocking AI API call whose result is not
+        // returned to the client. Defer it to the request's terminating phase so
+        // the HTTP response is sent immediately.
+        app()->terminating(function () use ($profile, $clinicId, $today) {
+            $this->runProgressAnalysis($profile, $clinicId, $today);
+        });
 
         return response()->json(array_merge(
             $feedback->toArray(),
@@ -158,7 +163,7 @@ class SessionFeedbackController extends Controller
             );
 
             if ($insight->wasRecentlyCreated) {
-                $aiController = new AiInsightController($this->ai);
+                $aiController = app(AiInsightController::class);
                 $aiController->notifyClinic(
                     $profile,
                     $clinicId,

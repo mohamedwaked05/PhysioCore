@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AiInsight;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AiInsightController extends Controller
 {
@@ -59,12 +60,16 @@ class AiInsightController extends Controller
             ->where('created_at', '>=', now()->subDays(7))
             ->count();
 
-        $insights = AiInsight::where('clinic_id', $clinicId)
+        // Get the latest insight ID per client in SQL (avoids loading all rows into PHP)
+        $latestIds = AiInsight::where('clinic_id', $clinicId)
             ->where('insight_type', 'progress')
-            ->select(['client_profile_id', 'adherence_score', 'pain_trend', 'recovery_status', 'created_at'])
-            ->latest()
-            ->get()
-            ->unique('client_profile_id');
+            ->groupBy('client_profile_id')
+            ->select(DB::raw('MAX(id) as max_id'))
+            ->pluck('max_id');
+
+        $insights = AiInsight::whereIn('id', $latestIds)
+            ->select(['client_profile_id', 'adherence_score', 'pain_trend', 'recovery_status'])
+            ->get();
 
         $avgAdherence = $insights->whereNotNull('adherence_score')->avg('adherence_score');
 
@@ -81,21 +86,24 @@ class AiInsightController extends Controller
     }
 
     /**
-     * GET /clinic/dashboard/safety-flags
-     * All unresolved safety insights for this clinic with patient info.
+     * GET /clinic/dashboard/safety-flags?resolved=0|1
+     * Safety insights for this clinic — active or resolved, with audit data.
      */
     public function flags(Request $request)
     {
-        $clinicId = $request->user()->clinic->id;
+        $clinicId     = $request->user()->clinic->id;
+        $showResolved = $request->boolean('resolved', false);
 
         $flags = AiInsight::where('clinic_id', $clinicId)
             ->where('safety_flag', true)
-            ->whereNull('resolved_at')
+            ->when(!$showResolved, fn($q) => $q->whereNull('resolved_at'))
+            ->when($showResolved,  fn($q) => $q->whereNotNull('resolved_at'))
             ->with([
                 'clientProfile' => fn($q) => $q->select(['id', 'user_id', 'condition_summary'])
                     ->with(['user' => fn($q) => $q->select(['id', 'first_name', 'last_name'])]),
+                'resolvedByUser:id,first_name,last_name',
             ])
-            ->select(['id', 'client_profile_id', 'flag_reason', 'severity', 'created_at'])
+            ->select(['id', 'client_profile_id', 'flag_reason', 'severity', 'resolved_at', 'resolved_by', 'resolution_note', 'created_at'])
             ->latest()
             ->get()
             ->map(function ($insight) {
@@ -104,6 +112,7 @@ class AiInsightController extends Controller
                 $lastName  = $u?->last_name  ?? '';
                 $fullName  = trim("{$firstName} {$lastName}") ?: 'Unknown Patient';
                 $initials  = strtoupper(($firstName[0] ?? '') . ($lastName[0] ?? '')) ?: '?';
+                $resolver  = $insight->resolvedByUser;
 
                 return [
                     'id'                => $insight->id,
@@ -113,6 +122,11 @@ class AiInsightController extends Controller
                     'condition'         => $insight->clientProfile?->condition_summary ?? '—',
                     'flag_reason'       => $insight->flag_reason,
                     'severity'          => $insight->severity,
+                    'resolved_at'       => $insight->resolved_at,
+                    'resolved_by'       => $resolver
+                        ? trim($resolver->first_name . ' ' . $resolver->last_name)
+                        : null,
+                    'resolution_note'   => $insight->resolution_note,
                     'created_at'        => $insight->created_at,
                 ];
             });
@@ -126,6 +140,10 @@ class AiInsightController extends Controller
      */
     public function resolve(Request $request, int $id)
     {
+        $request->validate([
+            'resolution_note' => ['nullable', 'string', 'max:500'],
+        ]);
+
         $clinicId = $request->user()->clinic->id;
 
         $insight = AiInsight::where('id', $id)
@@ -133,7 +151,11 @@ class AiInsightController extends Controller
             ->where('safety_flag', true)
             ->firstOrFail();
 
-        $insight->update(['resolved_at' => Carbon::now('UTC')]);
+        $insight->update([
+            'resolved_at'     => Carbon::now('UTC'),
+            'resolved_by'     => $request->user()->id,
+            'resolution_note' => $request->input('resolution_note'),
+        ]);
 
         return response()->json(['message' => 'Flag resolved.']);
     }

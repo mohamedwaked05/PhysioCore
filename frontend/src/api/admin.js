@@ -8,4 +8,4 @@ export const rejectClinic        = (id, data)   => api.post(`/admin/clinics/${id
 export const getAdminUsers       = (params)     => api.get('/admin/users', { params });
 export const toggleUserStatus    = (id, data)   => api.patch(`/admin/users/${id}/status`, data);
 export const getAdminSafetyFlags = (params)     => api.get('/admin/safety-flags', { params });
-export const adminResolveFlag    = (id)         => api.patch(`/admin/safety-flags/${id}/resolve`);
+export const adminResolveFlag    = (id, data = {}) => api.patch(`/admin/safety-flags/${id}/resolve`, data);

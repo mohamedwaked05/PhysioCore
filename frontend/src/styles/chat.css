@@ -102,10 +102,26 @@
     color: var(--text-muted);
     margin-top: 0.2rem;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
-.chat-bubble-row--sent  .chat-bubble-meta { text-align: right; }
-.chat-bubble-row--received .chat-bubble-meta { text-align: left; }
+.chat-bubble-row--sent  .chat-bubble-meta { justify-content: flex-end; }
+.chat-bubble-row--received .chat-bubble-meta { justify-content: flex-start; }
+
+/* ── Message status ticks ─────────────────────────────────── */
+.chat-tick {
+    font-size: 0.72rem;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.chat-tick--sent      { color: var(--text-disabled, #bbb); }
+.chat-tick--delivered { color: var(--text-muted); }
+.chat-tick--seen      { color: var(--primary); }
 
 .chat-bubble-sender {
     font-size: 0.72rem;

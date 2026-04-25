@@ -1,7 +1,11 @@
 import api from './axios';
 
-export const getMessages             = (params) => api.get('/messages', { params });
-export const sendMessage             = (data)   => api.post('/messages', data);
-export const getNotifications        = ()        => api.get('/messages/notifications');
-export const markAllNotificationsRead = ()       => api.post('/messages/notifications/read');
-export const markMessageRead          = (id)     => api.patch(`/messages/${id}/read`);
+const SKIP = { _skipAuthRedirect: true };
+
+export const getMessages              = (params)   => api.get('/messages', { params });
+export const sendMessage              = (data)     => api.post('/messages', data);
+export const getNotifications         = ()         => api.get('/messages/notifications');
+export const markAllNotificationsRead = ()         => api.post('/messages/notifications/read');
+export const markMessageRead          = (id)       => api.patch(`/messages/${id}/read`);
+export const markDelivered            = (ids)      => api.post('/messages/delivered', { message_ids: ids }, { ...SKIP });
+export const markSeen                 = (params)   => api.post('/messages/seen', params, { ...SKIP });

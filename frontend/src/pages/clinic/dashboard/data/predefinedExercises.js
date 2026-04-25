@@ -80,3 +80,34 @@ const library = {
 export function getPresetExercises(injuryType) {
     return (library[injuryType] ?? []).map((ex, i) => ({ ...ex, _key: Date.now() + i }));
 }
+
+/**
+ * Returns a structured 7-day rehab week for the given injury type.
+ * Each day gets a clinically meaningful subset of the exercise library:
+ *   Mon/Wed/Fri  — full training session (4–5 exercises)
+ *   Tue/Thu      — active recovery (3 exercises)
+ *   Sat          — light mobility (2 exercises)
+ *   Sun          — rest day (empty)
+ *
+ * Uses modulo on the flat exercise list so every injury type works
+ * regardless of how many exercises it has.
+ */
+export function getPresetWeekPlan(injuryType) {
+    const exs = library[injuryType];
+    if (!exs || exs.length === 0) return null;
+
+    const n = exs.length;
+    let seq = 0;
+    const stamp = () => Date.now() + (++seq) * 0.001;
+    const pick  = (...indices) => indices.map(i => ({ ...exs[i % n], _key: stamp() }));
+
+    return {
+        monday:    pick(0, 1, 2, 3),
+        tuesday:   pick(0, 4, 5),
+        wednesday: pick(0, 1, 2, 3, 4),
+        thursday:  pick(0, 5, 2),
+        friday:    pick(0, 1, 3, 4, 5),
+        saturday:  pick(0, n - 1),
+        sunday:    [],
+    };
+}

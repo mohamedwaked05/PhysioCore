@@ -4,6 +4,7 @@ import WorkoutSummary from '../components/WorkoutSummary';
 import Skeleton from '../../../../components/ui/Skeleton';
 import { getAccessRequests } from '../../../../api/client';
 import { getMyRehabPlan } from '../../../../api/rehabPlans';
+import { getEcho } from '../../../../services/echo';
 
 const DAY_NAMES = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
 const TODAY_DAY = DAY_NAMES[new Date().getDay()];
@@ -90,6 +91,22 @@ export default function WeeklyPage() {
             .catch(() => setPlan(null))
             .finally(() => setLoading(false));
     }, [clinicId]);
+
+    // Real-time plan updates
+    useEffect(() => {
+        if (!plan?.client_profile_id) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const echo = getEcho(token);
+        const ch   = echo.private(`rehab-plan.${plan.client_profile_id}`);
+        ch.listen('.RehabPlanUpdated', ({ plan: updated }) => {
+            if (updated?.deleted) { setPlan(null); return; }
+            if (updated?.exercises_by_day) setPlan(updated);
+        });
+        return () => {
+            try { echo.leave(`rehab-plan.${plan.client_profile_id}`); } catch {}
+        };
+    }, [plan?.client_profile_id]); // eslint-disable-line
 
     const exercisesByDay = plan?.exercises_by_day ?? {};
     const progress       = plan?.progress ?? {};

@@ -18,12 +18,13 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// If the server returns 401, only redirect to login when there was an active session
-// (expired/invalid token). Unauthenticated requests from guests are rejected silently.
+// If the server returns 401, only redirect to login when there was an active session.
+// Pass { _skipAuthRedirect: true } in the axios config to suppress the redirect for
+// background / non-critical calls (e.g. marking a notification as seen).
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        if (error.response?.status === 401 && !error.config?._skipAuthRedirect) {
             const hadToken = !!localStorage.getItem('token');
             localStorage.removeItem('token');
             localStorage.removeItem('user');

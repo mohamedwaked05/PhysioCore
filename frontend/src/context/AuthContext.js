@@ -16,14 +16,18 @@ export function AuthProvider({ children }) {
     };
 
     const logout = () => {
-        // Clear state first so the 401 interceptor won't redirect to /login
-        // if the server rejects an already-expired token.
+        // Remove persisted credentials before navigating away.
+        // Do NOT call setUser(null) here — it would trigger ProtectedRoute to
+        // render <Navigate to="/login"> before window.location.href fires,
+        // causing a /login flash. The full-page reload resets all React state
+        // naturally from the now-empty localStorage.
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('pc-photo');
-        setUser(null);
-        // Fire the server-side token revocation in the background (no-auth header
-        // since we already removed the token, so ignore any response).
+        // Revoke the token server-side in the background. Token is already gone
+        // from localStorage so the request interceptor sends no Authorization
+        // header; the 401 response is suppressed by the interceptor's hadToken
+        // check (hadToken === false → no redirect).
         api.post('/auth/logout').catch(() => {});
         window.location.href = '/';
     };

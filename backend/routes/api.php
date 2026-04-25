@@ -20,6 +20,8 @@ use App\Http\Controllers\Clinic\AnalyticsController;
 use App\Http\Controllers\Clinic\AiInsightController as ClinicAiInsightController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -94,6 +96,7 @@ Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(func
     Route::get('/patients/{clientProfileId}/feedback',   [PatientFeedbackController::class, 'index']);
 
     // Rehab plans
+    Route::get('/plans',                                  [RehabPlanController::class, 'index']);
     Route::get('/patients/{clientProfileId}/rehab-plan', [RehabPlanController::class, 'showForPatient']);
     Route::post('/rehab-plans',                          [RehabPlanController::class, 'store']);
     Route::put('/rehab-plans/{rehabPlan}',               [RehabPlanController::class, 'update']);
@@ -179,4 +182,28 @@ Route::middleware('auth:sanctum')->prefix('messages')->group(function () {
     Route::get('/notifications',         [MessageController::class, 'notifications']);
     Route::post('/notifications/read',   [MessageController::class, 'markAllRead']);
     Route::patch('/{id}/read',           [MessageController::class, 'markOneRead']);
+    Route::post('/delivered',            [MessageController::class, 'markDelivered']);
+    Route::post('/seen',                 [MessageController::class, 'markSeen']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Notifications (all roles)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth:sanctum')->prefix('notifications')->group(function () {
+    Route::get('/',              [NotificationController::class, 'index']);
+    Route::patch('/{id}/seen',   [NotificationController::class, 'markSeen']);
+    Route::post('/seen-all',     [NotificationController::class, 'markAllSeen']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| WebSocket broadcast auth (Sanctum token)
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/broadcasting/auth', function () {
+    return Broadcast::auth(request());
+})->middleware('auth:sanctum');

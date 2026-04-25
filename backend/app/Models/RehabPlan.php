@@ -5,15 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class RehabPlan extends Model
 {
+    use SoftDeletes;
     const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 
     protected $fillable = [
         'clinic_id',
         'client_profile_id',
         'injury_type',
+        'week_number',
+        'start_date',
+        'end_date',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date:Y-m-d',
+        'end_date'   => 'date:Y-m-d',
     ];
 
     public function exercises(): HasMany

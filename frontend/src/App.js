@@ -41,6 +41,7 @@ import OverviewPage from './pages/clinic/dashboard/pages/OverviewPage';
 import RequestsPage from './pages/clinic/dashboard/pages/RequestsPage';
 import SafetyFlagsPage from './pages/clinic/dashboard/pages/SafetyFlagsPage';
 import PatientsPage from './pages/clinic/dashboard/pages/PatientsPage';
+import PlansPage from './pages/clinic/dashboard/pages/PlansPage';
 import PatientFeedbackPage from './pages/clinic/dashboard/pages/PatientFeedbackPage';
 import InquiriesPage from './pages/clinic/dashboard/pages/InquiriesPage';
 import ClinicProfilePage from './pages/clinic/ClinicProfilePage';
@@ -104,6 +105,7 @@ function App() {
                         <Route path="flags"    element={<SafetyFlagsPage />} />
                         <Route path="patients" element={<PatientsPage />} />
                         <Route path="patients/:patientId/feedback" element={<PatientFeedbackPage />} />
+                        <Route path="plans"    element={<PlansPage />} />
                         <Route path="inquiries" element={<InquiriesPage />} />
                     </Route>
                     <Route path="/clinic/profile" element={

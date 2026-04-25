@@ -4,16 +4,21 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\AiInsight;
+use App\Models\Clinic;
 use App\Models\Message;
 use App\Models\PainEffortLog;
 use App\Models\SessionFeedback;
 use App\Services\AiService;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AiInsightController extends Controller
 {
-    public function __construct(private AiService $ai) {}
+    public function __construct(
+        private AiService $ai,
+        private NotificationService $notifications,
+    ) {}
 
     /**
      * POST /client/ai/escalate
@@ -133,7 +138,7 @@ class AiInsightController extends Controller
         bool $isCritical = false
     ): void {
         try {
-            $clinic = \App\Models\Clinic::find($clinicId);
+            $clinic = Clinic::find($clinicId);
             if (!$clinic) return;
 
             $user      = $profile->user;
@@ -145,16 +150,31 @@ class AiInsightController extends Controller
                 ? "🚨 CRITICAL: {$firstName} {$lastName} reported very high pain during their session. Immediate attention may be required."
                 : "⚠️ Safety Alert: {$firstName} {$lastName} reported {$painLevel} during their session.";
 
+            // Existing: message in the clinic's chat thread
             Message::create([
-                'sender_id'   => $user->id,
-                'receiver_id' => $clinic->user_id,
-                'context'     => 'safety_alert',
-                'reference_id'=> $clinicId,
-                'content'     => $body,
-                'is_read'     => false,
+                'sender_id'    => $user->id,
+                'receiver_id'  => $clinic->user_id,
+                'context'      => 'safety_alert',
+                'reference_id' => $clinicId,
+                'content'      => $body,
+                'is_read'      => false,
             ]);
+
+            $notifData = [
+                'severity'     => $aiResult['severity'] ?? 'warning',
+                'patient_name' => trim("{$firstName} {$lastName}"),
+                'flag_reason'  => $aiResult['flag_reason'] ?? null,
+                'clinic_id'    => $clinicId,
+                'is_critical'  => $isCritical,
+            ];
+
+            // Notify the clinic user in real-time
+            $this->notifications->notify($clinic->user_id, 'safety_flag', $notifData);
+
+            // Notify all admins in real-time (persistent + admin-channel broadcast)
+            $this->notifications->notifyAdmins('safety_flag', $notifData);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('Failed to send safety alert message: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::warning('Failed to send safety alert notification: ' . $e->getMessage());
         }
     }
 }

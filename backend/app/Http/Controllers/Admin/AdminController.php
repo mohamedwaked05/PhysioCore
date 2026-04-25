@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\AiInsight;
 use App\Models\Clinic;
 use App\Models\User;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
+    public function __construct(private NotificationService $notifications) {}
+
     // ── GET /admin/stats ──────────────────────────────────────
     public function stats()
     {
@@ -119,6 +122,12 @@ class AdminController extends Controller
         // Activate the clinic's user account
         $clinic->user?->update(['status' => 'active']);
 
+        if ($clinic->user_id) {
+            $this->notifications->notify($clinic->user_id, 'clinic_approved', [
+                'clinic_name' => $clinic->commercial_name ?? $clinic->legal_name,
+            ]);
+        }
+
         return response()->json(['message' => 'Clinic approved.', 'clinic' => $clinic]);
     }
 
@@ -134,6 +143,13 @@ class AdminController extends Controller
             'verification_status' => 'rejected',
             'rejection_reason'    => $request->reason,
         ]);
+
+        if ($clinic->user_id) {
+            $this->notifications->notify($clinic->user_id, 'clinic_rejected', [
+                'clinic_name'      => $clinic->commercial_name ?? $clinic->legal_name,
+                'rejection_reason' => $request->reason,
+            ]);
+        }
 
         return response()->json(['message' => 'Clinic rejected.', 'clinic' => $clinic]);
     }
@@ -176,6 +192,11 @@ class AdminController extends Controller
 
         $user->update(['status' => $request->status]);
 
+        $type = $request->status === 'suspended' ? 'user_suspended' : 'user_activated';
+        $this->notifications->notify($user->id, $type, [
+            'status' => $request->status,
+        ]);
+
         return response()->json(['message' => 'User status updated.', 'user' => $user]);
     }
 
@@ -195,14 +216,17 @@ class AdminController extends Controller
                 'clientProfile' => fn($q) => $q->select('id', 'user_id', 'condition_summary')
                     ->with('user:id,first_name,last_name'),
                 'clinic:id,commercial_name,legal_name',
+                'resolvedByUser:id,first_name,last_name',
             ])
             ->orderByRaw("CASE WHEN severity = 'critical' THEN 0 ELSE 1 END")
             ->latest()
+            ->limit(100)
             ->get()
             ->map(function ($f) {
-                $u       = $f->clientProfile?->user;
-                $name    = trim(($u?->first_name ?? '') . ' ' . ($u?->last_name ?? '')) ?: 'Unknown';
+                $u        = $f->clientProfile?->user;
+                $name     = trim(($u?->first_name ?? '') . ' ' . ($u?->last_name ?? '')) ?: 'Unknown';
                 $initials = strtoupper(($u?->first_name[0] ?? '') . ($u?->last_name[0] ?? '')) ?: '?';
+                $resolver = $f->resolvedByUser;
 
                 return [
                     'id'                => $f->id,
@@ -213,6 +237,10 @@ class AdminController extends Controller
                     'flag_reason'       => $f->flag_reason,
                     'severity'          => $f->severity,
                     'resolved_at'       => $f->resolved_at,
+                    'resolved_by'       => $resolver
+                        ? trim($resolver->first_name . ' ' . $resolver->last_name)
+                        : null,
+                    'resolution_note'   => $f->resolution_note,
                     'created_at'        => $f->created_at,
                 ];
             });
@@ -221,10 +249,18 @@ class AdminController extends Controller
     }
 
     // ── PATCH /admin/safety-flags/{id}/resolve ────────────────
-    public function resolveFlag(int $id)
+    public function resolveFlag(Request $request, int $id)
     {
+        $request->validate([
+            'resolution_note' => ['nullable', 'string', 'max:500'],
+        ]);
+
         $flag = AiInsight::where('safety_flag', true)->findOrFail($id);
-        $flag->update(['resolved_at' => Carbon::now('UTC')]);
+        $flag->update([
+            'resolved_at'     => Carbon::now('UTC'),
+            'resolved_by'     => $request->user()->id,
+            'resolution_note' => $request->input('resolution_note'),
+        ]);
 
         return response()->json(['message' => 'Flag resolved.']);
     }

@@ -16,6 +16,9 @@ class StoreRehabPlanRequest extends FormRequest
         return [
             'client_profile_id'                => ['required', 'integer', 'exists:client_profiles,id'],
             'injury_type'                      => ['required', 'string', 'max:100'],
+            'week_number'                      => ['sometimes', 'integer', 'min:1', 'max:52'],
+            'start_date'                       => ['nullable', 'date'],
+            'end_date'                         => ['nullable', 'date', 'after_or_equal:start_date'],
             'exercises'                        => ['required', 'array', 'min:1'],
             'exercises.*.day_of_week'          => ['required', 'string', 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday'],
             'exercises.*.name'                 => ['required', 'string', 'max:200'],
