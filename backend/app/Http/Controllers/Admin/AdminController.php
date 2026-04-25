@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\AiInsight;
 use App\Models\Clinic;
 use App\Models\User;
+use App\Models\UserNotification;
 use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -198,6 +200,34 @@ class AdminController extends Controller
         ]);
 
         return response()->json(['message' => 'User status updated.', 'user' => $user]);
+    }
+
+    // ── DELETE /admin/users/{id} ──────────────────────────────
+    public function destroyUser(Request $request, int $id)
+    {
+        $user = User::findOrFail($id);
+
+        if ($user->id === $request->user()->id) {
+            return response()->json(['message' => 'Cannot delete your own account.'], 403);
+        }
+
+        if ($user->role === 'admin') {
+            return response()->json(['message' => 'Admin accounts cannot be deleted.'], 403);
+        }
+
+        DB::transaction(function () use ($user) {
+            // Sanctum tokens have no DB cascade — delete manually
+            $user->tokens()->delete();
+            // Notifications have no DB cascade — delete manually
+            UserNotification::where('user_id', $user->id)->delete();
+            // DB CASCADE handles the rest:
+            //   client_profiles → access_requests, rehab_plans (exercises + progress)
+            //   clinics         → rehab_plans, access_requests
+            //   messages        (sender_id and receiver_id both CASCADE)
+            $user->delete();
+        });
+
+        return response()->json(['message' => 'User permanently deleted.']);
     }
 
     // ── GET /admin/safety-flags ───────────────────────────────

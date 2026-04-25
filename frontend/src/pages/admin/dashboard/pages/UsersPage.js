@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getAdminUsers, toggleUserStatus } from '../../../../api/admin';
+import { getAdminUsers, toggleUserStatus, deleteUser } from '../../../../api/admin';
 import { useToast } from '../../../../context/ToastContext';
 import Skeleton from '../../../../components/ui/Skeleton';
 
@@ -20,6 +20,8 @@ export default function UsersPage() {
     const [page,         setPage]         = useState(1);
     const [meta,         setMeta]         = useState(null);
     const [actionLoading, setActionLoading] = useState({});
+    const [deleteTarget,  setDeleteTarget]  = useState(null); // { id, name }
+    const [deleteConfirm, setDeleteConfirm] = useState('');
 
     const fetchUsers = useCallback(() => {
         setLoading(true);
@@ -37,6 +39,22 @@ export default function UsersPage() {
     useEffect(() => { fetchUsers(); }, [fetchUsers]);
     useEffect(() => { setPage(1); }, [roleFilter, statusFilter, search]);
 
+    const handleDelete = async () => {
+        if (!deleteTarget || deleteConfirm !== 'DELETE') return;
+        setActionLoading(p => ({ ...p, [deleteTarget.id]: true }));
+        try {
+            await deleteUser(deleteTarget.id);
+            addToast('User permanently deleted.', 'success');
+            setUsers(prev => prev.filter(u => u.id !== deleteTarget.id));
+            setDeleteTarget(null);
+            setDeleteConfirm('');
+        } catch (err) {
+            addToast(err.response?.data?.message ?? 'Delete failed.', 'error');
+        } finally {
+            setActionLoading(p => ({ ...p, [deleteTarget.id]: false }));
+        }
+    };
+
     const handleToggle = async (user) => {
         const next = user.status === 'active' ? 'suspended' : 'active';
         setActionLoading(p => ({ ...p, [user.id]: true }));
@@ -52,6 +70,60 @@ export default function UsersPage() {
     };
 
     return (
+        <>
+        {deleteTarget && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+                onClick={() => { setDeleteTarget(null); setDeleteConfirm(''); }}>
+                <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '1.75rem', width: '100%', maxWidth: 420, border: '0.5px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}
+                    onClick={e => e.stopPropagation()}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '1rem' }}>
+                        <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', background: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)', marginBottom: '0.25rem' }}>Delete Account Permanently</p>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                                This will permanently remove <strong>{deleteTarget.name}</strong> and all associated data (plans, messages, access requests). This action cannot be undone.
+                            </p>
+                        </div>
+                    </div>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                            Type <strong>DELETE</strong> to confirm
+                        </label>
+                        <input
+                            className="ui-input"
+                            placeholder="DELETE"
+                            value={deleteConfirm}
+                            onChange={e => setDeleteConfirm(e.target.value)}
+                            style={{ fontSize: '0.85rem' }}
+                            autoFocus
+                        />
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                            className="adm-btn adm-btn--activate"
+                            style={{ flex: 1 }}
+                            onClick={() => { setDeleteTarget(null); setDeleteConfirm(''); }}>
+                            Cancel
+                        </button>
+                        <button
+                            style={{
+                                flex: 1, padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-md)',
+                                fontSize: '0.8rem', fontWeight: 600, border: 'none', cursor: deleteConfirm === 'DELETE' ? 'pointer' : 'not-allowed',
+                                background: deleteConfirm === 'DELETE' ? '#dc2626' : '#fca5a5',
+                                color: '#fff', transition: 'background 0.15s',
+                            }}
+                            disabled={deleteConfirm !== 'DELETE' || actionLoading[deleteTarget.id]}
+                            onClick={handleDelete}>
+                            {actionLoading[deleteTarget.id] ? 'Deleting…' : 'Delete Permanently'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
         <div className="adm-page">
             <div className="adm-section">
                 <div className="adm-section-header">
@@ -152,13 +224,29 @@ export default function UsersPage() {
                                             </td>
                                             <td>
                                                 {u.role !== 'admin' && (
-                                                    <button
-                                                        className={`adm-btn ${u.status === 'active' ? 'adm-btn--suspend' : 'adm-btn--activate'}`}
-                                                        disabled={!!busy}
-                                                        onClick={() => handleToggle(u)}
-                                                    >
-                                                        {busy ? '…' : u.status === 'active' ? 'Suspend' : 'Activate'}
-                                                    </button>
+                                                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                                        <button
+                                                            className={`adm-btn ${u.status === 'active' ? 'adm-btn--suspend' : 'adm-btn--activate'}`}
+                                                            disabled={!!busy}
+                                                            onClick={() => handleToggle(u)}
+                                                        >
+                                                            {busy ? '…' : u.status === 'active' ? 'Suspend' : 'Activate'}
+                                                        </button>
+                                                        <button
+                                                            style={{
+                                                                padding: '0.3rem 0.55rem', borderRadius: 'var(--radius-md)',
+                                                                fontSize: '0.75rem', fontWeight: 600, border: '0.5px solid #fca5a5',
+                                                                background: 'none', color: '#dc2626', cursor: 'pointer',
+                                                                transition: 'background 0.15s',
+                                                            }}
+                                                            disabled={!!busy}
+                                                            onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                                                            onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                                            onClick={() => { setDeleteTarget({ id: u.id, name: `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || u.email }); setDeleteConfirm(''); }}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>
@@ -189,5 +277,6 @@ export default function UsersPage() {
                 )}
             </div>
         </div>
+        </>
     );
 }

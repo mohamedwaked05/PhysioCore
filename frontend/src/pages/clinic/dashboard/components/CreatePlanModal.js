@@ -201,10 +201,10 @@ export default function CreatePlanModal({ patient, existingPlan, defaultWeekNum,
     const addEx = () =>
         setByDay(prev => ({ ...prev, [activeDay]: [...prev[activeDay], EMPTY_EX()] }));
 
-    /* Load a full structured week preset — multiple exercises per day */
+    /* Load a full structured week preset — exercises vary by weekNumber (phase-based) */
     const loadPreset = () => {
         if (!injuryType) return;
-        const weekPlan = getPresetWeekPlan(injuryType);
+        const weekPlan = getPresetWeekPlan(injuryType, weekNumber);
         if (!weekPlan) return;
         const newByDay = {};
         WEEK_DAYS.forEach(d => {

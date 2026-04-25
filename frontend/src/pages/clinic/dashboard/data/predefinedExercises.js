@@ -83,16 +83,16 @@ export function getPresetExercises(injuryType) {
 
 /**
  * Returns a structured 7-day rehab week for the given injury type.
- * Each day gets a clinically meaningful subset of the exercise library:
- *   Mon/Wed/Fri  — full training session (4–5 exercises)
- *   Tue/Thu      — active recovery (3 exercises)
- *   Sat          — light mobility (2 exercises)
- *   Sun          — rest day (empty)
+ * weekNumber drives a 3-phase clinical progression:
+ *
+ *   Phase 1 (weeks 1–2) — Foundation: core movements only, lower daily volume
+ *   Phase 2 (weeks 3–4) — Progression: expand exercise pool, normal volume
+ *   Phase 3 (weeks 5+)  — Variation: full library rotation, functional load
  *
  * Uses modulo on the flat exercise list so every injury type works
  * regardless of how many exercises it has.
  */
-export function getPresetWeekPlan(injuryType) {
+export function getPresetWeekPlan(injuryType, weekNumber = 1) {
     const exs = library[injuryType];
     if (!exs || exs.length === 0) return null;
 
@@ -101,12 +101,39 @@ export function getPresetWeekPlan(injuryType) {
     const stamp = () => Date.now() + (++seq) * 0.001;
     const pick  = (...indices) => indices.map(i => ({ ...exs[i % n], _key: stamp() }));
 
+    // Phase 1 — Foundation (weeks 1–2): core movements, lower volume per day
+    if (weekNumber <= 2) {
+        return {
+            monday:    pick(0, 1, 2),
+            tuesday:   pick(0, 2),
+            wednesday: pick(0, 1, 2, 3),
+            thursday:  pick(1, 2),
+            friday:    pick(0, 2, 3),
+            saturday:  pick(0),
+            sunday:    [],
+        };
+    }
+
+    // Phase 2 — Progression (weeks 3–4): expand pool, normal volume
+    if (weekNumber <= 4) {
+        return {
+            monday:    pick(0, 1, 2, 3),
+            tuesday:   pick(0, 3, 4),
+            wednesday: pick(1, 2, 3, 4),
+            thursday:  pick(0, 2, 4),
+            friday:    pick(0, 1, 3, 4, 5),
+            saturday:  pick(n - 2, n - 1),
+            sunday:    [],
+        };
+    }
+
+    // Phase 3 — Variation (weeks 5+): full library rotation, functional load
     return {
-        monday:    pick(0, 1, 2, 3),
-        tuesday:   pick(0, 4, 5),
-        wednesday: pick(0, 1, 2, 3, 4),
-        thursday:  pick(0, 5, 2),
-        friday:    pick(0, 1, 3, 4, 5),
+        monday:    pick(2, 3, 4, 5),
+        tuesday:   pick(0, 3, n - 1),
+        wednesday: pick(1, 2, 4, 5, n - 1),
+        thursday:  pick(0, 2, 5),
+        friday:    pick(1, 3, 4, n - 2, n - 1),
         saturday:  pick(0, n - 1),
         sunday:    [],
     };

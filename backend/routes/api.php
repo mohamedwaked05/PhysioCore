@@ -166,6 +166,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/clinics/{id}/reject',           [AdminController::class, 'rejectClinic']);
     Route::get('/users',                          [AdminController::class, 'users']);
     Route::patch('/users/{id}/status',            [AdminController::class, 'toggleUserStatus']);
+    Route::delete('/users/{id}',                  [AdminController::class, 'destroyUser']);
     Route::get('/safety-flags',                   [AdminController::class, 'safetyFlags']);
     Route::patch('/safety-flags/{id}/resolve',    [AdminController::class, 'resolveFlag']);
 });

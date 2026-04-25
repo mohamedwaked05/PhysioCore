@@ -9,3 +9,4 @@ export const getAdminUsers       = (params)     => api.get('/admin/users', { par
 export const toggleUserStatus    = (id, data)   => api.patch(`/admin/users/${id}/status`, data);
 export const getAdminSafetyFlags = (params)     => api.get('/admin/safety-flags', { params });
 export const adminResolveFlag    = (id, data = {}) => api.patch(`/admin/safety-flags/${id}/resolve`, data);
+export const deleteUser          = (id)         => api.delete(`/admin/users/${id}`);
