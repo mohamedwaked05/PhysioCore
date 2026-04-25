@@ -15,10 +15,12 @@ class AccessRequestController extends Controller
     {
         $clinic = $request->user()->clinic;
 
-        $requests = AccessRequest::where('clinic_id', $clinic->id)
-            ->with('clientProfile.user:id,first_name,last_name')
-            ->latest()
-            ->get();
+        $requests = Cache::remember("clinic_access_requests_{$clinic->id}", 60, fn() =>
+            AccessRequest::where('clinic_id', $clinic->id)
+                ->with('clientProfile.user:id,first_name,last_name')
+                ->latest()
+                ->get()
+        );
 
         return response()->json($requests);
     }
@@ -41,6 +43,9 @@ class AccessRequestController extends Controller
         if ($clientUserId = $accessRequest->clientProfile?->user_id) {
             Cache::forget("access_requests_{$clientUserId}");
         }
+
+        Cache::forget("clinic_access_requests_{$clinic->id}");
+        Cache::forget("clinic_counts_{$clinic->id}");
 
         // Notify the client
         try {

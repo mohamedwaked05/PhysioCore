@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\StoreSessionFeedbackRequest;
+use App\Jobs\AnalyzeSessionJob;
 use App\Models\AiInsight;
 use App\Models\ExerciseLog;
 use App\Models\PainEffortLog;
@@ -101,79 +102,32 @@ class SessionFeedbackController extends Controller
             }
         }
 
-        // ── AI: session safety analysis ───────────────────────
-        $safetyResult = null;
+        // ── AI: session safety analysis (background) ─────────
+        // Dispatched to the queue — no longer blocks the HTTP response.
+        // Critical real-time alerts (pain ≥ 9) are still handled immediately
+        // by the separate POST /client/ai/escalate endpoint, which fires from
+        // the frontend before the user ever reaches the submit button.
         if ($request->pain_level) {
-            $safetyResult = $this->runSessionAnalysis($profile, $clinicId, $request, $today, $feedback->id);
+            dispatch(new AnalyzeSessionJob(
+                clientProfileId:    $profile->id,
+                clinicId:           $clinicId,
+                painLevel:          (float) $request->pain_level,
+                effortLevel:        (float) ($request->effort_level ?? 0),
+                exercisesCompleted: (int)   ($request->exercises_completed ?? 0),
+                today:              $today,
+                feedbackId:         $feedback->id,
+            ));
         }
 
         // ── AI: progress analysis — deferred after response ──
-        // runProgressAnalysis makes a blocking AI API call whose result is not
-        // returned to the client. Defer it to the request's terminating phase so
-        // the HTTP response is sent immediately.
         app()->terminating(function () use ($profile, $clinicId, $today) {
             $this->runProgressAnalysis($profile, $clinicId, $today);
         });
 
         return response()->json(array_merge(
             $feedback->toArray(),
-            ['ai' => $safetyResult ? ['safety_flag' => $safetyResult['safety_flag'], 'flag_reason' => $safetyResult['flag_reason'], 'severity' => $safetyResult['severity'] ?? null] : null]
+            ['ai' => null]
         ), 201);
-    }
-
-    // ── Private helpers ────────────────────────────────────────
-
-    private function runSessionAnalysis($profile, int $clinicId, $request, string $today, int $feedbackId): ?array
-    {
-        $recentPain = PainEffortLog::where('client_profile_id', $profile->id)
-            ->where('clinic_id', $clinicId)
-            ->where('session_date', '<', $today)
-            ->where('session_date', '>=', Carbon::now('UTC')->subDays(14)->toDateString())
-            ->orderBy('session_date')
-            ->pluck('pain_level')
-            ->map(fn($v) => (float) $v)
-            ->all();
-
-        $result = $this->ai->analyzeSession([
-            'client_id'            => $profile->id,
-            'clinic_id'            => $clinicId,
-            'pain_level'           => $request->pain_level,
-            'effort_level'         => $request->effort_level ?? 0,
-            'completed_exercises'  => $request->exercises_completed,
-            'previous_pain_levels' => $recentPain,
-        ]);
-
-        if (!$result) return null;
-
-        if ($result['safety_flag']) {
-            // Idempotent: unique DB constraint on (session_feedback_id, insight_type)
-            // is the hard guard; wasRecentlyCreated gates the notification.
-            $insight = AiInsight::firstOrCreate(
-                [
-                    'session_feedback_id' => $feedbackId,
-                    'insight_type'        => 'session',
-                ],
-                [
-                    'client_profile_id' => $profile->id,
-                    'clinic_id'         => $clinicId,
-                    'safety_flag'       => true,
-                    'flag_reason'       => $result['flag_reason'],
-                    'severity'          => $result['severity'] ?? null,
-                ]
-            );
-
-            if ($insight->wasRecentlyCreated) {
-                $aiController = app(AiInsightController::class);
-                $aiController->notifyClinic(
-                    $profile,
-                    $clinicId,
-                    $result,
-                    isCritical: ($result['severity'] ?? '') === 'critical'
-                );
-            }
-        }
-
-        return $result;
     }
 
     private function runProgressAnalysis($profile, int $clinicId, string $today): void

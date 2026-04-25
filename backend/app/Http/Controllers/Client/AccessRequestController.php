@@ -64,6 +64,8 @@ class AccessRequestController extends Controller
         } catch (\Throwable) {}
 
         Cache::forget("access_requests_{$request->user()->id}");
+        Cache::forget("clinic_access_requests_{$request->clinic_id}");
+        Cache::forget("clinic_counts_{$request->clinic_id}");
 
         return response()->json(
             $accessRequest->load('clinic:id,user_id,legal_name,commercial_name,specialty_text,address'),

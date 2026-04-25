@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\UpdateProfileRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -12,7 +13,9 @@ class ClientProfileController extends Controller
 {
     public function show(Request $request)
     {
-        return response()->json($request->user()->clientProfile);
+        $userId  = $request->user()->id;
+        $profile = Cache::remember("client_profile_{$userId}", 60, fn() => $request->user()->clientProfile);
+        return response()->json($profile);
     }
 
     public function update(UpdateProfileRequest $request)
@@ -29,6 +32,8 @@ class ClientProfileController extends Controller
 
         unset($data['profile_photo']);
         $profile->update($data);
+
+        Cache::forget("client_profile_{$request->user()->id}");
 
         return response()->json($profile->fresh());
     }

@@ -11,6 +11,7 @@ use App\Models\RehabPlan;
 use App\Models\RehabPlanExercise;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class RehabPlanController extends Controller
 {
@@ -19,16 +20,16 @@ class RehabPlanController extends Controller
     {
         $clinic = $request->user()->clinic;
 
-        $plans = RehabPlan::where('clinic_id', $clinic->id)
-            ->with(['exercises', 'progress', 'clientProfile.user'])
-            ->orderBy('client_profile_id')
-            ->orderBy('week_number')
-            ->get();
+        $result = Cache::remember("clinic_plans_{$clinic->id}", 30, function () use ($clinic) {
+            $plans = RehabPlan::where('clinic_id', $clinic->id)
+                ->with(['exercises', 'progress', 'clientProfile.user'])
+                ->orderBy('client_profile_id')
+                ->orderBy('week_number')
+                ->get();
 
-        $grouped = $plans->groupBy('client_profile_id');
+            $grouped = $plans->groupBy('client_profile_id');
 
-        return response()->json(
-            $grouped->map(function ($clientPlans, $clientProfileId) {
+            return $grouped->map(function ($clientPlans, $clientProfileId) {
                 $first = $clientPlans->first();
                 $cp    = $first->clientProfile;
                 $user  = $cp?->user;
@@ -39,10 +40,12 @@ class RehabPlanController extends Controller
                         'name'              => trim(($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')) ?: 'Unknown',
                         'condition_summary' => $cp?->condition_summary ?? '—',
                     ],
-                    'plans' => $clientPlans->map(fn($p) => $this->formatForClinic($p))->values(),
+                    'plans' => $clientPlans->map(fn($p) => $this->formatForClinic($p))->values()->toArray(),
                 ];
-            })->values()
-        );
+            })->values()->toArray();
+        });
+
+        return response()->json($result);
     }
 
     /* GET /clinic/patients/{clientProfileId}/rehab-plan */
@@ -138,6 +141,9 @@ class RehabPlanController extends Controller
 
         $plan->load(['exercises', 'progress']);
 
+        Cache::forget("clinic_plans_{$clinic->id}");
+        Cache::forget("rehab_plan_{$plan->client_profile_id}_{$clinic->id}");
+
         broadcast(new RehabPlanUpdated((int) $plan->client_profile_id, $this->buildClientPayload($plan)));
 
         return response()->json($this->formatForClinic($plan), 201);
@@ -205,6 +211,9 @@ class RehabPlanController extends Controller
 
         $rehabPlan->load(['exercises', 'progress']);
 
+        Cache::forget("clinic_plans_{$rehabPlan->clinic_id}");
+        Cache::forget("rehab_plan_{$rehabPlan->client_profile_id}_{$rehabPlan->clinic_id}");
+
         broadcast(new RehabPlanUpdated($rehabPlan->client_profile_id, $this->buildClientPayload($rehabPlan)));
 
         return response()->json($this->formatForClinic($rehabPlan));
@@ -218,9 +227,13 @@ class RehabPlanController extends Controller
         }
 
         $clientProfileId = $rehabPlan->client_profile_id;
+        $clinicId        = $rehabPlan->clinic_id;
         $planId          = $rehabPlan->id;
 
         $rehabPlan->delete();
+
+        Cache::forget("clinic_plans_{$clinicId}");
+        Cache::forget("rehab_plan_{$clientProfileId}_{$clinicId}");
 
         // Notify the client in real-time so their plan view clears immediately
         broadcast(new RehabPlanUpdated($clientProfileId, ['deleted' => true, 'id' => $planId]));
@@ -246,6 +259,9 @@ class RehabPlanController extends Controller
 
         $exercise = $rehabPlan->exercises()->create($data);
 
+        Cache::forget("clinic_plans_{$rehabPlan->clinic_id}");
+        Cache::forget("rehab_plan_{$rehabPlan->client_profile_id}_{$rehabPlan->clinic_id}");
+
         return response()->json($exercise, 201);
     }
 
@@ -267,6 +283,9 @@ class RehabPlanController extends Controller
 
         $exercise->update($data);
 
+        Cache::forget("clinic_plans_{$rehabPlan->clinic_id}");
+        Cache::forget("rehab_plan_{$rehabPlan->client_profile_id}_{$rehabPlan->clinic_id}");
+
         return response()->json($exercise);
     }
 
@@ -277,7 +296,13 @@ class RehabPlanController extends Controller
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
+        $clinicId        = $rehabPlan->clinic_id;
+        $clientProfileId = $rehabPlan->client_profile_id;
+
         $exercise->delete();
+
+        Cache::forget("clinic_plans_{$clinicId}");
+        Cache::forget("rehab_plan_{$clientProfileId}_{$clinicId}");
 
         return response()->json(null, 204);
     }
@@ -323,6 +348,9 @@ class RehabPlanController extends Controller
         ]));
 
         $newPlan->load(['exercises', 'progress']);
+
+        Cache::forget("clinic_plans_{$clinic->id}");
+        Cache::forget("rehab_plan_{$data['client_profile_id']}_{$clinic->id}");
 
         return response()->json($this->formatForClinic($newPlan), 201);
     }

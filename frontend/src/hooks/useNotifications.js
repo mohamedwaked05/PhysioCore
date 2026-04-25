@@ -98,7 +98,10 @@ export function useNotifications(user) {
     /* ── Initial load + fallback polling ─────────────────── */
     useEffect(() => {
         load();
-        pollRef.current = setInterval(load, FALLBACK_POLL);
+        pollRef.current = setInterval(() => {
+            const state = echoRef.current?.connector?.pusher?.connection?.state;
+            if (state !== 'connected') load();
+        }, FALLBACK_POLL);
         return () => clearInterval(pollRef.current);
     }, [load]);
 

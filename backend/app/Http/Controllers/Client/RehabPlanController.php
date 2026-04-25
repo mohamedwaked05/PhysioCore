@@ -9,6 +9,7 @@ use App\Models\RehabPlan;
 use App\Models\RehabPlanProgress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class RehabPlanController extends Controller
 {
@@ -34,17 +35,18 @@ class RehabPlanController extends Controller
             return response()->json(['message' => 'No approved access with this clinic.'], 403);
         }
 
-        $plan = RehabPlan::where('clinic_id', $request->clinic_id)
-            ->where('client_profile_id', $clientProfile->id)
-            ->with(['exercises', 'progress'])
-            ->latest()
-            ->first();
+        $cacheKey = "rehab_plan_{$clientProfile->id}_{$request->clinic_id}";
+        $planData = Cache::remember($cacheKey, 30, function () use ($request, $clientProfile) {
+            $plan = RehabPlan::where('clinic_id', $request->clinic_id)
+                ->where('client_profile_id', $clientProfile->id)
+                ->with(['exercises', 'progress'])
+                ->latest()
+                ->first();
 
-        if (!$plan) {
-            return response()->json(null);
-        }
+            return $plan ? $this->formatForClient($plan) : null;
+        });
 
-        return response()->json($this->formatForClient($plan));
+        return response()->json($planData);
     }
 
     /* POST /client/rehab-plan/progress */
@@ -81,6 +83,8 @@ class RehabPlanController extends Controller
             ]
         );
 
+        Cache::forget("rehab_plan_{$clientProfile->id}_{$plan->clinic_id}");
+
         return response()->json($progress, 201);
     }
 
@@ -98,10 +102,20 @@ class RehabPlanController extends Controller
             return response()->json(['message' => 'Client profile not found.'], 404);
         }
 
+        $plan = RehabPlan::where('id', $request->rehab_plan_id)
+            ->where('client_profile_id', $clientProfile->id)
+            ->first();
+
+        if (!$plan) {
+            return response()->json(['message' => 'Plan not found.'], 404);
+        }
+
         RehabPlanProgress::where('rehab_plan_id', $request->rehab_plan_id)
             ->where('client_profile_id', $clientProfile->id)
             ->where('day_of_week', $request->day_of_week)
             ->delete();
+
+        Cache::forget("rehab_plan_{$clientProfile->id}_{$plan->clinic_id}");
 
         return response()->json(null, 204);
     }

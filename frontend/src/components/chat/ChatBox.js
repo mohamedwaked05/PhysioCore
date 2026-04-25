@@ -222,10 +222,14 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
         fetchMessages(false);
     }, [fetchMessages, user]);
 
-    // Polling
+    // Polling — skipped when WebSocket is connected (safety net only)
     useEffect(() => {
         if (!user) return;
-        const id = setInterval(() => fetchMessages(true), POLL_INTERVAL);
+        const id = setInterval(() => {
+            const echo  = getEcho(localStorage.getItem('token'));
+            const state = echo?.connector?.pusher?.connection?.state;
+            if (state !== 'connected') fetchMessages(true);
+        }, POLL_INTERVAL);
         return () => clearInterval(id);
     }, [fetchMessages, user]);
 

@@ -47,6 +47,8 @@ class ClinicProfileController extends Controller
         unset($data['license_file'], $data['cert_file'], $data['profile_photo']);
         $clinic->update($data);
 
+        Cache::forget("clinic_profile_{$request->user()->id}");
+
         return response()->json($clinic->fresh(), 201);
     }
 
