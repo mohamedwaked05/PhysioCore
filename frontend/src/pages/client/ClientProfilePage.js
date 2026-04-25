@@ -5,6 +5,7 @@ import Avatar from '../../components/ui/Avatar';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import SectionHeader from '../../components/ui/SectionHeader';
+import Skeleton from '../../components/ui/Skeleton';
 import { Field, Label, Input, Textarea, FieldError } from '../../components/ui/Input';
 import PhoneInput from '../../components/ui/PhoneInput';
 import '../../styles/ui.css';
@@ -186,7 +187,21 @@ export default function ClientProfilePage() {
     if (loading) {
         return (
             <ClientLayout>
-                <div className="client-loading"><div className="client-spinner" /></div>
+                <div style={{ maxWidth: 680, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
+                        <Skeleton height="80px" width="80px" radius="50%" />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <Skeleton height="22px" width="180px" radius="6px" />
+                            <Skeleton height="14px" width="120px" radius="6px" />
+                        </div>
+                    </div>
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            <Skeleton height="14px" width="90px" radius="5px" />
+                            <Skeleton height="42px" radius="8px" />
+                        </div>
+                    ))}
+                </div>
             </ClientLayout>
         );
     }

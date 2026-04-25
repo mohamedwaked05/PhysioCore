@@ -260,7 +260,7 @@ export default function CreatePlanModal({ patient, existingPlan, defaultWeekNum,
                 exercises,
             };
             let result;
-            if (isEdit) {
+            if (isEdit && existingPlan?.id) {
                 result = await updateRehabPlan(existingPlan.id, planMeta);
             } else {
                 result = await createRehabPlan({ client_profile_id: patient.clientProfileId, ...planMeta });
