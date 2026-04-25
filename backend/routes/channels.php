@@ -23,6 +23,10 @@ Broadcast::channel('rehab-plan.{clientProfileId}', function ($user, $clientProfi
     return $profile && (int) $profile->id === (int) $clientProfileId;
 });
 
+Broadcast::channel('clinic.{clinicId}', function ($user, $clinicId) {
+    return $user->role === 'clinic' && (int) $user->clinic?->id === (int) $clinicId;
+});
+
 Broadcast::channel('admin', function ($user) {
     $allowed = $user->role === 'admin';
 

@@ -68,11 +68,15 @@ function PlansIcon() {
 export default function ClinicDashboardLayout() {
     const { user } = useAuth();
     const [verificationStatus, setVerificationStatus] = useState(null);
+    const [clinicId, setClinicId] = useState(null);
     const [counts, setCounts] = useState(null);
 
     useEffect(() => {
         getClinicProfile()
-            .then(res => setVerificationStatus(res.data?.verification_status ?? 'pending'))
+            .then(res => {
+                setVerificationStatus(res.data?.verification_status ?? 'pending');
+                setClinicId(res.data?.id ?? null);
+            })
             .catch(() => {});
 
         getDashboardCounts()
@@ -135,7 +139,7 @@ export default function ClinicDashboardLayout() {
                 </div>
 
                 {/* ── Nested Page Content ─── */}
-                <Outlet context={{ verificationStatus }} />
+                <Outlet context={{ verificationStatus, clinicId }} />
             </div>
         </ClinicLayout>
     );

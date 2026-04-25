@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link, useOutletContext } from 'react-router-dom';
+import { useAuth } from '../../../../context/AuthContext';
 import { getSafetyFlags, resolveSafetyFlag } from '../../../../api/clinic';
+import { getEcho } from '../../../../services/echo';
 import Skeleton from '../../../../components/ui/Skeleton';
 
 const PRIORITY_FILTERS = ['All', 'High', 'Medium', 'Low'];
@@ -148,11 +150,19 @@ function ResolvedFlagCard({ flag }) {
 }
 
 export default function SafetyFlagsPage() {
+    const { user }             = useAuth();
+    const { clinicId }         = useOutletContext() ?? {};
+
     const [flags,        setFlags]        = useState([]);
     const [loading,      setLoading]      = useState(true);
     const [filter,       setFilter]       = useState('All');
     const [showResolved, setShowResolved] = useState(false);
 
+    // Keep ref in sync so the silent-refetch closure always reads current showResolved
+    const showResolvedRef = useRef(showResolved);
+    useEffect(() => { showResolvedRef.current = showResolved; }, [showResolved]);
+
+    // Data load (shows loading state — used on mount and filter toggle)
     useEffect(() => {
         setLoading(true);
         getSafetyFlags({ resolved: showResolved ? 1 : 0 })
@@ -160,6 +170,32 @@ export default function SafetyFlagsPage() {
             .catch(() => setFlags([]))
             .finally(() => setLoading(false));
     }, [showResolved]);
+
+    // Silent background refetch — called by WebSocket handler, no loading flash
+    const silentRefetch = useCallback(() => {
+        getSafetyFlags({ resolved: showResolvedRef.current ? 1 : 0 })
+            .then(res => setFlags(res.data))
+            .catch(() => {});
+    }, []);
+
+    // WebSocket: listen for incoming safety flags on the clinic's private channel
+    useEffect(() => {
+        if (!user || !clinicId) return;
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const echo = getEcho(token);
+        const ch   = echo.private(`clinic.${clinicId}`);
+
+        ch.listen('.SafetyFlagBroadcast', (e) => {
+            console.log('SafetyFlag received', e);
+            silentRefetch();
+        });
+
+        return () => {
+            try { echo.leave(`clinic.${clinicId}`); } catch {}
+        };
+    }, [user?.id, clinicId, silentRefetch]);
 
     const handleResolved = (id) => setFlags(prev => prev.filter(f => f.id !== id));
 

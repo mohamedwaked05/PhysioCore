@@ -4,7 +4,7 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
  * Admins subscribe to this channel to get live safety alerts
  * regardless of which notification record they own.
  */
-class SafetyFlagBroadcast implements ShouldBroadcast
+class SafetyFlagBroadcast implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -26,9 +26,13 @@ class SafetyFlagBroadcast implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        return [
-            new PrivateChannel('admin'),
-        ];
+        $channels = [new PrivateChannel('admin')];
+
+        if (!empty($this->payload['clinic_id'])) {
+            $channels[] = new PrivateChannel('clinic.' . $this->payload['clinic_id']);
+        }
+
+        return $channels;
     }
 
     public function broadcastWith(): array
