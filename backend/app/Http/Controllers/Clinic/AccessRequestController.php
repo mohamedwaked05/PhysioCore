@@ -7,6 +7,7 @@ use App\Http\Requests\Clinic\UpdateAccessRequestRequest;
 use App\Models\AccessRequest;
 use App\Models\Message;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class AccessRequestController extends Controller
 {
@@ -36,6 +37,10 @@ class AccessRequestController extends Controller
 
         $newStatus = $request->action === 'approve' ? 'approved' : 'rejected';
         $accessRequest->update(['status' => $newStatus]);
+
+        if ($clientUserId = $accessRequest->clientProfile?->user_id) {
+            Cache::forget("access_requests_{$clientUserId}");
+        }
 
         // Notify the client
         try {

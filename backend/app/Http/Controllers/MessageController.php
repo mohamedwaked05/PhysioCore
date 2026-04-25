@@ -31,8 +31,11 @@ class MessageController extends Controller
                       ->orWhere('receiver_id', $request->with_user_id);
             }))
             ->with(['sender:id,first_name,last_name', 'receiver:id,first_name,last_name'])
-            ->oldest()
-            ->get();
+            ->latest()
+            ->take(50)
+            ->get()
+            ->reverse()
+            ->values();
 
         // Mark fetched messages as read
         Message::where('receiver_id', $userId)

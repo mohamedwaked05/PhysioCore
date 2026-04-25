@@ -7,17 +7,22 @@ use App\Http\Requests\Client\StoreAccessRequestRequest;
 use App\Models\Clinic;
 use App\Models\Message;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class AccessRequestController extends Controller
 {
     public function index(Request $request)
     {
-        $requests = $request->user()
-            ->clientProfile
-            ->accessRequests()
-            ->with('clinic:id,user_id,legal_name,commercial_name,specialty_text,address')
-            ->latest()
-            ->get();
+        $userId = $request->user()->id;
+
+        $requests = Cache::remember("access_requests_{$userId}", 60, fn() =>
+            $request->user()
+                ->clientProfile
+                ->accessRequests()
+                ->with('clinic:id,user_id,legal_name,commercial_name,specialty_text,address')
+                ->latest()
+                ->get()
+        );
 
         return response()->json($requests);
     }
@@ -57,6 +62,8 @@ class AccessRequestController extends Controller
                 ]);
             }
         } catch (\Throwable) {}
+
+        Cache::forget("access_requests_{$request->user()->id}");
 
         return response()->json(
             $accessRequest->load('clinic:id,user_id,legal_name,commercial_name,specialty_text,address'),

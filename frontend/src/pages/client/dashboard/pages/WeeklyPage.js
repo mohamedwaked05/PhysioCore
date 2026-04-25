@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ExerciseItem from '../components/ExerciseItem';
 import WorkoutSummary from '../components/WorkoutSummary';
 import Skeleton from '../../../../components/ui/Skeleton';
@@ -69,7 +69,9 @@ export default function WeeklyPage() {
     const [clinicId,     setClinicId]     = useState('');
     const [clinics,      setClinics]      = useState([]);
 
-    // Fetch approved clinics → then load plan
+    const isInitialLoad = useRef(true);
+
+    // Fetch clinics + immediately load plan — avoids React re-render between the two calls
     useEffect(() => {
         getAccessRequests()
             .then(res => {
@@ -77,13 +79,30 @@ export default function WeeklyPage() {
                     .filter(r => r.status === 'approved' && r.clinic)
                     .map(r => r.clinic);
                 setClinics(approved);
-                if (approved.length >= 1) setClinicId(String(approved[0].id));
-                else setLoading(false);
+                if (!approved.length) {
+                    setLoading(false);
+                    isInitialLoad.current = false;
+                    return;
+                }
+                const firstId = String(approved[0].id);
+                setClinicId(firstId);
+                getMyRehabPlan(firstId)
+                    .then(res => setPlan(res.data ?? null))
+                    .catch(() => setPlan(null))
+                    .finally(() => {
+                        setLoading(false);
+                        isInitialLoad.current = false;
+                    });
             })
-            .catch(() => setLoading(false));
+            .catch(() => {
+                setLoading(false);
+                isInitialLoad.current = false;
+            });
     }, []);
 
+    // Reload plan when user manually changes clinic selector
     useEffect(() => {
+        if (isInitialLoad.current) return;
         if (!clinicId) return;
         setLoading(true);
         getMyRehabPlan(clinicId)

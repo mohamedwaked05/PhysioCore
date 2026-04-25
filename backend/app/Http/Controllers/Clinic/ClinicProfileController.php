@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Clinic\StoreClinicProfileRequest;
 use App\Http\Requests\Clinic\UpdateClinicProfileRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -13,7 +14,9 @@ class ClinicProfileController extends Controller
 {
     public function show(Request $request)
     {
-        return response()->json($request->user()->clinic);
+        $userId = $request->user()->id;
+        $clinic = Cache::remember("clinic_profile_{$userId}", 60, fn() => $request->user()->clinic);
+        return response()->json($clinic);
     }
 
     public function store(StoreClinicProfileRequest $request)
@@ -75,6 +78,8 @@ class ClinicProfileController extends Controller
 
         unset($data['license_file'], $data['cert_file'], $data['profile_photo']);
         $clinic->update($data);
+
+        Cache::forget("clinic_profile_{$request->user()->id}");
 
         return response()->json($clinic->fresh());
     }

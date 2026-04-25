@@ -56,6 +56,7 @@ export default function TodayPage() {
     const [safetyResult,    setSafetyResult]    = useState(null);  // {safety_flag, flag_reason, severity}
     const [escalating,      setEscalating]      = useState(false);
     const criticalSentRef = useRef(false); // prevents duplicate critical escalations per session
+    const isInitialLoad   = useRef(true);  // prevents [clinicId] effect from double-firing on mount
 
     const completedCount = completed.size;
     const totalCount     = exercises.length;
@@ -64,7 +65,7 @@ export default function TodayPage() {
     const showRating     = (allDone || sessionEnded) && !todayDone;
     const canSubmit      = !submitted && !submitting && !!clinicId && painLevel > 0 && effortLevel > 0;
 
-    // 1. Fetch approved clinics
+    // 1. Fetch clinics + immediately load plan — avoids React re-render between the two calls
     useEffect(() => {
         getAccessRequests()
             .then(res => {
@@ -72,14 +73,44 @@ export default function TodayPage() {
                     .filter(r => r.status === 'approved' && r.clinic)
                     .map(r => r.clinic);
                 setClinics(approved);
-                if (approved.length >= 1) setClinicId(String(approved[0].id));
-                else setPlanLoading(false);
+                if (!approved.length) {
+                    setPlanLoading(false);
+                    isInitialLoad.current = false;
+                    return;
+                }
+                const firstId = String(approved[0].id);
+                setClinicId(firstId);
+                getMyRehabPlan(firstId)
+                    .then(res => {
+                        const p = res.data;
+                        if (p && p.exercises_by_day) {
+                            setPlan(p);
+                            setExercises((p.exercises_by_day[TODAY_DAY] ?? []).map(mapExercise));
+                            const prog = p.progress?.[TODAY_DAY];
+                            setTodayDone(prog?.completed ?? false);
+                            setDoneAt(prog?.completed_at ?? null);
+                        } else {
+                            setPlan(null);
+                            setExercises([]);
+                            setTodayDone(false);
+                            setDoneAt(null);
+                        }
+                    })
+                    .catch(() => { setPlan(null); setExercises([]); })
+                    .finally(() => {
+                        setPlanLoading(false);
+                        isInitialLoad.current = false;
+                    });
             })
-            .catch(() => setPlanLoading(false));
+            .catch(() => {
+                setPlanLoading(false);
+                isInitialLoad.current = false;
+            });
     }, []);
 
-    // 2. Load plan when clinic selected
+    // 2. Reload plan when user manually changes clinic selector
     useEffect(() => {
+        if (isInitialLoad.current) return;
         if (!clinicId) return;
         setPlanLoading(true);
         setCompleted(new Set());
@@ -90,8 +121,7 @@ export default function TodayPage() {
                 const p = res.data;
                 if (p && p.exercises_by_day) {
                     setPlan(p);
-                    const todayExs = (p.exercises_by_day[TODAY_DAY] ?? []).map(mapExercise);
-                    setExercises(todayExs);
+                    setExercises((p.exercises_by_day[TODAY_DAY] ?? []).map(mapExercise));
                     const prog = p.progress?.[TODAY_DAY];
                     setTodayDone(prog?.completed ?? false);
                     setDoneAt(prog?.completed_at ?? null);
