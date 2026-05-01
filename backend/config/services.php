@@ -41,4 +41,8 @@ return [
         'redirect'      => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'ai' => [
+        'url' => env('AI_SERVICE_URL', 'http://localhost:8001'),
+    ],
+
 ];

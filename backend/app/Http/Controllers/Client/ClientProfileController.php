@@ -49,8 +49,7 @@ class ClientProfileController extends Controller
 
     private function deleteStoredFile(string $url): void
     {
-        // Extract relative path from full URL
-        $relativePath = ltrim(parse_url($url, PHP_URL_PATH), '/storage/');
+        $relativePath = Str::after(parse_url($url, PHP_URL_PATH), '/storage/');
         Storage::disk('public')->delete($relativePath);
     }
 }

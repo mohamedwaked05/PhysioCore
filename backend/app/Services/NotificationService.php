@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Events\NotificationCreated;
 use App\Events\SafetyFlagBroadcast;
+use App\Models\Clinic;
+use App\Models\Message;
 use App\Models\User;
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +31,52 @@ class NotificationService
             $notification->update(['status' => 'delivered']);
         } catch (\Throwable $e) {
             Log::warning("NotificationService::notify failed [{$type}] user {$userId}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Send a safety alert message + notification to the clinic and all admins.
+     */
+    public function notifyClinic(
+        $profile,
+        int $clinicId,
+        array $aiResult,
+        bool $isCritical = false
+    ): void {
+        try {
+            $clinic = Clinic::find($clinicId);
+            if (!$clinic) return;
+
+            $user      = $profile->user;
+            $firstName = $user?->first_name ?? 'A patient';
+            $lastName  = $user?->last_name  ?? '';
+            $painLevel = $aiResult['flag_reason'] ?? 'high pain';
+
+            $body = $isCritical
+                ? "🚨 CRITICAL: {$firstName} {$lastName} reported very high pain during their session. Immediate attention may be required."
+                : "⚠️ Safety Alert: {$firstName} {$lastName} reported {$painLevel} during their session.";
+
+            Message::create([
+                'sender_id'    => $user->id,
+                'receiver_id'  => $clinic->user_id,
+                'context'      => 'safety_alert',
+                'reference_id' => $clinicId,
+                'content'      => $body,
+                'is_read'      => false,
+            ]);
+
+            $notifData = [
+                'severity'     => $aiResult['severity'] ?? 'warning',
+                'patient_name' => trim("{$firstName} {$lastName}"),
+                'flag_reason'  => $aiResult['flag_reason'] ?? null,
+                'clinic_id'    => $clinicId,
+                'is_critical'  => $isCritical,
+            ];
+
+            $this->notify($clinic->user_id, 'safety_flag', $notifData);
+            $this->notifyAdmins('safety_flag', $notifData);
+        } catch (\Throwable $e) {
+            Log::warning('NotificationService::notifyClinic failed: ' . $e->getMessage());
         }
     }
 

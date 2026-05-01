@@ -32,8 +32,8 @@ use Illuminate\Support\Facades\Route;
 
 // Public auth routes
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login',    [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+    Route::post('/login',    [AuthController::class, 'login'])->middleware('throttle:10,1');
 
     // Email verification (signed URL + throttle)
     Route::get('/verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])
@@ -41,8 +41,8 @@ Route::prefix('auth')->group(function () {
         ->name('verification.verify');
 
     // Password reset
-    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
-    Route::post('/reset-password',  [PasswordResetController::class, 'resetPassword']);
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->middleware('throttle:6,1');
+    Route::post('/reset-password',  [PasswordResetController::class, 'resetPassword'])->middleware('throttle:6,1');
 
     // Google OAuth
     Route::get('/google',                   [SocialAuthController::class, 'redirectToGoogle']);

@@ -22,7 +22,7 @@ class AdminController extends Controller
         $clinicCounts = Clinic::selectRaw("
             COUNT(*) as total,
             SUM(CASE WHEN verification_status = 'pending'  THEN 1 ELSE 0 END) as pending,
-            SUM(CASE WHEN verification_status = 'verified' THEN 1 ELSE 0 END) as verified,
+            SUM(CASE WHEN verification_status = 'approved' THEN 1 ELSE 0 END) as approved,
             SUM(CASE WHEN verification_status = 'rejected' THEN 1 ELSE 0 END) as rejected
         ")->first();
 
@@ -96,16 +96,16 @@ class AdminController extends Controller
     public function clinics(Request $request)
     {
         $request->validate([
-            'status' => ['nullable', 'in:pending,verified,rejected'],
+            'status' => ['nullable', 'in:pending,approved,rejected'],
             'search' => ['nullable', 'string', 'max:100'],
         ]);
 
         $query = Clinic::with('user:id,first_name,last_name,email,created_at,status')
             ->when($request->status, fn($q) => $q->where('verification_status', $request->status))
             ->when($request->search, fn($q) => $q->where(function ($inner) use ($request) {
-                $inner->where('legal_name', 'ilike', "%{$request->search}%")
-                      ->orWhere('commercial_name', 'ilike', "%{$request->search}%")
-                      ->orWhere('clinic_email', 'ilike', "%{$request->search}%");
+                $inner->where('legal_name', 'LIKE', "%{$request->search}%")
+                      ->orWhere('commercial_name', 'LIKE', "%{$request->search}%")
+                      ->orWhere('clinic_email', 'LIKE', "%{$request->search}%");
             }))
             ->latest();
 
@@ -117,7 +117,7 @@ class AdminController extends Controller
     {
         $clinic = Clinic::findOrFail($id);
         $clinic->update([
-            'verification_status' => 'verified',
+            'verification_status' => 'approved',
             'rejection_reason'    => null,
         ]);
 
@@ -169,9 +169,9 @@ class AdminController extends Controller
             ->when($request->role,   fn($q) => $q->where('role', $request->role))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->search, fn($q) => $q->where(function ($inner) use ($request) {
-                $inner->where('first_name', 'ilike', "%{$request->search}%")
-                      ->orWhere('last_name',  'ilike', "%{$request->search}%")
-                      ->orWhere('email',      'ilike', "%{$request->search}%");
+                $inner->where('first_name', 'LIKE', "%{$request->search}%")
+                      ->orWhere('last_name',  'LIKE', "%{$request->search}%")
+                      ->orWhere('email',      'LIKE', "%{$request->search}%");
             }))
             ->latest();
 

@@ -144,6 +144,11 @@ class MessageController extends Controller
 
     public function markDelivered(Request $request)
     {
+        $request->validate([
+            'message_ids'   => ['required', 'array', 'max:100'],
+            'message_ids.*' => ['integer'],
+        ]);
+
         $userId = $request->user()->id;
         $ids    = $request->input('message_ids', []);
 

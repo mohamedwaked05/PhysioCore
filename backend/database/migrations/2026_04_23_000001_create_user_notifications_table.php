@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('type', 50);
-            $table->jsonb('data')->default('{}');
+            $table->json('data')->default('{}');
             $table->enum('status', ['unread', 'seen'])->default('unread');
             $table->timestamps();
 

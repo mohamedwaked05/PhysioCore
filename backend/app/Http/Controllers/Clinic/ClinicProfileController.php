@@ -97,7 +97,7 @@ class ClinicProfileController extends Controller
 
     private function deleteStoredFile(string $url): void
     {
-        $relativePath = ltrim(parse_url($url, PHP_URL_PATH), '/storage/');
+        $relativePath = Str::after(parse_url($url, PHP_URL_PATH), '/storage/');
         Storage::disk('public')->delete($relativePath);
     }
 }

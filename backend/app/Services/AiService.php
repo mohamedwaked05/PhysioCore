@@ -11,7 +11,7 @@ class AiService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(env('AI_SERVICE_URL', 'http://localhost:8001'), '/');
+        $this->baseUrl = rtrim(config('services.ai.url', 'http://localhost:8001'), '/');
     }
 
     /**

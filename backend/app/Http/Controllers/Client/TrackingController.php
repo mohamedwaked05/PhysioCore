@@ -31,6 +31,7 @@ class TrackingController extends Controller
         $plan = RehabPlan::with(['exercises', 'progress'])
             ->where('client_profile_id', $profile->id)
             ->where('clinic_id', $clinicId)
+            ->latest()
             ->first();
 
         $feedbacks = SessionFeedback::where('client_profile_id', $profile->id)
