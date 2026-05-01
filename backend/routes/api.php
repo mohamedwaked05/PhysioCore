@@ -177,7 +177,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth:sanctum')->prefix('messages')->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('messages')->group(function () {
     Route::get('/',                      [MessageController::class, 'index']);
     Route::post('/',                     [MessageController::class, 'store']);
     Route::get('/notifications',         [MessageController::class, 'notifications']);

@@ -186,7 +186,7 @@ export default function TodayPage() {
                 effort_level: effortLevel || 0,
             })
                 .then(res => setSafetyResult(res.data))
-                .catch(() => {})
+                .catch(() => addToast('Could not notify clinic. If pain is severe, contact them directly.', 'error'))
                 .finally(() => setEscalating(false));
         }
     }, [painLevel, clinicId]); // eslint-disable-line
@@ -224,7 +224,7 @@ export default function TodayPage() {
                 effort_level: exerciseEffort,
             })
                 .then(res => setSafetyResult(res.data))
-                .catch(() => {})
+                .catch(() => addToast('Could not notify clinic. If pain is severe, contact them directly.', 'error'))
                 .finally(() => setEscalating(false));
         }
     };

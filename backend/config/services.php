@@ -43,6 +43,7 @@ return [
 
     'ai' => [
         'url' => env('AI_SERVICE_URL', 'http://localhost:8001'),
+        'key' => env('AI_SERVICE_API_KEY', ''),
     ],
 
 ];

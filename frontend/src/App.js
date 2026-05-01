@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -54,6 +55,7 @@ function ClinicIdRedirect() {
 
 function App() {
     return (
+        <ErrorBoundary>
         <ThemeProvider>
         <ToastProvider>
         <AuthProvider>
@@ -133,6 +135,7 @@ function App() {
         </AuthProvider>
         </ToastProvider>
         </ThemeProvider>
+        </ErrorBoundary>
     );
 }
 

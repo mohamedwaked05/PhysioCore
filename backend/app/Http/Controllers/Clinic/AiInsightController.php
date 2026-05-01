@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Clinic;
 
 use App\Http\Controllers\Controller;
+use App\Models\AccessRequest;
 use App\Models\AiInsight;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -17,6 +18,15 @@ class AiInsightController extends Controller
     public function show(Request $request, int $clientProfileId)
     {
         $clinicId = $request->user()->clinic->id;
+
+        $hasAccess = AccessRequest::where('clinic_id', $clinicId)
+            ->where('client_profile_id', $clientProfileId)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$hasAccess) {
+            return response()->json(['message' => 'Not found.'], 404);
+        }
 
         $latest = AiInsight::where('client_profile_id', $clientProfileId)
             ->where('clinic_id', $clinicId)

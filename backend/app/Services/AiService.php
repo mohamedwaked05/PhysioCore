@@ -8,10 +8,21 @@ use Illuminate\Support\Facades\Log;
 class AiService
 {
     private string $baseUrl;
+    private string $apiKey;
 
     public function __construct()
     {
         $this->baseUrl = rtrim(config('services.ai.url', 'http://localhost:8001'), '/');
+        $this->apiKey  = config('services.ai.key', '');
+    }
+
+    private function client(): \Illuminate\Http\Client\PendingRequest
+    {
+        $headers = ['Accept' => 'application/json'];
+        if ($this->apiKey) {
+            $headers['X-Api-Key'] = $this->apiKey;
+        }
+        return Http::withHeaders($headers);
     }
 
     /**
@@ -21,7 +32,7 @@ class AiService
     public function analyzeSession(array $payload): ?array
     {
         try {
-            $response = Http::timeout(5)->post("{$this->baseUrl}/analyze-session", $payload);
+            $response = $this->client()->timeout(5)->post("{$this->baseUrl}/analyze-session", $payload);
             if ($response->successful()) {
                 return $response->json();
             }
@@ -39,7 +50,7 @@ class AiService
     public function analyzeProgress(array $payload): ?array
     {
         try {
-            $response = Http::timeout(10)->post("{$this->baseUrl}/analyze-progress", $payload);
+            $response = $this->client()->timeout(10)->post("{$this->baseUrl}/analyze-progress", $payload);
             if ($response->successful()) {
                 return $response->json();
             }

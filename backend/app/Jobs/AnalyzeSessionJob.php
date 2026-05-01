@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
-use App\Http\Controllers\Client\AiInsightController;
 use App\Models\AiInsight;
+use App\Services\NotificationService;
 use App\Models\ClientProfile;
 use App\Models\PainEffortLog;
 use App\Services\AiService;
@@ -32,10 +32,13 @@ class AnalyzeSessionJob implements ShouldQueue
         public readonly int    $feedbackId,
     ) {}
 
-    public function handle(AiService $ai): void
+    public function handle(AiService $ai, NotificationService $notifications): void
     {
         $profile = ClientProfile::find($this->clientProfileId);
-        if (!$profile) return;
+        if (!$profile) {
+            Log::warning('AnalyzeSessionJob: ClientProfile not found', ['client_profile_id' => $this->clientProfileId]);
+            return;
+        }
 
         $recentPain = PainEffortLog::where('client_profile_id', $this->clientProfileId)
             ->where('clinic_id', $this->clinicId)
@@ -72,7 +75,7 @@ class AnalyzeSessionJob implements ShouldQueue
         );
 
         if ($insight->wasRecentlyCreated) {
-            app(AiInsightController::class)->notifyClinic(
+            $notifications->notifyClinic(
                 $profile,
                 $this->clinicId,
                 $result,

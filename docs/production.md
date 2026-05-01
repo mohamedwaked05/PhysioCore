@@ -52,6 +52,8 @@
   │ Redis            │ 6379               │ DB 0 = queue/default, DB 1 = cache │
   ├──────────────────┼────────────────────┼────────────────────────────────────┤
   │ Reverb WebSocket │ 8080 (internal)    │ Proxied through Nginx on 443       │
+  ├──────────────────┼────────────────────┼────────────────────────────────────┤
+  │ AI Microservice  │ 8001 (internal)    │ Python/FastAPI — localhost only    │
   └──────────────────┴────────────────────┴────────────────────────────────────┘
 
   ---
@@ -155,7 +157,7 @@
   mv composer.phar /usr/local/bin/composer
 
   ---
-  Supervisor — 2 Processes to Keep Alive
+  Supervisor — 3 Processes to Keep Alive
 
   Queue Worker (/etc/supervisor/conf.d/physiocore-queue.conf):
   [program:physiocore-queue]
@@ -176,6 +178,17 @@
   autorestart=true
   redirect_stderr=true
   stdout_logfile=/var/log/physiocore-reverb.log
+
+  AI Microservice (/etc/supervisor/conf.d/physiocore-ai.conf):
+  [program:physiocore-ai]
+  command=/var/www/physiocore/ai-service/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8001
+  directory=/var/www/physiocore/ai-service
+  user=www-data
+  autostart=true
+  autorestart=true
+  redirect_stderr=true
+  stdout_logfile=/var/log/physiocore-ai.log
+  environment=AI_API_KEY="%(ENV_AI_SERVICE_API_KEY)s"
 
   ---
   Nginx Config

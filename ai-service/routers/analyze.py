@@ -1,10 +1,18 @@
-from fastapi import APIRouter
+import os
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
 from logic.session_analyzer import analyze_session
 from logic.progress_analyzer import analyze_progress
 
-router = APIRouter()
+
+async def verify_api_key(x_api_key: str = Header(default="")):
+    expected = os.getenv("AI_API_KEY", "")
+    if expected and x_api_key != expected:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+router = APIRouter(dependencies=[Depends(verify_api_key)])
 
 
 # ── Request / Response models ──────────────────────────────────

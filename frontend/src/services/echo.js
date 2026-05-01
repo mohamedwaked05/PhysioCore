@@ -4,10 +4,18 @@ import Pusher from 'pusher-js';
 window.Pusher = Pusher;
 
 let instance = null;
+let currentToken = null;
 
 export function getEcho(token) {
-    if (instance) return instance;
+    if (instance && currentToken === token) return instance;
 
+    // Token changed or first call — disconnect stale instance and reinitialize
+    if (instance) {
+        instance.disconnect();
+        instance = null;
+    }
+
+    currentToken = token;
     instance = new Echo({
         broadcaster:       'reverb',
         key:               'rmjcp03lmoyfg1ocj9cb',

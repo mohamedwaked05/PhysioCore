@@ -22,7 +22,7 @@ class UpdateProfileRequest extends FormRequest
             'timezone'            => ['nullable', 'string', 'max:100'],
             'phone'               => ['nullable', 'string', 'max:20'],
             'address'             => ['nullable', 'string', 'max:255'],
-            'profile_photo'       => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'profile_photo'       => ['nullable', 'image', 'mime_types:image/jpeg,image/png', 'max:5120'],
             'condition_summary'   => ['nullable', 'string', 'max:500'],
             'injury_details'      => ['nullable', 'string', 'max:2000'],
             'medical_history'     => ['nullable', 'string', 'max:2000'],

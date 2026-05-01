@@ -121,8 +121,9 @@ function openGooglePopup(login, onSuccess, onSetupToken) {
     const left   = Math.round(window.screen.width  / 2 - width  / 2);
     const top    = Math.round(window.screen.height / 2 - height / 2);
 
+    const base = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
     const popup = window.open(
-        'http://127.0.0.1:8000/api/auth/google',
+        `${base}/api/auth/google`,
         'google-oauth',
         `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
     );
@@ -185,7 +186,8 @@ function SignInForm({ onSuccess, onForgotPassword }) {
             login,
             onSuccess,
             (setupToken) => {
-                window.location.href = `/auth/google/complete?setup_token=${setupToken}`;
+                const params = new URLSearchParams({ setup_token: setupToken });
+                window.location.href = `/auth/google/complete?${params}`;
             }
         );
     };

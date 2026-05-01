@@ -22,7 +22,7 @@ def analyze_progress(
     adherence_score = min(100, max(0, adherence_score))
 
     # ── Pain Trend ─────────────────────────────────────────────
-    valid = [p for p in pain_logs if p.get("pain_level") and p["pain_level"] > 0]
+    valid = [p for p in pain_logs if p.get("pain_level") is not None]
 
     if len(valid) >= 4:
         mid = len(valid) // 2

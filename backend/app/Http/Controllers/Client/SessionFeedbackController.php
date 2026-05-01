@@ -4,18 +4,16 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\StoreSessionFeedbackRequest;
+use App\Jobs\AnalyzeProgressJob;
 use App\Jobs\AnalyzeSessionJob;
-use App\Models\AiInsight;
 use App\Models\ExerciseLog;
 use App\Models\PainEffortLog;
 use App\Models\RehabPlan;
 use App\Models\SessionFeedback;
-use App\Services\AiService;
 use Carbon\Carbon;
 
 class SessionFeedbackController extends Controller
 {
-    public function __construct(private AiService $ai) {}
 
     public function store(StoreSessionFeedbackRequest $request)
     {
@@ -119,10 +117,8 @@ class SessionFeedbackController extends Controller
             ));
         }
 
-        // ── AI: progress analysis — deferred after response ──
-        app()->terminating(function () use ($profile, $clinicId, $today) {
-            $this->runProgressAnalysis($profile, $clinicId, $today);
-        });
+        // ── AI: progress analysis — queued so it survives process restarts ──
+        dispatch(new AnalyzeProgressJob($profile->id, $clinicId, $today));
 
         return response()->json(array_merge(
             $feedback->toArray(),
@@ -130,84 +126,4 @@ class SessionFeedbackController extends Controller
         ), 201);
     }
 
-    private function runProgressAnalysis($profile, int $clinicId, string $today): void
-    {
-        try {
-            $twoWeeksAgo = Carbon::now('UTC')->subDays(14)->toDateString();
-
-            // Fetch pain logs (primary: pain_effort_logs)
-            $painLogs = PainEffortLog::where('client_profile_id', $profile->id)
-                ->where('clinic_id', $clinicId)
-                ->where('session_date', '>=', $twoWeeksAgo)
-                ->orderBy('session_date')
-                ->select(['session_date', 'pain_level'])
-                ->get()
-                ->map(fn($r) => [
-                    'date'        => $r->session_date instanceof Carbon
-                        ? $r->session_date->toDateString()
-                        : substr((string) $r->session_date, 0, 10),
-                    'pain_level'  => (float) $r->pain_level,
-                ])
-                ->all();
-
-            // Build exercise logs: per session_date — completed vs total
-            $exerciseLogs = ExerciseLog::where('client_profile_id', $profile->id)
-                ->where('session_date', '>=', $twoWeeksAgo)
-                ->selectRaw('session_date, COUNT(*) as completed_count')
-                ->groupBy('session_date')
-                ->orderBy('session_date')
-                ->get()
-                ->map(function ($r) use ($clinicId) {
-                    // Assigned count = total exercises in the plan (approximated by day)
-                    // Use completed_count as a proxy if we don't have assigned
-                    return [
-                        'date'            => $r->session_date instanceof Carbon
-                            ? $r->session_date->toDateString()
-                            : substr((string) $r->session_date, 0, 10),
-                        'completed_count' => (int) $r->completed_count,
-                        'assigned_count'  => (int) $r->completed_count, // fallback
-                    ];
-                })
-                ->all();
-
-            // Use session_feedbacks for completed/total if available
-            $sessionFeedbacks = SessionFeedback::where('client_profile_id', $profile->id)
-                ->where('clinic_id', $clinicId)
-                ->where('session_date', '>=', $twoWeeksAgo)
-                ->select(['session_date', 'exercises_completed', 'exercises_total'])
-                ->orderBy('session_date')
-                ->get();
-
-            if ($sessionFeedbacks->isNotEmpty()) {
-                $exerciseLogs = $sessionFeedbacks->map(fn($r) => [
-                    'date'            => $r->session_date instanceof Carbon
-                        ? $r->session_date->toDateString()
-                        : substr((string) $r->session_date, 0, 10),
-                    'completed_count' => (int) $r->exercises_completed,
-                    'assigned_count'  => max(1, (int) $r->exercises_total),
-                ])->all();
-            }
-
-            $result = $this->ai->analyzeProgress([
-                'client_id'     => $profile->id,
-                'clinic_id'     => $clinicId,
-                'pain_logs'     => $painLogs,
-                'exercise_logs' => $exerciseLogs,
-            ]);
-
-            if ($result) {
-                AiInsight::create([
-                    'client_profile_id' => $profile->id,
-                    'clinic_id'         => $clinicId,
-                    'insight_type'      => 'progress',
-                    'adherence_score'   => $result['adherence_score'],
-                    'pain_trend'        => $result['pain_trend'],
-                    'recovery_status'   => $result['recovery_status'],
-                    'safety_flag'       => false,
-                ]);
-            }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('AI progress analysis failed: ' . $e->getMessage());
-        }
-    }
 }
