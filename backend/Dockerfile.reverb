@@ -1,0 +1,31 @@
+FROM php:8.2-cli-bookworm
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git unzip zip curl libpq-dev libzip-dev libpng-dev libonig-dev libxml2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_pgsql pgsql zip mbstring exif pcntl bcmath
+
+# Install Redis extension via PECL
+RUN pecl install redis && docker-php-ext-enable redis
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy source
+COPY . .
+
+# Install PHP dependencies
+RUN composer install --optimize-autoloader --no-dev --no-scripts --no-interaction
+
+# Copy entrypoint
+COPY docker/entrypoint-reverb.sh /entrypoint-reverb.sh
+RUN chmod +x /entrypoint-reverb.sh
+
+EXPOSE 8080
+
+ENTRYPOINT ["/entrypoint-reverb.sh"]
