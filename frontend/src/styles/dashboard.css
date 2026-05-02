@@ -1026,6 +1026,105 @@
     }
 }
 
+/* ── Bottom Navigation Bar (mobile only) ─────────────────────── */
+.cd-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Hide the top tab bar on mobile */
+    .cd-subnav-wrapper {
+        display: none;
+    }
+
+    /* Add breathing room so content doesn't hide behind the bottom nav */
+    .cd-layout {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom) + 1rem);
+    }
+
+    /* Show the bottom nav */
+    .cd-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        background: rgba(18, 22, 50, 0.94);
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.28);
+        padding-bottom: env(safe-area-inset-bottom);
+        align-items: stretch;
+    }
+
+    .cd-bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.28rem;
+        padding: 0.65rem 0.25rem;
+        min-height: 56px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 0.68rem;
+        font-weight: 500;
+        font-family: 'Inter', sans-serif;
+        letter-spacing: 0.02em;
+        transition: color 0.15s ease, background 0.15s ease;
+        border-radius: 0;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+    }
+
+    .cd-bottom-nav-item:active {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .cd-bottom-nav-item.active {
+        color: #7b8fe8;
+    }
+
+    .cd-bottom-nav-item.active::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 32px;
+        height: 2px;
+        background: #7b8fe8;
+        border-radius: 0 0 2px 2px;
+    }
+
+    .cd-bottom-nav-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        transition: background 0.15s ease;
+    }
+
+    .cd-bottom-nav-item.active .cd-bottom-nav-icon {
+        background: rgba(123, 143, 232, 0.14);
+    }
+
+    .cd-bottom-nav-label {
+        line-height: 1;
+    }
+}
+
+/* Dark-mode tints for bottom nav are already handled by the dark bg color */
+[data-theme="dark"] .cd-bottom-nav {
+    background: rgba(7, 9, 15, 0.95);
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+
 /* ============================================================
    Today Page — Enhanced Workout Tracking
    ============================================================ */
