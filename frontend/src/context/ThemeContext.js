@@ -4,7 +4,7 @@ const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
     const [theme, setTheme] = useState(
-        () => localStorage.getItem('physiocore-theme') ?? 'light'
+        () => localStorage.getItem('physiocore-theme') ?? 'dark'
     );
 
     useEffect(() => {

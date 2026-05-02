@@ -188,6 +188,12 @@ export default function GuestLayout({ children }) {
                         </button>
                     </div>
 
+                    {/* Mobile-only: Find a Clinic visible without opening menu */}
+                    <NavLink to="/clinics" className="guest-mobile-find-btn">
+                        <FindClinicIcon />
+                        Find Clinics
+                    </NavLink>
+
                     {/* Mobile burger */}
                     <button
                         className={`burger-btn${menuOpen ? ' open' : ''}`}
