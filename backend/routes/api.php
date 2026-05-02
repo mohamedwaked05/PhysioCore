@@ -37,7 +37,7 @@ Route::prefix('auth')->group(function () {
 
     // Email verification (signed URL + throttle)
     Route::get('/verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-        ->middleware(['signed', 'throttle:6,1'])
+        ->middleware(['signed:relative', 'throttle:6,1'])
         ->name('verification.verify');
 
     // Password reset
