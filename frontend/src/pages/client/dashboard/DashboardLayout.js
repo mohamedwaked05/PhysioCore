@@ -1,4 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../../context/AuthContext';
 import ClientLayout from '../../../components/ClientLayout';
 import '../../../styles/dashboard.css';
@@ -88,19 +89,22 @@ export default function DashboardLayout() {
                 <Outlet />
             </div>
 
-            {/* ── Bottom Navigation (mobile only) ─── */}
-            <nav className="cd-bottom-nav" aria-label="Dashboard sections">
-                {subnav.map(({ to, label, iconLg }) => (
-                    <NavLink
-                        key={to}
-                        to={to}
-                        className={({ isActive }) => `cd-bottom-nav-item${isActive ? ' active' : ''}`}
-                    >
-                        <span className="cd-bottom-nav-icon">{iconLg}</span>
-                        <span className="cd-bottom-nav-label">{label}</span>
-                    </NavLink>
-                ))}
-            </nav>
+            {/* ── Bottom Navigation (mobile only) — portalled to body to escape stacking context ─── */}
+            {createPortal(
+                <nav className="cd-bottom-nav" aria-label="Dashboard sections">
+                    {subnav.map(({ to, label, iconLg }) => (
+                        <NavLink
+                            key={to}
+                            to={to}
+                            className={({ isActive }) => `cd-bottom-nav-item${isActive ? ' active' : ''}`}
+                        >
+                            <span className="cd-bottom-nav-icon">{iconLg}</span>
+                            <span className="cd-bottom-nav-label">{label}</span>
+                        </NavLink>
+                    ))}
+                </nav>,
+                document.body
+            )}
         </ClientLayout>
     );
 }
