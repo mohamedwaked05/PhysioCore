@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext';
+import { useToast } from '../../../../context/ToastContext';
 import { getSafetyFlags, resolveSafetyFlag } from '../../../../api/clinic';
 import { getEcho } from '../../../../services/echo';
 import Skeleton from '../../../../components/ui/Skeleton';
@@ -152,6 +153,7 @@ function ResolvedFlagCard({ flag }) {
 export default function SafetyFlagsPage() {
     const { user }             = useAuth();
     const { clinicId }         = useOutletContext() ?? {};
+    const { addToast }         = useToast();
 
     const [flags,        setFlags]        = useState([]);
     const [loading,      setLoading]      = useState(true);
@@ -188,14 +190,19 @@ export default function SafetyFlagsPage() {
         const ch   = echo.private(`clinic.${clinicId}`);
 
         ch.listen('.SafetyFlagBroadcast', (e) => {
-            console.log('SafetyFlag received', e);
             silentRefetch();
+            const isCritical = e.severity === 'critical' || e.is_critical;
+            const patient    = e.patient_name ? ` — ${e.patient_name}` : '';
+            const msg = isCritical
+                ? `🚨 Critical safety flag raised${patient}`
+                : `⚠️ Safety flag raised${patient}`;
+            addToast(msg, isCritical ? 'error' : 'warning');
         });
 
         return () => {
             try { echo.leave(`clinic.${clinicId}`); } catch {}
         };
-    }, [user, clinicId, silentRefetch]);
+    }, [user, clinicId, silentRefetch, addToast]);
 
     const handleResolved = (id) => setFlags(prev => prev.filter(f => f.id !== id));
 
