@@ -16,15 +16,22 @@ export function getEcho(token) {
     }
 
     currentToken = token;
+    const reverbHost   = process.env.REACT_APP_REVERB_HOST   || '127.0.0.1';
+    const reverbPort   = parseInt(process.env.REACT_APP_REVERB_PORT   || '8080', 10);
+    const reverbScheme = process.env.REACT_APP_REVERB_SCHEME || 'http';
+    const reverbKey    = process.env.REACT_APP_REVERB_APP_KEY || 'rmjcp03lmoyfg1ocj9cb';
+    const apiUrl       = process.env.REACT_APP_API_URL        || 'http://127.0.0.1:8000/api';
+    const forceTLS     = reverbScheme === 'https';
+
     instance = new Echo({
         broadcaster:       'reverb',
-        key:               'rmjcp03lmoyfg1ocj9cb',
-        wsHost:            '127.0.0.1',
-        wsPort:            8080,
-        wssPort:           8080,
-        forceTLS:          false,
+        key:               reverbKey,
+        wsHost:            reverbHost,
+        wsPort:            reverbPort,
+        wssPort:           reverbPort,
+        forceTLS,
         enabledTransports: ['ws', 'wss'],
-        authEndpoint:      'http://127.0.0.1:8000/api/broadcasting/auth',
+        authEndpoint:      `${apiUrl}/broadcasting/auth`,
         auth: {
             headers: {
                 Authorization: `Bearer ${token}`,
