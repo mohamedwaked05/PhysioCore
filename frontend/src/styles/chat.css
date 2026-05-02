@@ -260,55 +260,39 @@
     }
 }
 
-/* ── Full-height chat for the dedicated Messages page ─────────
-   Makes the chat fill all available screen space so:
-   - messages scroll inside the container
-   - input bar never scrolls away
-   - no page-level scroll needed at all
-   ─────────────────────────────────────────────────────────── */
+/* ── Messages page mobile layout ──────────────────────────── */
 @media (max-width: 768px) {
-    /* The messages page itself becomes a flex column that fills remaining height */
-    .messages-page {
-        display: flex;
-        flex-direction: column;
-        /* viewport minus: top navbar (64px) + bottom nav (56px) + safe area + cd-layout padding (1rem top) */
-        min-height: calc(100dvh - 64px - 56px - env(safe-area-inset-bottom) - 1rem);
+    /* Hide title row — chat card takes full available height */
+    .messages-page .cld-page-header {
+        display: none;
     }
 
-    /* Let the chat body flex to fill available space */
-    .messages-body {
-        flex: 1;
-        min-height: 0;
-        display: flex !important;
-        flex-direction: column;
-        align-items: stretch !important;
-    }
+    /* Flat block layout — no flex stretch tricks needed */
+    .messages-page  { display: block; padding-bottom: 0; }
+    .messages-body  { display: block !important; }
+    .messages-body > div { display: block; }
 
-    /* Chat host wrapper fills body */
-    .messages-body > div {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* chat-box: fixed height so it never over-grows and leaves empty space */
+    /* Chat box: compact card, shrinks when keyboard opens via --chat-avail-h */
     .messages-page .chat-box {
-        height: calc(100dvh - 64px - 56px - 80px - env(safe-area-inset-bottom));
+        height: var(--chat-avail-h, calc(100dvh - 64px - 56px - 120px - env(safe-area-inset-bottom)));
+        max-height: 520px;
+        display: flex;
+        flex-direction: column;
+        border-radius: 12px;
         flex: none;
-        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
     }
 
+    /* Messages fill the flex space and scroll inside the card */
     .messages-page .chat-messages {
+        flex: 1;
         overflow-y: auto;
+        min-height: 0;
     }
 
-    /* input area: sticky bottom inside the flex column */
+    /* Input bar pinned at bottom of the card */
     .messages-page .chat-input-area {
-        position: sticky;
-        bottom: 0;
+        flex-shrink: 0;
         background: var(--surface);
         padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-        z-index: 10;
     }
 }

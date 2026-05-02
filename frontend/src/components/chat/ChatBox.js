@@ -88,7 +88,7 @@ function MessageList({ messages, currentUserId, loading, newCount, listRef }) {
 }
 
 /* ── MessageInput ─────────────────────────────────────────── */
-function MessageInput({ onSend, sending, listRef }) {
+function MessageInput({ onSend, sending, listRef, boxRef }) {
     const [text, setText] = useState('');
     const textareaRef = useRef(null);
 
@@ -114,10 +114,15 @@ function MessageInput({ onSend, sending, listRef }) {
                 listRef.current.scrollTop = listRef.current.scrollHeight;
             }
             textareaRef.current?.scrollIntoView({ block: 'nearest' });
+            // Shrink chat card to stay above keyboard on mobile
+            if (boxRef?.current && window.innerWidth < 768) {
+                const avail = vv.height - 64 - 56;
+                boxRef.current.style.setProperty('--chat-avail-h', avail + 'px');
+            }
         };
         vv.addEventListener('resize', onResize);
         return () => vv.removeEventListener('resize', onResize);
-    }, [listRef]);
+    }, [listRef, boxRef]);
 
     return (
         <div className="chat-input-area">
@@ -170,6 +175,7 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
     const [newCount, setNewCount] = useState(0);
     const prevCountRef            = useRef(0);
     const listRef                 = useRef(null);
+    const boxRef                  = useRef(null);
 
     // The other party's user id (used for markSeen sender filter)
     const otherUserId = withUserId || receiverId;
@@ -334,7 +340,7 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
     }
 
     return (
-        <div className="chat-box">
+        <div className="chat-box" ref={boxRef}>
             <MessageList
                 messages={messages}
                 currentUserId={user.id}
@@ -342,7 +348,7 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
                 newCount={newCount}
                 listRef={listRef}
             />
-            <MessageInput onSend={handleSend} sending={sending} listRef={listRef} />
+            <MessageInput onSend={handleSend} sending={sending} listRef={listRef} boxRef={boxRef} />
         </div>
     );
 }
