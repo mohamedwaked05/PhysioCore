@@ -246,3 +246,15 @@
     from { opacity: 0; transform: translateY(4px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+@media (max-width: 767px) {
+    .chat-input-area textarea {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 520px) {
+    .chat-box {
+        height: 320px;
+    }
+}

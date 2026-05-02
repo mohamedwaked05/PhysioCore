@@ -1592,3 +1592,33 @@
     width: 110px;
   }
 }
+
+@media (max-width: 767px) {
+  .profile-input,
+  .profile-select,
+  .profile-textarea {
+    font-size: 1rem;
+  }
+
+  .clinic-search-input {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .client-content {
+    padding: 0.85rem 0.75rem;
+  }
+
+  .client-nav {
+    padding: 0 0.75rem;
+  }
+
+  .profile-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-form-grid .span-2 {
+    grid-column: span 1;
+  }
+}

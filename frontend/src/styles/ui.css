@@ -533,7 +533,7 @@
     border: 1.5px solid var(--border);
     border-radius: 10px;
     box-shadow: 0 10px 32px rgba(0,0,0,0.14);
-    width: 290px;
+    width: min(290px, calc(100vw - 2rem));
     max-height: 300px;
     overflow: hidden;
     display: flex;
@@ -761,4 +761,17 @@
 .wh-display-empty {
     font-size: 0.875rem;
     color: var(--text-muted);
+}
+
+/* ── Mobile: prevent iOS auto-zoom on inputs (font-size must be ≥16px) ── */
+@media (max-width: 767px) {
+    .ui-input,
+    .ui-field input,
+    .ui-field select,
+    .ui-field textarea,
+    .ui-phone-number-input,
+    .ui-phone-dial-search,
+    .ui-tag-add-input {
+        font-size: 1rem;
+    }
 }

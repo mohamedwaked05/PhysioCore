@@ -1010,3 +1010,10 @@
     .cld-feedback-footer { flex-direction: column; align-items: flex-start; }
     .cld-subnav-link   { padding: 0.45rem 0.75rem; font-size: 0.8rem; }
 }
+
+@media (max-width: 390px) {
+    .cld-layout        { padding: 1rem 0.85rem 2rem; }
+    .cld-title         { font-size: 1.25rem; }
+    .cld-subnav-link   { padding: 0.4rem 0.6rem; font-size: 0.78rem; }
+    .cld-stats-grid    { grid-template-columns: 1fr; gap: 0.5rem; }
+}

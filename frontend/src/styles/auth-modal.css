@@ -601,3 +601,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+@media (max-width: 767px) {
+    .auth-modal-input {
+        font-size: 1rem;
+    }
+
+    .auth-modal-card {
+        margin: 0.5rem;
+        max-height: calc(100dvh - 1rem);
+        overflow-y: auto;
+    }
+}

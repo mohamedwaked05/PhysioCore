@@ -482,3 +482,10 @@
 @media (max-width: 480px) {
     .adm-stats-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 390px) {
+    .adm-layout { padding: 1rem 0.85rem 2rem; }
+    .adm-table  { font-size: 0.75rem; }
+    .adm-table th, .adm-table td { padding: 0.5rem; }
+    .adm-title  { font-size: 1.25rem; }
+}

@@ -74,10 +74,11 @@ export default function DashboardLayout() {
                             <NavLink
                                 key={to}
                                 to={to}
+                                title={label}
                                 className={({ isActive }) => `cd-subnav-link${isActive ? ' active' : ''}`}
                             >
                                 <span className="cd-subnav-icon">{icon}</span>
-                                {label}
+                                <span className="cd-subnav-label">{label}</span>
                             </NavLink>
                         ))}
                     </nav>
