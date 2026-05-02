@@ -17,6 +17,12 @@ export default function MessagesPage() {
     const [loading, setLoading]     = useState(true);
     const [selected, setSelected]   = useState(null);
 
+    // Full-screen chat on mobile — strips cd-layout padding
+    useEffect(() => {
+        document.body.classList.add('messages-fullscreen');
+        return () => document.body.classList.remove('messages-fullscreen');
+    }, []);
+
     useEffect(() => {
         getAccessRequests()
             .then(res => {
@@ -80,7 +86,7 @@ export default function MessagesPage() {
             <div className="messages-body" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                 {/* Clinic list — only shown when multiple clinics */}
                 {clinics.length > 1 && (
-                    <div style={{
+                    <div className="messages-sidebar" style={{
                         width: 200, flexShrink: 0,
                         background: 'var(--surface)', borderRadius: 'var(--radius-lg)',
                         border: '0.5px solid var(--border)', overflow: 'hidden',
@@ -110,14 +116,14 @@ export default function MessagesPage() {
                 )}
 
                 {/* Chat area */}
-                <div style={{
+                <div className="messages-chat-wrapper" style={{
                     flex: 1,
                     background: 'var(--surface)', borderRadius: 'var(--radius-lg)',
                     border: '0.5px solid var(--border)', overflow: 'hidden',
                 }}>
                     {selected && (
                         <>
-                            <div style={{
+                            <div className="messages-chat-header" style={{
                                 padding: '0.85rem 1.1rem',
                                 borderBottom: '0.5px solid var(--border)',
                             }}>

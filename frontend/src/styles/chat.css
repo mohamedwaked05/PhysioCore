@@ -267,39 +267,83 @@
     }
 }
 
-/* ── Messages page mobile layout ──────────────────────────── */
+/* ── Messages page — full-screen chat on mobile (WhatsApp style) ─ */
 @media (max-width: 768px) {
-    /* Hide title row — chat card takes full available height */
+    /* Strip cd-layout padding so chat reaches screen edges */
+    body.messages-fullscreen .cd-layout {
+        padding: 0 !important;
+    }
+
+    /* Prevent page-level scroll — only the message list scrolls */
+    body.messages-fullscreen {
+        overflow: hidden;
+    }
+
+    /* Page fills viewport minus navbar + bottom nav */
+    .messages-page {
+        display: flex;
+        flex-direction: column;
+        height: calc(100dvh - 64px - 56px - env(safe-area-inset-bottom));
+        overflow: hidden;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Page title hidden — clinic name in chat header replaces it */
     .messages-page .cld-page-header {
         display: none;
     }
 
-    /* Flat block layout — no flex stretch tricks needed */
-    .messages-page  { display: block; padding-bottom: 0; }
-    .messages-body  { display: block !important; }
-    .messages-body > div { display: block; }
-
-    /* Chat box: compact card, shrinks when keyboard opens via --chat-avail-h */
-    .messages-page .chat-box {
-        height: var(--chat-avail-h, calc(100dvh - 64px - 56px - 120px - env(safe-area-inset-bottom)));
-        max-height: 520px;
-        display: flex;
-        flex-direction: column;
-        border-radius: 12px;
-        flex: none;
+    /* messages-body fills remaining height as a flex column */
+    .messages-body {
+        flex: 1;
+        min-height: 0;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
     }
 
-    /* Messages fill the flex space and scroll inside the card */
+    /* Sidebar (multi-clinic list) hidden on mobile */
+    .messages-sidebar {
+        display: none !important;
+    }
+
+    /* Chat wrapper: fills body, strips card styling */
+    .messages-chat-wrapper {
+        flex: 1;
+        min-height: 0;
+        display: flex !important;
+        flex-direction: column !important;
+        background: var(--surface) !important;
+        border: none !important;
+        border-radius: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* Chat box: full height, no card chrome */
+    .messages-page .chat-box {
+        flex: 1;
+        height: auto !important;
+        max-height: none !important;
+        border-radius: 0 !important;
+        transform: none !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Messages scroll inside the flex space */
     .messages-page .chat-messages {
         flex: 1;
         overflow-y: auto;
         min-height: 0;
     }
 
-    /* Input bar pinned at bottom of the card */
+    /* Input bar: sticky above bottom nav, lifts with keyboard natively */
     .messages-page .chat-input-area {
-        flex-shrink: 0;
+        position: sticky;
+        bottom: 0;
         background: var(--surface);
         padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+        z-index: 10;
     }
 }

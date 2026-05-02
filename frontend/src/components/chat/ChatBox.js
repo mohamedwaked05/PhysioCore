@@ -88,7 +88,7 @@ function MessageList({ messages, currentUserId, loading, newCount, listRef }) {
 }
 
 /* ── MessageInput ─────────────────────────────────────────── */
-function MessageInput({ onSend, sending, listRef, boxRef }) {
+function MessageInput({ onSend, sending, listRef }) {
     const [text, setText] = useState('');
     const textareaRef = useRef(null);
 
@@ -113,20 +113,10 @@ function MessageInput({ onSend, sending, listRef, boxRef }) {
             if (listRef?.current) {
                 listRef.current.scrollTop = listRef.current.scrollHeight;
             }
-            if (boxRef?.current && window.innerWidth <= 768) {
-                const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
-                boxRef.current.style.transform = keyboardHeight > 50
-                    ? `translateY(-${keyboardHeight}px)`
-                    : 'translateY(0)';
-            }
         };
         vv.addEventListener('resize', onResize);
-        vv.addEventListener('scroll', onResize);
-        return () => {
-            vv.removeEventListener('resize', onResize);
-            vv.removeEventListener('scroll', onResize);
-        };
-    }, [listRef, boxRef]);
+        return () => vv.removeEventListener('resize', onResize);
+    }, [listRef]);
 
     return (
         <div className="chat-input-area">
@@ -352,7 +342,7 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
                 newCount={newCount}
                 listRef={listRef}
             />
-            <MessageInput onSend={handleSend} sending={sending} listRef={listRef} boxRef={boxRef} />
+            <MessageInput onSend={handleSend} sending={sending} listRef={listRef} />
         </div>
     );
 }
