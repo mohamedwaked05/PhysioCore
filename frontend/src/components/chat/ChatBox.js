@@ -118,6 +118,20 @@ function MessageInput({ onSend, sending, listRef }) {
         return () => vv.removeEventListener('resize', onResize);
     }, [listRef]);
 
+    const handleFocus = () => {
+        // Save scroll position and restore after focus — prevents iOS from
+        // scrolling the page when the textarea gets keyboard focus.
+        const scrollY = window.scrollY;
+        requestAnimationFrame(() => {
+            window.scrollTo({ top: scrollY, behavior: 'instant' });
+        });
+        setTimeout(() => {
+            if (listRef?.current) {
+                listRef.current.scrollTop = listRef.current.scrollHeight;
+            }
+        }, 100);
+    };
+
     return (
         <div className="chat-input-area">
             <textarea
@@ -127,6 +141,7 @@ function MessageInput({ onSend, sending, listRef }) {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onFocus={handleFocus}
                 autoComplete="off"
                 autoCorrect="on"
                 spellCheck={true}

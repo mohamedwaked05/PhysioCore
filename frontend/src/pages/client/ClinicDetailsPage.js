@@ -242,12 +242,14 @@ function DiscussCard({ clinic, onGuestAction }) {
                 Have questions before committing? Send the clinic a brief message to describe
                 your condition and what you're looking for.
             </p>
-            <ChatBox
-                context="inquiry"
-                referenceId={clinic.id}
-                receiverId={clinic.user_id}
-                onGuestAction={onGuestAction}
-            />
+            <div style={{ position: 'relative', overflow: 'hidden' }}>
+                <ChatBox
+                    context="inquiry"
+                    referenceId={clinic.id}
+                    receiverId={clinic.user_id}
+                    onGuestAction={onGuestAction}
+                />
+            </div>
         </Card>
     );
 }

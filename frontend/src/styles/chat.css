@@ -180,6 +180,7 @@
     min-height: 40px;
     max-height: 120px;
     transition: border-color var(--transition);
+    touch-action: manipulation;
 }
 
 .chat-input-area textarea:focus {
