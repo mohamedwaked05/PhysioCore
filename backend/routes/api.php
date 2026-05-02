@@ -30,13 +30,6 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// TEMP — remove after use
-Route::get('/admin/reset-db', function (\Illuminate\Http\Request $request) {
-    if ($request->query('secret') !== 'physiocore-nuke-2026') abort(403);
-    DB::table('users')->delete();
-    return response()->json(['deleted' => true]);
-});
-
 // Public auth routes
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
