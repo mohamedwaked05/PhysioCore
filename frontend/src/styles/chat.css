@@ -267,83 +267,76 @@
     }
 }
 
-/* ── Messages page — full-screen chat on mobile (WhatsApp style) ─ */
+/* ── Messages page — full-screen chat on mobile ───────────────
+   .cd-layout padding + .cd-header are controlled by JS in
+   MessagesPage.js (direct DOM manipulation). CSS here only
+   needs to control descendants of .messages-page.
+   ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    /* Strip cd-layout padding so chat reaches screen edges */
-    body.messages-fullscreen .cd-layout {
-        padding: 0 !important;
-    }
-
-    /* Prevent page-level scroll — only the message list scrolls */
-    body.messages-fullscreen {
-        overflow: hidden;
-    }
-
-    /* Page fills viewport minus navbar + bottom nav */
+    /* Page: fills viewport minus navbar (64px) + bottom nav (56px) */
     .messages-page {
-        display: flex;
-        flex-direction: column;
-        height: calc(100dvh - 64px - 56px - env(safe-area-inset-bottom));
-        overflow: hidden;
         padding: 0 !important;
         margin: 0 !important;
+        height: calc(100dvh - 64px - 56px - env(safe-area-inset-bottom)) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
     }
 
-    /* Page title hidden — clinic name in chat header replaces it */
+    /* page title hidden — clinic name header in the chat replaces it */
     .messages-page .cld-page-header {
-        display: none;
+        display: none !important;
     }
 
-    /* messages-body fills remaining height as a flex column */
+    /* messages-body: flex column, fills remaining height */
     .messages-body {
-        flex: 1;
-        min-height: 0;
+        flex: 1 !important;
+        min-height: 0 !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
+        gap: 0 !important;
     }
 
-    /* Sidebar (multi-clinic list) hidden on mobile */
+    /* Multi-clinic sidebar: hidden on mobile */
     .messages-sidebar {
         display: none !important;
     }
 
-    /* Chat wrapper: fills body, strips card styling */
+    /* Chat area wrapper: strips card styling, fills height */
     .messages-chat-wrapper {
-        flex: 1;
-        min-height: 0;
+        flex: 1 !important;
+        min-height: 0 !important;
         display: flex !important;
         flex-direction: column !important;
-        background: var(--surface) !important;
         border: none !important;
         border-radius: 0 !important;
         overflow: hidden !important;
     }
 
-    /* Chat box: full height, no card chrome */
+    /* chat-box: full height flex column, no card chrome */
     .messages-page .chat-box {
-        flex: 1;
+        flex: 1 !important;
         height: auto !important;
         max-height: none !important;
         border-radius: 0 !important;
         transform: none !important;
-        display: flex;
-        flex-direction: column;
+        display: flex !important;
+        flex-direction: column !important;
     }
 
-    /* Messages scroll inside the flex space */
+    /* Messages list scrolls inside the flex space */
     .messages-page .chat-messages {
-        flex: 1;
-        overflow-y: auto;
-        min-height: 0;
+        flex: 1 !important;
+        overflow-y: auto !important;
+        min-height: 0 !important;
     }
 
-    /* Input bar: sticky above bottom nav, lifts with keyboard natively */
+    /* Input bar: never shrinks, lifts with keyboard natively */
     .messages-page .chat-input-area {
-        position: sticky;
-        bottom: 0;
-        background: var(--surface);
-        padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-        z-index: 10;
+        flex-shrink: 0 !important;
+        padding: 0.75rem !important;
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+        background: var(--surface) !important;
     }
 }
