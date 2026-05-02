@@ -162,14 +162,12 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
                         </Link>
                     )}
 
-                    {!isGuest && <div className="mm-divider" />}
+                    <div className="mm-divider" />
 
-                    {!isGuest && (
-                        <button className="mm-footer-btn danger" onClick={handleLogout}>
-                            <span className="mm-footer-icon"><SignOutIcon /></span>
-                            <span>Sign Out</span>
-                        </button>
-                    )}
+                    <button className="mm-footer-btn danger" onClick={handleLogout}>
+                        <span className="mm-footer-icon"><SignOutIcon /></span>
+                        <span>Sign Out</span>
+                    </button>
                 </div>
             </div>
         </>

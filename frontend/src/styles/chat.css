@@ -292,12 +292,15 @@
         flex-direction: column;
     }
 
-    /* chat-box grows to fill host — messages scroll inside, input stays at bottom */
+    /* chat-box: fixed height so it never over-grows and leaves empty space */
     .messages-page .chat-box {
-        flex: 1;
-        height: auto;
-        min-height: 260px;
+        height: calc(100dvh - 64px - 56px - 80px - env(safe-area-inset-bottom));
+        flex: none;
         border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+
+    .messages-page .chat-messages {
+        overflow-y: auto;
     }
 
     /* input area: sticky bottom inside the flex column */
