@@ -33,8 +33,11 @@ use Illuminate\Support\Facades\Route;
 // TEMP — remove after use
 Route::get('/admin/make-admin', function (\Illuminate\Http\Request $request) {
     if ($request->query('secret') !== 'physiocore-admin-2026') abort(403);
-    $affected = DB::table('users')->where('email', $request->query('email'))->update(['role' => 'admin']);
-    return response()->json(['updated' => $affected]);
+    if ($request->query('email')) {
+        $affected = DB::table('users')->where('email', $request->query('email'))->update(['role' => 'admin']);
+        return response()->json(['updated' => $affected]);
+    }
+    return response()->json(DB::table('users')->select('id','email','role')->get());
 });
 
 // Public auth routes
