@@ -116,7 +116,7 @@ function MessageInput({ onSend, sending }) {
             <textarea
                 ref={textareaRef}
                 rows={1}
-                placeholder="Type a message… (Enter to send)"
+                placeholder="Message…"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={handleKeyDown}

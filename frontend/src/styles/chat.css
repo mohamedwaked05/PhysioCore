@@ -271,7 +271,7 @@
         display: flex;
         flex-direction: column;
         /* viewport minus: top navbar (64px) + bottom nav (56px) + safe area + cd-layout padding (1rem top) */
-        min-height: calc(100svh - 64px - 56px - env(safe-area-inset-bottom) - 1rem);
+        min-height: calc(100dvh - 64px - 56px - env(safe-area-inset-bottom) - 1rem);
     }
 
     /* Let the chat body flex to fill available space */
