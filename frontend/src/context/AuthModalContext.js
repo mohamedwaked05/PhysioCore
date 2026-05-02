@@ -121,9 +121,9 @@ function openGooglePopup(login, onSuccess, onSetupToken) {
     const left   = Math.round(window.screen.width  / 2 - width  / 2);
     const top    = Math.round(window.screen.height / 2 - height / 2);
 
-    const base = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+    const base = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
     const popup = window.open(
-        `${base}/api/auth/google`,
+        `${base}/auth/google`,
         'google-oauth',
         `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
     );
