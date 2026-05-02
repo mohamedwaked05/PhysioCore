@@ -32,6 +32,7 @@ export function AuthModalProvider({ children }) {
     }, []);
 
     const handleAuthSuccess = useCallback((loggedInUser) => {
+        const cb = pendingCallbackRef.current; // read before closeAuthModal clears it
         closeAuthModal();
         if (loggedInUser?.role === 'clinic') {
             navigate('/clinic/dashboard', { replace: true });
@@ -41,7 +42,6 @@ export function AuthModalProvider({ children }) {
             navigate('/admin/dashboard', { replace: true });
             return;
         }
-        const cb = pendingCallbackRef.current;
         setTimeout(() => cb?.(), 80);
     }, [closeAuthModal, navigate]);
 
