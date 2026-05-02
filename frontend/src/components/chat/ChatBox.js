@@ -24,16 +24,11 @@ function MessageTick({ msg }) {
 }
 
 /* ── MessageList ──────────────────────────────────────────── */
-function MessageList({ messages, currentUserId, loading, newCount }) {
-    const listRef    = useRef(null);
-    const initialRef = useRef(true);
-
+function MessageList({ messages, currentUserId, loading, newCount, listRef }) {
     useEffect(() => {
         if (!listRef.current) return;
-        // Direct scrollTop manipulation — only scrolls this container, never the page viewport
         listRef.current.scrollTop = listRef.current.scrollHeight;
-        initialRef.current = false;
-    }, [messages.length]);
+    }, [messages.length, listRef]);
 
     if (loading) {
         return (
@@ -93,7 +88,7 @@ function MessageList({ messages, currentUserId, loading, newCount }) {
 }
 
 /* ── MessageInput ─────────────────────────────────────────── */
-function MessageInput({ onSend, sending }) {
+function MessageInput({ onSend, sending, listRef }) {
     const [text, setText] = useState('');
     const textareaRef = useRef(null);
 
@@ -111,6 +106,24 @@ function MessageInput({ onSend, sending }) {
         }
     };
 
+    const handleFocus = () => {
+        if (listRef?.current) {
+            setTimeout(() => {
+                listRef.current.scrollTop = listRef.current.scrollHeight;
+            }, 300);
+        }
+    };
+
+    useEffect(() => {
+        const vv = window.visualViewport;
+        if (!vv || !listRef?.current) return;
+        const onResize = () => {
+            listRef.current.scrollTop = listRef.current.scrollHeight;
+        };
+        vv.addEventListener('resize', onResize);
+        return () => vv.removeEventListener('resize', onResize);
+    }, [listRef]);
+
     return (
         <div className="chat-input-area">
             <textarea
@@ -120,6 +133,10 @@ function MessageInput({ onSend, sending }) {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onFocus={handleFocus}
+                autoComplete="off"
+                autoCorrect="on"
+                spellCheck={true}
             />
             <button
                 className="chat-send-btn"
@@ -158,6 +175,7 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
     const [sending, setSending]   = useState(false);
     const [newCount, setNewCount] = useState(0);
     const prevCountRef            = useRef(0);
+    const listRef                 = useRef(null);
 
     // The other party's user id (used for markSeen sender filter)
     const otherUserId = withUserId || receiverId;
@@ -328,8 +346,9 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
                 currentUserId={user.id}
                 loading={loading}
                 newCount={newCount}
+                listRef={listRef}
             />
-            <MessageInput onSend={handleSend} sending={sending} />
+            <MessageInput onSend={handleSend} sending={sending} listRef={listRef} />
         </div>
     );
 }

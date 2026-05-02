@@ -79,9 +79,7 @@
     display: flex;
     flex-direction: column;
     animation: mm-panel-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
 }
 
 @keyframes mm-panel-in {
@@ -182,6 +180,9 @@
 /* ── Nav Links ───────────────────────────────────────────────── */
 .mm-nav {
     flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 0.6rem 0.65rem;
     display: flex;
     flex-direction: column;
