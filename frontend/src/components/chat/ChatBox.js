@@ -193,6 +193,7 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
     useEffect(() => {
         const vv = window.visualViewport;
         if (!vv || window.innerWidth > 768) return;
+        const box = boxRef.current;
         const update = () => {
             if (boxRef.current) {
                 boxRef.current.style.height = `${vv.height - 64}px`;
@@ -207,7 +208,7 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
         return () => {
             vv.removeEventListener('resize', update);
             vv.removeEventListener('scroll', update);
-            if (boxRef.current) boxRef.current.style.height = '';
+            if (box) box.style.height = '';
         };
     }, []);
 
