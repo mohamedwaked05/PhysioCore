@@ -1,4 +1,4 @@
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../context/AuthContext';
 import ClientLayout from '../../../components/ClientLayout';
@@ -52,8 +52,20 @@ const subnav = [
     { to: 'messages', label: 'Messages',     icon: <MessagesIcon />, iconLg: <MessagesIcon size={20} /> },
 ];
 
+function BackArrowIcon() {
+    return (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+        </svg>
+    );
+}
+
 export default function DashboardLayout() {
-    const { user } = useAuth();
+    const { user }   = useAuth();
+    const location   = useLocation();
+    const navigate   = useNavigate();
+    const isMessages = location.pathname.endsWith('/messages');
 
     return (
         <ClientLayout>
@@ -103,6 +115,18 @@ export default function DashboardLayout() {
                         </NavLink>
                     ))}
                 </nav>,
+                document.body
+            )}
+
+            {/* ── Back arrow (mobile, messages route only) ─── */}
+            {isMessages && createPortal(
+                <button
+                    className="cd-chat-back"
+                    onClick={() => navigate(-1)}
+                    aria-label="Back to dashboard"
+                >
+                    <BackArrowIcon />
+                </button>,
                 document.body
             )}
         </ClientLayout>

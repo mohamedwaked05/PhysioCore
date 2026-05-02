@@ -174,6 +174,28 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
     // The other party's user id (used for markSeen sender filter)
     const otherUserId = withUserId || receiverId;
 
+    /* ── visualViewport: shrink chat to fit above keyboard on iOS ─ */
+    useEffect(() => {
+        const vv = window.visualViewport;
+        if (!vv || window.innerWidth > 768) return;
+        const update = () => {
+            if (boxRef.current) {
+                boxRef.current.style.height = `${vv.height - 64}px`;
+            }
+            if (listRef.current) {
+                listRef.current.scrollTop = listRef.current.scrollHeight;
+            }
+        };
+        vv.addEventListener('resize', update);
+        vv.addEventListener('scroll', update);
+        update();
+        return () => {
+            vv.removeEventListener('resize', update);
+            vv.removeEventListener('scroll', update);
+            if (boxRef.current) boxRef.current.style.height = '';
+        };
+    }, []);
+
     /* ── Optimistic status patch helpers ─────────────────── */
     const applySeen = useCallback((messageIds, seenAt) => {
         const idSet = new Set(messageIds);

@@ -273,11 +273,16 @@
    needs to control descendants of .messages-page.
    ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    /* Page: fills viewport minus navbar (64px) + bottom nav (56px) */
+    /* Hide bottom nav when in full-screen chat mode */
+    body.chat-fullscreen .cd-bottom-nav {
+        display: none !important;
+    }
+
+    /* Page: fills viewport minus navbar only (bottom nav is hidden) */
     .messages-page {
         padding: 0 !important;
         margin: 0 !important;
-        height: calc(100dvh - 64px - 56px - env(safe-area-inset-bottom)) !important;
+        height: calc(100dvh - 64px - env(safe-area-inset-bottom)) !important;
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;

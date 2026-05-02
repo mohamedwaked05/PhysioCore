@@ -1031,6 +1031,34 @@
     display: none;
 }
 
+/* ── Chat back button (mobile, messages route only) ───────────── */
+.cd-chat-back {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .cd-chat-back {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 500;
+        width: 56px;
+        height: 64px;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.85);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: color 0.15s;
+    }
+    .cd-chat-back:active {
+        color: #fff;
+    }
+}
+
 @media (max-width: 768px) {
     /* Hide the top tab bar on mobile */
     .cd-subnav-wrapper {

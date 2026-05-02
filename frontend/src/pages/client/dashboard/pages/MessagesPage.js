@@ -17,18 +17,19 @@ export default function MessagesPage() {
     const [loading, setLoading]     = useState(true);
     const [selected, setSelected]   = useState(null);
 
-    // Full-screen chat on mobile: directly strip cd-layout padding and hide
-    // the Recovery Dashboard header — these are siblings/ancestors so CSS
-    // on .messages-page alone cannot reach them.
+    // Full-screen chat on mobile: strip layout padding, hide page header,
+    // hide bottom nav (back button in DashboardLayout replaces it).
     useEffect(() => {
         if (window.innerWidth > 768) return;
         const layout = document.querySelector('.cd-layout');
         const header = document.querySelector('.cd-header');
         if (layout) layout.style.setProperty('padding', '0', 'important');
         if (header) header.style.setProperty('display', 'none', 'important');
+        document.body.classList.add('chat-fullscreen');
         return () => {
             if (layout) layout.style.removeProperty('padding');
             if (header) header.style.removeProperty('display');
+            document.body.classList.remove('chat-fullscreen');
         };
     }, []);
 
