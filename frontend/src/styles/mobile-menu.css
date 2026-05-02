@@ -177,6 +177,28 @@
     margin-top: 0.1rem;
 }
 
+/* ── User sign-out icon (in mm-user row) ─────────────────────── */
+.mm-user-signout {
+    margin-left: auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.13s;
+}
+
+.mm-user-signout:hover,
+.mm-user-signout:active {
+    background: rgba(239, 68, 68, 0.15);
+}
+
 /* ── Nav Links ───────────────────────────────────────────────── */
 .mm-nav {
     flex: 1;

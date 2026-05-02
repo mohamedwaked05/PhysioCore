@@ -113,6 +113,13 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
                             <div className="mm-user-name">{fullName}</div>
                             <div className="mm-user-role">{user.role}</div>
                         </div>
+                        <button
+                            className="mm-user-signout"
+                            onClick={handleLogout}
+                            aria-label="Sign out"
+                        >
+                            <SignOutIcon />
+                        </button>
                     </div>
                 )}
 
@@ -142,9 +149,8 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
                     )}
                 </nav>
 
-                {/* Footer: theme + profile + logout */}
+                {/* Footer: theme toggle + profile */}
                 <div className="mm-footer">
-                    {/* Night mode */}
                     <button className="mm-footer-btn" onClick={() => toggle()}>
                         <span className="mm-footer-icon">
                             {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
@@ -161,13 +167,6 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
                             <span>Profile</span>
                         </Link>
                     )}
-
-                    <div className="mm-divider" />
-
-                    <button className="mm-footer-btn danger" onClick={handleLogout}>
-                        <span className="mm-footer-icon"><SignOutIcon /></span>
-                        <span>Sign Out</span>
-                    </button>
                 </div>
             </div>
         </>
