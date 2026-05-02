@@ -113,15 +113,19 @@ function MessageInput({ onSend, sending, listRef, boxRef }) {
             if (listRef?.current) {
                 listRef.current.scrollTop = listRef.current.scrollHeight;
             }
-            textareaRef.current?.scrollIntoView({ block: 'nearest' });
-            // Shrink chat card to stay above keyboard on mobile
-            if (boxRef?.current && window.innerWidth < 768) {
-                const avail = vv.height - 64 - 56;
-                boxRef.current.style.setProperty('--chat-avail-h', avail + 'px');
+            if (boxRef?.current && window.innerWidth <= 768) {
+                const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
+                boxRef.current.style.transform = keyboardHeight > 50
+                    ? `translateY(-${keyboardHeight}px)`
+                    : 'translateY(0)';
             }
         };
         vv.addEventListener('resize', onResize);
-        return () => vv.removeEventListener('resize', onResize);
+        vv.addEventListener('scroll', onResize);
+        return () => {
+            vv.removeEventListener('resize', onResize);
+            vv.removeEventListener('scroll', onResize);
+        };
     }, [listRef, boxRef]);
 
     return (

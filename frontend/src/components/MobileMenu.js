@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -71,6 +72,7 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
     const { user, logout } = useAuth();
     const { theme, toggle } = useTheme();
     const photoUrl = useProfilePhoto(user?.role);
+    const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
 
     if (!isOpen) return null;
 
@@ -115,7 +117,7 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
                         </div>
                         <button
                             className="mm-user-signout"
-                            onClick={handleLogout}
+                            onClick={() => setShowSignOutConfirm(true)}
                             aria-label="Sign out"
                         >
                             <SignOutIcon />
@@ -169,6 +171,32 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
                     )}
                 </div>
             </div>
+
+            {/* Sign out confirmation dialog */}
+            {showSignOutConfirm && (
+                <>
+                    <div
+                        className="mm-confirm-overlay"
+                        onClick={() => setShowSignOutConfirm(false)}
+                        aria-hidden="true"
+                    />
+                    <div className="mm-confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="mm-confirm-title">
+                        <div className="mm-confirm-icon">
+                            <SignOutIcon />
+                        </div>
+                        <h3 className="mm-confirm-title" id="mm-confirm-title">Sign Out</h3>
+                        <p className="mm-confirm-msg">Are you sure you want to sign out?</p>
+                        <div className="mm-confirm-actions">
+                            <button className="mm-confirm-cancel" onClick={() => setShowSignOutConfirm(false)}>
+                                Cancel
+                            </button>
+                            <button className="mm-confirm-signout" onClick={handleLogout}>
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
         </>
     );
 }

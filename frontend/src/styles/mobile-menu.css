@@ -386,6 +386,106 @@
     color: #fff;
 }
 
+/* ── Sign out confirmation dialog ───────────────────────────── */
+.mm-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: 500;
+    animation: mm-overlay-in 0.15s ease both;
+}
+
+.mm-confirm-card {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 501;
+    width: min(300px, 88vw);
+    background: rgba(14, 18, 40, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    animation: mm-confirm-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes mm-confirm-in {
+    from { opacity: 0; transform: translate(-50%, -46%) scale(0.94); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.mm-confirm-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(239, 68, 68, 0.14);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ef4444;
+    margin-bottom: 0.25rem;
+}
+
+.mm-confirm-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.mm-confirm-msg {
+    font-size: 0.83rem;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    margin: 0.1rem 0 0.75rem;
+    line-height: 1.5;
+}
+
+.mm-confirm-actions {
+    display: flex;
+    gap: 0.6rem;
+    width: 100%;
+}
+
+.mm-confirm-cancel,
+.mm-confirm-signout {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    border-radius: 10px;
+    font-size: 0.855rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border: none;
+    transition: background 0.14s;
+}
+
+.mm-confirm-cancel {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.mm-confirm-cancel:hover {
+    background: rgba(255, 255, 255, 0.13);
+    color: #fff;
+}
+
+.mm-confirm-signout {
+    background: #ef4444;
+    color: #fff;
+}
+
+.mm-confirm-signout:hover {
+    background: #dc2626;
+}
+
 /* ── Show burger on mobile ───────────────────────────────────── */
 @media (max-width: 768px) {
     .burger-btn {

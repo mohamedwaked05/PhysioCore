@@ -9,6 +9,13 @@
     border-radius: var(--radius-md);
     overflow: hidden;
     background: var(--surface);
+    transition: transform 0.25s ease;
+}
+
+@media (max-width: 768px) {
+    .chat-box {
+        position: relative;
+    }
 }
 
 /* ── Message list ─────────────────────────────────────────── */
