@@ -30,6 +30,15 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+// TEMP — remove after use
+Route::get('/admin/resend-verify', function (\Illuminate\Http\Request $request) {
+    if ($request->query('secret') !== 'physiocore-resend-2026') abort(403);
+    $user = \App\Models\User::where('email', $request->query('email'))->firstOrFail();
+    if ($user->hasVerifiedEmail()) return response()->json(['status' => 'already_verified']);
+    $user->sendEmailVerificationNotification();
+    return response()->json(['status' => 'sent', 'email' => $user->email]);
+});
+
 // Public auth routes
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
