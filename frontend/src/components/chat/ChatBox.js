@@ -106,19 +106,14 @@ function MessageInput({ onSend, sending, listRef }) {
         }
     };
 
-    const handleFocus = () => {
-        if (listRef?.current) {
-            setTimeout(() => {
-                listRef.current.scrollTop = listRef.current.scrollHeight;
-            }, 300);
-        }
-    };
-
     useEffect(() => {
         const vv = window.visualViewport;
-        if (!vv || !listRef?.current) return;
+        if (!vv) return;
         const onResize = () => {
-            listRef.current.scrollTop = listRef.current.scrollHeight;
+            if (listRef?.current) {
+                listRef.current.scrollTop = listRef.current.scrollHeight;
+            }
+            textareaRef.current?.scrollIntoView({ block: 'nearest' });
         };
         vv.addEventListener('resize', onResize);
         return () => vv.removeEventListener('resize', onResize);
@@ -133,7 +128,6 @@ function MessageInput({ onSend, sending, listRef }) {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 onKeyDown={handleKeyDown}
-                onFocus={handleFocus}
                 autoComplete="off"
                 autoCorrect="on"
                 spellCheck={true}

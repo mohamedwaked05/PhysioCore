@@ -78,8 +78,8 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
     const isGuest  = !user;
 
     const handleLogout = () => {
-        onClose();
         logout();
+        onClose();
     };
 
     return (
@@ -155,20 +155,20 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
                         </span>
                     </button>
 
+                    {!isGuest && profileRoute && (
+                        <Link to={profileRoute} className="mm-footer-btn" onClick={onClose}>
+                            <span className="mm-footer-icon"><ProfileIcon /></span>
+                            <span>Profile</span>
+                        </Link>
+                    )}
+
+                    {!isGuest && <div className="mm-divider" />}
+
                     {!isGuest && (
-                        <>
-                            {profileRoute && (
-                                <Link to={profileRoute} className="mm-footer-btn" onClick={onClose}>
-                                    <span className="mm-footer-icon"><ProfileIcon /></span>
-                                    <span>Profile</span>
-                                </Link>
-                            )}
-                            <div className="mm-divider" />
-                            <button className="mm-footer-btn danger" onClick={handleLogout}>
-                                <span className="mm-footer-icon"><SignOutIcon /></span>
-                                <span>Sign Out</span>
-                            </button>
-                        </>
+                        <button className="mm-footer-btn danger" onClick={handleLogout}>
+                            <span className="mm-footer-icon"><SignOutIcon /></span>
+                            <span>Sign Out</span>
+                        </button>
                     )}
                 </div>
             </div>
