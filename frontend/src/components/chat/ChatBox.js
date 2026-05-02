@@ -106,25 +106,7 @@ function MessageInput({ onSend, sending, listRef }) {
         }
     };
 
-    useEffect(() => {
-        const vv = window.visualViewport;
-        if (!vv) return;
-        const onResize = () => {
-            if (listRef?.current) {
-                listRef.current.scrollTop = listRef.current.scrollHeight;
-            }
-        };
-        vv.addEventListener('resize', onResize);
-        return () => vv.removeEventListener('resize', onResize);
-    }, [listRef]);
-
     const handleFocus = () => {
-        // Save scroll position and restore after focus — prevents iOS from
-        // scrolling the page when the textarea gets keyboard focus.
-        const scrollY = window.scrollY;
-        requestAnimationFrame(() => {
-            window.scrollTo({ top: scrollY, behavior: 'instant' });
-        });
         setTimeout(() => {
             if (listRef?.current) {
                 listRef.current.scrollTop = listRef.current.scrollHeight;
@@ -174,7 +156,7 @@ function MessageInput({ onSend, sending, listRef }) {
  *   withUserId  — user_id of the other party (for filtering fetch)
  *   onGuestAction — called when guest tries to interact (optional)
  */
-export default function ChatBox({ context, referenceId, receiverId, withUserId, onGuestAction }) {
+export default function ChatBox({ context, referenceId, receiverId, withUserId, onGuestAction, fullscreen = false }) {
     const { user }     = useAuth();
     const { addToast } = useToast();
 
@@ -189,28 +171,39 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
     // The other party's user id (used for markSeen sender filter)
     const otherUserId = withUserId || receiverId;
 
-    /* ── visualViewport: shrink chat to fit above keyboard on iOS ─ */
+    /* ── visualViewport: keyboard-aware layout on mobile ─────── */
     useEffect(() => {
         const vv = window.visualViewport;
         if (!vv || window.innerWidth > 768) return;
         const box = boxRef.current;
-        const update = () => {
-            if (boxRef.current) {
-                boxRef.current.style.height = `${vv.height - 64}px`;
+
+        const onResize = () => {
+            if (fullscreen) {
+                // Full-screen chat: shrink the chat box to fit above the keyboard
+                if (boxRef.current) {
+                    boxRef.current.style.height = `${vv.height - 64}px`;
+                }
+            } else {
+                // Embedded chat: scroll the page so the entire chat box is visible
+                if (boxRef.current) {
+                    const rect = boxRef.current.getBoundingClientRect();
+                    const overflow = rect.bottom - vv.height;
+                    if (overflow > 0) {
+                        window.scrollBy({ top: overflow + 8, behavior: 'instant' });
+                    }
+                }
             }
             if (listRef.current) {
                 listRef.current.scrollTop = listRef.current.scrollHeight;
             }
         };
-        vv.addEventListener('resize', update);
-        vv.addEventListener('scroll', update);
-        update();
+
+        vv.addEventListener('resize', onResize);
         return () => {
-            vv.removeEventListener('resize', update);
-            vv.removeEventListener('scroll', update);
+            vv.removeEventListener('resize', onResize);
             if (box) box.style.height = '';
         };
-    }, []);
+    }, [fullscreen]);
 
     /* ── Optimistic status patch helpers ─────────────────── */
     const applySeen = useCallback((messageIds, seenAt) => {

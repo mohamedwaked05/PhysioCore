@@ -148,6 +148,7 @@ export default function MessagesPage() {
                                 context="treatment"
                                 referenceId={selected.id}
                                 receiverId={selected.user_id}
+                                fullscreen
                             />
                         </>
                     )}
