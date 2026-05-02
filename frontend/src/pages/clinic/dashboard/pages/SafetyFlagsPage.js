@@ -195,7 +195,7 @@ export default function SafetyFlagsPage() {
         return () => {
             try { echo.leave(`clinic.${clinicId}`); } catch {}
         };
-    }, [user?.id, clinicId, silentRefetch]);
+    }, [user, clinicId, silentRefetch]);
 
     const handleResolved = (id) => setFlags(prev => prev.filter(f => f.id !== id));
 

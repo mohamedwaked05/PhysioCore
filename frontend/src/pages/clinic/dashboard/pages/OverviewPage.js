@@ -110,12 +110,6 @@ export default function OverviewPage() {
     const avgPain          = summary.avg_pain;
     const painDiff         = summary.pain_diff;
 
-    const formatDiff = (val, suffix = '') => {
-        if (!val && val !== 0) return null;
-        const sign = val >= 0 ? '↑ +' : '↓ ';
-        return `${sign}${Math.abs(val)}${suffix}`;
-    };
-
     return (
         <div className="cld-page">
 

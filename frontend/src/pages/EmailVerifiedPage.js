@@ -38,14 +38,13 @@ function StatusIcon({ type }) {
 export default function EmailVerifiedPage() {
     const [searchParams]    = useSearchParams();
     const navigate          = useNavigate();
-    const { login }         = useAuth();
+    useAuth();
 
     const status = searchParams.get('status'); // success | already-verified | invalid
     const token  = searchParams.get('token');
     const role   = searchParams.get('role');
 
     const [phase, setPhase]     = useState('loading'); // loading | done | error | already
-    const [userData, setUserData] = useState(null);
     const [countdown, setCountdown] = useState(5);
 
     useEffect(() => {
@@ -54,7 +53,6 @@ export default function EmailVerifiedPage() {
 
             api.get('/user')
                 .then(({ data }) => {
-                    setUserData(data);
                     setPhase('done');
 
                     // Broadcast to all same-origin tabs (e.g. the registration tab)

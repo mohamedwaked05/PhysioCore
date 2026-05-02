@@ -196,7 +196,7 @@ export default function WeeklyPage() {
                                 key={d.key}
                                 className={`cd-day-list-item${isActive ? ' cd-day-list-item--active' : ''}`}
                                 onClick={() => setSelectedDay(d.key)}
-                                role="button"
+                                role="tab"
                                 tabIndex={0}
                                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && setSelectedDay(d.key)}
                                 aria-selected={isActive}

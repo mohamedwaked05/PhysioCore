@@ -46,7 +46,7 @@ export default function RequestsPage() {
             .then(res => setRequests(res.data.map(normalize)))
             .catch(() => addToast('Failed to load access requests.', 'error'))
             .finally(() => setLoading(false));
-    }, []);
+    }, [addToast]);
 
     async function handleAction(id, action) {
         setActing(id);

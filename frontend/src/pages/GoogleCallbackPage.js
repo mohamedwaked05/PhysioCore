@@ -69,7 +69,7 @@ export default function GoogleCallbackPage() {
         }
 
         navigate('/login');
-    }, []);
+    }, [login, navigate, searchParams]);
 
     return (
         <div style={styles.container}>

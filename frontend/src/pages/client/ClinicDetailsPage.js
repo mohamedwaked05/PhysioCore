@@ -98,7 +98,6 @@ function PhotoOrPlaceholder({ src, name }) {
 function HeroCard({ clinic, hasRequest, requesting, onRequest }) {
     const name       = clinic.commercial_name || clinic.legal_name;
     const services   = parseList(clinic.services);
-    const priceLabel = formatPrice(clinic.min_price, clinic.max_price);
     const priceLevel = getPriceLevel(clinic.min_price, clinic.max_price);
 
     return (
