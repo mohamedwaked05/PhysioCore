@@ -71,13 +71,13 @@ export default function MessagesPage() {
     const clinicName = (c) => c.commercial_name || c.legal_name;
 
     return (
-        <div className="cld-page">
+        <div className="cld-page messages-page">
             <div className="cld-page-header">
                 <h2 className="cld-page-title">Messages</h2>
                 <p className="cld-page-subtitle">Treatment conversations with your clinics.</p>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+            <div className="messages-body" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                 {/* Clinic list — only shown when multiple clinics */}
                 {clinics.length > 1 && (
                     <div style={{

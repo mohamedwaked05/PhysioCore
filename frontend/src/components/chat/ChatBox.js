@@ -25,12 +25,13 @@ function MessageTick({ msg }) {
 
 /* ── MessageList ──────────────────────────────────────────── */
 function MessageList({ messages, currentUserId, loading, newCount }) {
-    const bottomRef  = useRef(null);
+    const listRef    = useRef(null);
     const initialRef = useRef(true);
 
     useEffect(() => {
-        if (!bottomRef.current) return;
-        bottomRef.current.scrollIntoView({ behavior: initialRef.current ? 'instant' : 'smooth' });
+        if (!listRef.current) return;
+        // Direct scrollTop manipulation — only scrolls this container, never the page viewport
+        listRef.current.scrollTop = listRef.current.scrollHeight;
         initialRef.current = false;
     }, [messages.length]);
 
@@ -54,7 +55,7 @@ function MessageList({ messages, currentUserId, loading, newCount }) {
     }
 
     return (
-        <div className="chat-messages">
+        <div className="chat-messages" ref={listRef}>
             {newCount > 0 && (
                 <div className="chat-new-indicator">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -87,7 +88,6 @@ function MessageList({ messages, currentUserId, loading, newCount }) {
                     </div>
                 );
             })}
-            <div ref={bottomRef} />
         </div>
     );
 }
