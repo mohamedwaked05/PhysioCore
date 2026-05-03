@@ -1838,3 +1838,37 @@
         gap: 0.4rem;
     }
 }
+
+/* ── Narrow mobile (≤480px): wrap log scale to full-width 10-col grid ── */
+@media (max-width: 480px) {
+    .cd-log-row {
+        flex-wrap: wrap;
+        gap: 0.35rem 0.5rem;
+    }
+
+    .cd-log-label {
+        min-width: 0;
+        flex: 0 0 auto;
+    }
+
+    .cd-log-value {
+        flex: 0 0 auto;
+        margin-left: auto;
+    }
+
+    .cd-log-buttons {
+        order: 3;
+        flex-basis: 100%;
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 0.2rem;
+    }
+
+    .cd-log-btn {
+        width: 100%;
+        min-width: 0;
+        height: 28px;
+        font-size: 0.72rem;
+        padding: 0;
+    }
+}

@@ -107,9 +107,16 @@ function MessageInput({ onSend, sending, listRef }) {
     };
 
     const handleFocus = () => {
+        // Capture window scroll BEFORE iOS focus-driven auto-scroll fires.
+        // We restore it after to prevent the browser from pushing the page
+        // (and the chat box with it) upward when the keyboard opens.
+        const startScrollY = window.scrollY;
         setTimeout(() => {
             if (listRef?.current) {
                 listRef.current.scrollTop = listRef.current.scrollHeight;
+            }
+            if (Math.abs(window.scrollY - startScrollY) > 4) {
+                window.scrollTo(0, startScrollY);
             }
         }, 100);
     };

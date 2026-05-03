@@ -548,6 +548,49 @@
     flex-shrink: 0;
 }
 
+/* ── Patients page row (PatientsPage.js) ─────────────────────── */
+.cld-patient-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.35rem;
+    transition: background var(--transition);
+}
+
+@media (max-width: 640px) {
+    .cld-patient-row {
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        padding: 0.85rem 1rem;
+    }
+
+    .cld-patient-row .cld-patient-info {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .cld-patient-row .cld-patient-actions {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 0.4rem;
+    }
+
+    .cld-patient-row .cld-patient-actions > * {
+        flex: 1 1 calc(33.333% - 0.4rem);
+        min-width: 0;
+        justify-content: center;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 360px) {
+    .cld-patient-row .cld-patient-actions > * {
+        flex-basis: 100%;
+    }
+}
+
 /* ── Feedback Items ───────────────────────────────────────── */
 .cld-feedback-list { display: flex; flex-direction: column; gap: 0.75rem; }
 
@@ -1016,4 +1059,126 @@
     .cld-title         { font-size: 1.25rem; }
     .cld-subnav-link   { padding: 0.4rem 0.6rem; font-size: 0.78rem; }
     .cld-stats-grid    { grid-template-columns: 1fr; gap: 0.5rem; }
+}
+
+/* ── Bottom Navigation (mobile only) ─────────────────────────── */
+.cld-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Hide the top tab bar on mobile */
+    .cld-subnav-wrapper {
+        display: none;
+    }
+
+    /* Add breathing room so content doesn't hide behind the bottom nav */
+    .cld-layout {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom) + 1rem);
+    }
+
+    /* Show the bottom nav */
+    .cld-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        background: rgba(18, 22, 50, 0.94);
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.28);
+        padding-bottom: env(safe-area-inset-bottom);
+        align-items: stretch;
+    }
+
+    .cld-bottom-nav-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.28rem;
+        padding: 0.55rem 0.15rem;
+        min-height: 56px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 0.62rem;
+        font-weight: 500;
+        font-family: 'Inter', sans-serif;
+        letter-spacing: 0.02em;
+        transition: color 0.15s ease, background 0.15s ease;
+        border-radius: 0;
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+    }
+
+    .cld-bottom-nav-item:active {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .cld-bottom-nav-item.active {
+        color: #7b8fe8;
+    }
+
+    .cld-bottom-nav-item.active::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 28px;
+        height: 2px;
+        background: #7b8fe8;
+        border-radius: 0 0 2px 2px;
+    }
+
+    .cld-bottom-nav-icon {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        transition: background 0.15s ease;
+    }
+
+    .cld-bottom-nav-item.active .cld-bottom-nav-icon {
+        background: rgba(123, 143, 232, 0.14);
+    }
+
+    .cld-bottom-nav-badge {
+        position: absolute;
+        top: -2px;
+        right: -4px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 0.6rem;
+        font-weight: 700;
+        line-height: 16px;
+        border-radius: 999px;
+        text-align: center;
+        border: 2px solid rgba(18, 22, 50, 0.94);
+        box-sizing: content-box;
+    }
+
+    .cld-bottom-nav-label {
+        line-height: 1;
+        white-space: nowrap;
+    }
+}
+
+[data-theme="dark"] .cld-bottom-nav {
+    background: rgba(7, 9, 15, 0.95);
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .cld-bottom-nav-badge {
+    border-color: rgba(7, 9, 15, 0.95);
 }

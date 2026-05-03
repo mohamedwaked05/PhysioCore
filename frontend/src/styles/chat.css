@@ -10,6 +10,19 @@
     overflow: hidden;
     background: var(--surface);
     transition: transform 0.25s ease;
+    /* Stop iOS from using this element as the scroll-into-view anchor when
+       the textarea inside is focused — the input is already visible. */
+    scroll-margin-top: 0;
+    scroll-padding-top: 0;
+    /* Give the chat its own layout containment so focus inside doesn't
+       trigger ancestor scroll adjustments. */
+    contain: layout;
+}
+
+.chat-box textarea {
+    /* Same anchoring guards on the input itself */
+    scroll-margin-top: 0;
+    scroll-padding-top: 0;
 }
 
 @media (max-width: 768px) {
@@ -344,5 +357,195 @@
         padding: 0.75rem !important;
         padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
         background: var(--surface) !important;
+    }
+}
+
+/* ============================================================
+   Clinic Inquiries — list + chat layout
+   ============================================================ */
+.cld-inquiries-grid {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.cld-inquiries-list {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    overflow: hidden;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.cld-inquiries-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    border-left: 3px solid transparent;
+    border-bottom: 0.5px solid var(--border-light);
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.cld-inquiries-list-item:hover {
+    background: var(--surface-dim);
+}
+
+.cld-inquiries-list-item.active {
+    background: var(--surface-dim);
+    border-left-color: var(--primary);
+}
+
+.cld-inquiries-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.cld-inquiries-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 0.1rem 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cld-inquiries-preview {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.cld-inquiries-chat {
+    flex: 1;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border);
+    overflow: hidden;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.cld-inquiries-chat-header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.85rem 1.1rem;
+    border-bottom: 0.5px solid var(--border);
+}
+
+.cld-inquiries-back {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.cld-inquiries-back:hover {
+    background: var(--surface-dim);
+    color: var(--text);
+}
+
+.cld-inquiries-empty-chat {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* ── Mobile: list/chat as separate views ──────────────────────── */
+@media (max-width: 768px) {
+    .cld-inquiries-grid {
+        position: relative;
+    }
+
+    .cld-inquiries-list {
+        width: 100%;
+        max-height: none;
+    }
+
+    .cld-inquiries-chat {
+        display: none;
+    }
+
+    /* Show back button only on mobile */
+    .cld-inquiries-back {
+        display: flex;
+    }
+
+    /* When a chat is open: hide list, show chat fullscreen */
+    .cld-inquiries--chat-open .cld-inquiries-header {
+        display: none;
+    }
+
+    .cld-inquiries--chat-open .cld-inquiries-list {
+        display: none;
+    }
+
+    .cld-inquiries--chat-open .cld-inquiries-chat {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 150;
+        border-radius: 0;
+        border: none;
+        background: var(--bg);
+    }
+
+    /* Make ChatBox fill the available height in the fullscreen view */
+    .cld-inquiries--chat-open .chat-box {
+        flex: 1;
+        height: auto;
+        max-height: none;
+        border-radius: 0;
+        min-height: 0;
+    }
+
+    .cld-inquiries--chat-open .chat-messages {
+        flex: 1;
+        min-height: 0;
+    }
+
+    .cld-inquiries--chat-open .chat-input-area {
+        flex-shrink: 0;
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }
 }

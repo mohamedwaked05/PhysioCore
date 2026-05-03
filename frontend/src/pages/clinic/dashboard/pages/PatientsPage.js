@@ -146,18 +146,16 @@ export default function PatientsPage() {
                         {filtered.map((p, idx) => (
                             <div
                                 key={p.id}
+                                className="cld-patient-row"
                                 style={{
-                                    display: 'flex', alignItems: 'center', gap: '1rem',
-                                    padding: '1rem 1.35rem',
                                     borderBottom: idx < filtered.length - 1 ? '0.5px solid var(--border-light)' : 'none',
-                                    transition: 'background var(--transition)',
                                 }}
                                 onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-dim)'}
                                 onMouseLeave={e => e.currentTarget.style.background = ''}
                             >
                                 <div className="cld-patient-avatar">{p.initials}</div>
 
-                                <div className="cld-patient-info" style={{ flex: 1 }}>
+                                <div className="cld-patient-info" style={{ flex: 1, minWidth: 0 }}>
                                     <p className="cld-patient-name">{p.name}</p>
                                     <p className="cld-patient-condition">{p.condition}</p>
                                     <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>

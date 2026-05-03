@@ -10,12 +10,22 @@ function getInitials(first, last) {
     return `${first?.[0] ?? ''}${last?.[0] ?? ''}`.toUpperCase() || '?';
 }
 
+function BackArrowIcon() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"/>
+            <polyline points="12 19 5 12 12 5"/>
+        </svg>
+    );
+}
+
 export default function InquiriesPage() {
     const { user }                        = useAuth();
     const [clinic, setClinic]             = useState(null);
     const [threads, setThreads]           = useState([]); // unique clients
     const [selected, setSelected]         = useState(null);
     const [loading, setLoading]           = useState(true);
+    const [mobileChatOpen, setMobileChatOpen] = useState(false);
 
     const buildThreads = useCallback((messages, clinicUserId) => {
         const map = new Map();
@@ -44,7 +54,10 @@ export default function InquiriesPage() {
                 if (cancelled) return;
                 const unique = buildThreads(msgRes.data, user.id);
                 setThreads(unique);
-                if (unique.length > 0) setSelected(unique[0]);
+                // Don't auto-select on mount — on mobile the user picks a thread first
+                if (unique.length > 0 && window.innerWidth > 768) {
+                    setSelected(unique[0]);
+                }
             } catch {
                 // leave empty state
             } finally {
@@ -54,6 +67,15 @@ export default function InquiriesPage() {
         load();
         return () => { cancelled = true; };
     }, [user, buildThreads]);
+
+    const openThread = (client) => {
+        setSelected(client);
+        setMobileChatOpen(true);
+    };
+
+    const closeThread = () => {
+        setMobileChatOpen(false);
+    };
 
     if (loading) {
         return (
@@ -96,51 +118,31 @@ export default function InquiriesPage() {
     }
 
     return (
-        <div className="cld-page">
-            <div className="cld-page-header">
+        <div className={`cld-page cld-inquiries${mobileChatOpen ? ' cld-inquiries--chat-open' : ''}`}>
+            <div className="cld-page-header cld-inquiries-header">
                 <h2 className="cld-page-title">Inquiries</h2>
                 <p className="cld-page-subtitle">
                     {threads.length} conversation{threads.length !== 1 ? 's' : ''} from prospective clients.
                 </p>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+            <div className="cld-inquiries-grid">
                 {/* Client list */}
-                <div style={{
-                    width: 220, flexShrink: 0,
-                    background: 'var(--surface)', borderRadius: 'var(--radius-lg)',
-                    border: '0.5px solid var(--border)', overflow: 'hidden',
-                }}>
+                <div className="cld-inquiries-list">
                     {threads.map(client => (
                         <button
                             key={client.id}
-                            onClick={() => setSelected(client)}
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: '0.65rem',
-                                width: '100%', textAlign: 'left',
-                                padding: '0.75rem 1rem',
-                                background: selected?.id === client.id ? 'var(--surface-dim)' : 'transparent',
-                                borderLeft: selected?.id === client.id ? '3px solid var(--primary)' : '3px solid transparent',
-                                border: 'none', borderBottom: '0.5px solid var(--border-light)',
-                                cursor: 'pointer', transition: 'background var(--transition)',
-                            }}
+                            onClick={() => openThread(client)}
+                            className={`cld-inquiries-list-item${selected?.id === client.id ? ' active' : ''}`}
                         >
-                            <div style={{
-                                width: 32, height: 32, borderRadius: '50%',
-                                background: 'var(--primary)', color: '#fff',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '0.72rem', fontWeight: 700, flexShrink: 0,
-                            }}>
+                            <div className="cld-inquiries-avatar">
                                 {getInitials(client.first_name, client.last_name)}
                             </div>
-                            <div style={{ minWidth: 0 }}>
-                                <p style={{ fontSize: '0.83rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.1rem' }}>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                                <p className="cld-inquiries-name">
                                     {client.first_name} {client.last_name}
                                 </p>
-                                <p style={{
-                                    fontSize: '0.73rem', color: 'var(--text-muted)',
-                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                }}>
+                                <p className="cld-inquiries-preview">
                                     {client.lastMessage}
                                 </p>
                             </div>
@@ -149,20 +151,26 @@ export default function InquiriesPage() {
                 </div>
 
                 {/* Chat area */}
-                <div style={{
-                    flex: 1, background: 'var(--surface)',
-                    borderRadius: 'var(--radius-lg)', border: '0.5px solid var(--border)',
-                    overflow: 'hidden',
-                }}>
-                    {selected && clinic && (
+                <div className="cld-inquiries-chat">
+                    {selected && clinic ? (
                         <>
-                            <div style={{ padding: '0.85rem 1.1rem', borderBottom: '0.5px solid var(--border)' }}>
-                                <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>
-                                    {selected.first_name} {selected.last_name}
-                                </p>
-                                <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
-                                    Inquiry · Pre-treatment
-                                </p>
+                            <div className="cld-inquiries-chat-header">
+                                <button
+                                    type="button"
+                                    className="cld-inquiries-back"
+                                    onClick={closeThread}
+                                    aria-label="Back to inquiries"
+                                >
+                                    <BackArrowIcon />
+                                </button>
+                                <div style={{ minWidth: 0, flex: 1 }}>
+                                    <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>
+                                        {selected.first_name} {selected.last_name}
+                                    </p>
+                                    <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                                        Inquiry · Pre-treatment
+                                    </p>
+                                </div>
                             </div>
                             <ChatBox
                                 context="inquiry"
@@ -171,6 +179,10 @@ export default function InquiriesPage() {
                                 withUserId={selected.id}
                             />
                         </>
+                    ) : (
+                        <div className="cld-inquiries-empty-chat">
+                            <p>Select a conversation to view messages.</p>
+                        </div>
                     )}
                 </div>
             </div>
