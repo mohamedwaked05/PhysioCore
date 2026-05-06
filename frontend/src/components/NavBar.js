@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import QRCode from 'qrcode';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useProfilePhoto } from '../hooks/useProfilePhoto';
@@ -263,14 +265,107 @@ function GroupRow({ group, role, onGroupClick }) {
     );
 }
 
+function QrIcon() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+            <path d="M14 14h.01M14 18h3M17 14v4M21 14h.01M21 18h.01"/>
+        </svg>
+    );
+}
+
+function QrModal({ clinicId, onClose }) {
+    const canvasRef             = useRef(null);
+    const [copied, setCopied]   = useState(false);
+    const [ready,  setReady]    = useState(false);
+    const clinicUrl = `https://physiocore.health/clinics/${clinicId}`;
+
+    useEffect(() => {
+        if (!clinicId || !canvasRef.current) return;
+        QRCode.toCanvas(canvasRef.current, clinicUrl, {
+            width: 280, margin: 2,
+            color: { dark: '#1a1a2e', light: '#ffffff' },
+        }).then(() => setReady(true));
+    }, [clinicId, clinicUrl]);
+
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [onClose]);
+
+    const download = useCallback(() => {
+        if (!canvasRef.current) return;
+        canvasRef.current.toBlob(blob => {
+            const a = Object.assign(document.createElement('a'), {
+                href: URL.createObjectURL(blob),
+                download: `physiocore-clinic-${clinicId}.png`,
+            });
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }, 'image/png');
+    }, [clinicId]);
+
+    const copyLink = useCallback(() => {
+        navigator.clipboard.writeText(clinicUrl).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    }, [clinicUrl]);
+
+    return createPortal(
+        <div className="qr-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+            <div className="qr-modal" role="dialog" aria-modal="true" aria-label="QR Code">
+                <div className="qr-modal-header">
+                    <div>
+                        <p className="qr-modal-title">Share your clinic</p>
+                        <p className="qr-modal-sub">Patients scan this to visit your profile directly</p>
+                    </div>
+                    <button className="qr-close-btn" onClick={onClose} aria-label="Close">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div className="qr-canvas-wrap">
+                    <canvas ref={canvasRef} className="qr-canvas" />
+                    {!ready && <div className="qr-canvas-loading">Generating…</div>}
+                </div>
+                <div className="qr-url-row">
+                    <span className="qr-url-text">{clinicUrl}</span>
+                    <button className="qr-copy-btn" onClick={copyLink}>
+                        {copied ? (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        ) : (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        )}
+                        {copied ? 'Copied!' : 'Copy'}
+                    </button>
+                </div>
+                <div className="qr-actions">
+                    <button className="qr-download-btn" onClick={download} disabled={!ready}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download PNG
+                    </button>
+                </div>
+            </div>
+        </div>,
+        document.body
+    );
+}
+
 /* ── Shared NavBar ────────────────────────────────────────── */
-export default function NavBar({ homeRoute, links, profileRoute }) {
+export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = null }) {
     const { user, logout }          = useAuth();
     const { theme, toggle }         = useTheme();
     const photoUrl                  = useProfilePhoto(user?.role);
     const navigate                  = useNavigate();
     const [open, setOpen]           = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
+    const [qrOpen, setQrOpen]       = useState(false);
     const wrapRef                   = useRef(null);
     const notifRef                  = useRef(null);
     const { isOpen: menuOpen, toggle: menuToggle, close: menuClose } = useMobileMenu();
@@ -474,6 +569,14 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
                         )}
                     </div>
 
+                    {/* ── QR Code button (clinic only) ── */}
+                    {qrClinicId && (
+                        <button className="nav-settings-btn" onClick={() => setQrOpen(true)}
+                            aria-label="My QR Code" title="My QR Code">
+                            <QrIcon />
+                        </button>
+                    )}
+
                     {/* ── Mobile burger ── */}
                     <button className={`burger-btn${menuOpen ? ' open' : ''}`} onClick={menuToggle}
                         aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -484,6 +587,10 @@ export default function NavBar({ homeRoute, links, profileRoute }) {
             </nav>
 
             <MobileMenu isOpen={menuOpen} onClose={menuClose} links={links} homeRoute={homeRoute} profileRoute={profileRoute} />
+
+            {qrOpen && qrClinicId && (
+                <QrModal clinicId={qrClinicId} onClose={() => setQrOpen(false)} />
+            )}
         </>
     );
 }

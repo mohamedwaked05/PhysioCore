@@ -109,7 +109,7 @@ export default function ClinicDashboardLayout() {
     ];
 
     return (
-        <ClinicLayout>
+        <ClinicLayout clinicId={clinicId}>
             <div className="cld-layout">
                 {/* ── Page Header ─── */}
                 <div className="cld-header">

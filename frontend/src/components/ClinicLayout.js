@@ -27,13 +27,14 @@ const CLINIC_LINKS = [
     { to: '/clinic/profile',   label: 'Profile',   icon: <ClinicProfileIcon /> },
 ];
 
-export default function ClinicLayout({ children }) {
+export default function ClinicLayout({ children, clinicId = null }) {
     return (
         <div className="client-shell">
             <NavBar
                 homeRoute="/clinic/dashboard"
                 links={CLINIC_LINKS}
                 profileRoute="/clinic/profile"
+                qrClinicId={clinicId}
             />
             <main className="client-content">
                 {children}
