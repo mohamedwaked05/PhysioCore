@@ -46,4 +46,8 @@ return [
         'key' => env('AI_SERVICE_API_KEY', ''),
     ],
 
+    'groq' => [
+        'api_key' => env('GROQ_API_KEY', ''),
+    ],
+
 ];

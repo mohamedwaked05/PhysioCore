@@ -12,3 +12,4 @@ const publicApi = axios.create({
 
 export const getPublicClinics = () => publicApi.get('/clinics');
 export const getPublicClinic  = (id) => publicApi.get(`/clinics/${id}`);
+export const assessInjury     = (messages) => publicApi.post('/chatbot/assess', { messages });

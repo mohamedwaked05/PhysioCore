@@ -19,6 +19,7 @@ use App\Http\Controllers\Client\AiInsightController;
 use App\Http\Controllers\Clinic\AnalyticsController;
 use App\Http\Controllers\Clinic\AiInsightController as ClinicAiInsightController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Broadcast;
@@ -116,6 +117,9 @@ Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(func
 
 Route::get('/clinics',      [ClinicController::class, 'index']);
 Route::get('/clinics/{id}', [ClinicController::class, 'show']);
+
+// Injury assessment chatbot — guest-accessible, no auth required
+Route::post('/chatbot/assess', [ChatbotController::class, 'assess'])->middleware('throttle:20,1');
 
 /*
 |--------------------------------------------------------------------------

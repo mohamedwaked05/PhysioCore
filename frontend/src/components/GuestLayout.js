@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import NavBar from './NavBar';
 import MobileMenu from './MobileMenu';
+import Chatbot from './Chatbot';
 import useMobileMenu from '../hooks/useMobileMenu';
 import '../styles/client.css';
 import '../styles/guest.css';
@@ -133,6 +134,7 @@ export default function GuestLayout({ children }) {
                     profileRoute="/client/profile"
                 />
                 <main className="guest-main">{children}</main>
+                <Chatbot />
             </div>
         );
     }
@@ -218,6 +220,7 @@ export default function GuestLayout({ children }) {
             />
 
             <main className="guest-main">{children}</main>
+            <Chatbot />
         </div>
     );
 }
