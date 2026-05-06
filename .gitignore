@@ -6,3 +6,8 @@ notes.md
 db.md
 dump.rdb
 production.md1
+
+# Python bytecode caches
+__pycache__/
+*.pyc
+*.pyo
