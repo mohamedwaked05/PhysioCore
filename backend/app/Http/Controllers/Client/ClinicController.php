@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Clinic;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ClinicController extends Controller
 {
@@ -20,6 +21,22 @@ class ClinicController extends Controller
             ->findOrFail($id);
 
         return response()->json($clinic);
+    }
+
+    public function qrCode($id)
+    {
+        $clinic = Clinic::where('verification_status', 'approved')
+            ->select(['id'])
+            ->findOrFail($id);
+
+        $url = 'https://physiocore.health/clinics/' . $clinic->id;
+
+        $svg = QrCode::format('svg')->size(300)->margin(1)->generate($url);
+
+        return response($svg, 200)
+            ->header('Content-Type', 'image/svg+xml')
+            ->header('Cache-Control', 'public, max-age=86400')
+            ->header('Access-Control-Allow-Origin', '*');
     }
 
     public function index()

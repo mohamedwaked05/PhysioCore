@@ -119,7 +119,7 @@
 /* ── Stats Grid (top 3 cards) ─────────────────────────────── */
 .cld-stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
     animation: cld-fade-up 0.22s 0.06s ease both;
@@ -1028,7 +1028,7 @@
 
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 900px) {
-    .cld-stats-grid    { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+    .cld-stats-grid    { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
     .cld-charts-grid   { grid-template-columns: 1fr 1fr; }
     .cld-charts-grid .cld-chart-card:last-child { grid-column: span 2; }
     .cld-grid          { grid-template-columns: 1fr; }
@@ -1182,3 +1182,216 @@
 [data-theme="dark"] .cld-bottom-nav-badge {
     border-color: rgba(7, 9, 15, 0.95);
 }
+
+/* ── QR stat card ──────────────────────────────────────────── */
+.cld-qr-card {
+    background: none;
+    border: 0.5px solid var(--border-light);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    width: 100%;
+    transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+}
+
+.cld-qr-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+/* ── QR Modal overlay ──────────────────────────────────────── */
+.qr-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 9995;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    backdrop-filter: blur(3px);
+}
+
+.qr-modal {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 380px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.qr-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1.25rem 1.25rem 1rem;
+}
+
+.qr-modal-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text);
+    margin: 0 0 0.15rem;
+}
+
+.qr-modal-sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.qr-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+    min-width: 32px;
+    min-height: 32px;
+}
+
+.qr-close-btn:hover {
+    color: var(--text);
+    background: var(--border-light);
+}
+
+.qr-canvas-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1.25rem;
+    position: relative;
+    min-height: 300px;
+}
+
+.qr-canvas {
+    display: block;
+    border-radius: var(--radius-md);
+    max-width: 100%;
+}
+
+.qr-canvas-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.qr-url-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 1.25rem 0;
+    padding: 0.55rem 0.75rem;
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.qr-url-text {
+    flex: 1;
+    font-size: 0.73rem;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Inter', monospace;
+}
+
+.qr-copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    color: var(--primary);
+    cursor: pointer;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    padding: 4px 6px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+}
+
+.qr-copy-btn:hover { opacity: 0.75; }
+
+.qr-actions {
+    padding: 0.875rem 1.25rem 1.25rem;
+    display: flex;
+    gap: 0.625rem;
+}
+
+.qr-download-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.65rem 1rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+    min-height: 44px;
+}
+
+.qr-download-btn:hover:not(:disabled) {
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+.qr-download-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* ── QR modal mobile ────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .qr-modal {
+        max-width: 100%;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    .qr-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .qr-canvas-wrap {
+        min-height: 260px;
+    }
+}
+
+/* ── Dark theme: QR modal surfaces ─────────────────────────── */
+[data-theme="dark"] .qr-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+

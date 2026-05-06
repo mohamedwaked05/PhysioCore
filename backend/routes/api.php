@@ -115,8 +115,9 @@ Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(func
 |--------------------------------------------------------------------------
 */
 
-Route::get('/clinics',      [ClinicController::class, 'index']);
-Route::get('/clinics/{id}', [ClinicController::class, 'show']);
+Route::get('/clinics',               [ClinicController::class, 'index']);
+Route::get('/clinics/{id}',          [ClinicController::class, 'show']);
+Route::get('/clinics/{id}/qr-code',  [ClinicController::class, 'qrCode']);
 
 // Injury assessment chatbot — guest-accessible, no auth required
 Route::post('/chatbot/assess', [ChatbotController::class, 'assess'])->middleware('throttle:20,1');
