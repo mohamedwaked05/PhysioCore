@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MetricCard from '../components/MetricCard';
 import ProgressBar from '../components/ProgressBar';
-import DayTracker from '../components/DayTracker';
 import MilestoneItem from '../components/MilestoneItem';
 import Skeleton from '../../../../components/ui/Skeleton';
 import { getAccessRequests, getTrackingStatus, getLatestAiInsight } from '../../../../api/client';
@@ -57,6 +56,118 @@ function DumbellIcon() {
     return (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6.5 6.5h11M6.5 17.5h11M3 9.5v5M21 9.5v5M6.5 6.5v11M17.5 6.5v11"/>
+        </svg>
+    );
+}
+
+/* ── SVG Weekly Bar Chart ─────────────────────────────────────── */
+function WeeklyChart({ days }) {
+    if (!days || days.length === 0) {
+        return (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.83rem' }}>
+                Complete your first session to see progress
+            </div>
+        );
+    }
+    const BAR_W = 28;
+    const BAR_GAP = 10;
+    const H = 80;
+    const PADY = 20;
+    const PADX = 8;
+    const totalW = days.length * (BAR_W + BAR_GAP) - BAR_GAP + PADX * 2;
+
+    const barColor = (status) => {
+        if (status === 'complete') return '#16a34a';
+        if (status === 'partial')  return '#f59e0b';
+        if (status === 'rest')     return 'rgba(0,0,0,0.08)';
+        return 'rgba(62,71,114,0.12)';
+    };
+
+    return (
+        <svg viewBox={`0 0 ${totalW} ${H + PADY + 24}`} style={{ width: '100%', display: 'block', overflow: 'visible' }}>
+            {days.map((d, i) => {
+                const x    = PADX + i * (BAR_W + BAR_GAP);
+                const pct  = d.completion ?? 0;
+                const barH = Math.max((pct / 100) * H, pct > 0 ? 3 : 0);
+                const y    = PADY + H - barH;
+                const fill = barColor(d.status);
+                return (
+                    <g key={d.id ?? i}>
+                        {/* Background track */}
+                        <rect x={x} y={PADY} width={BAR_W} height={H} fill="rgba(0,0,0,0.04)" rx={4} />
+                        {/* Value bar */}
+                        {barH > 0 && <rect x={x} y={y} width={BAR_W} height={barH} fill={fill} rx={4} />}
+                        {/* Day label */}
+                        <text x={x + BAR_W / 2} y={H + PADY + 16} textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.55">
+                            {d.short}
+                        </text>
+                        {/* Percentage above bar */}
+                        {pct > 0 && (
+                            <text x={x + BAR_W / 2} y={y - 4} textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.7">
+                                {pct}%
+                            </text>
+                        )}
+                    </g>
+                );
+            })}
+            {/* Y axis line */}
+            <line x1={PADX} y1={PADY} x2={PADX} y2={PADY + H} stroke="currentColor" strokeWidth="0.5" opacity="0.15" />
+        </svg>
+    );
+}
+
+/* ── SVG Pain Line Chart ──────────────────────────────────────── */
+function PainLineChart({ trend }) {
+    if (!trend || trend.length === 0) {
+        return (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.83rem' }}>
+                Log your pain levels to see your trend
+            </div>
+        );
+    }
+
+    const VW   = 300;
+    const H    = 90;
+    const PADX = 28;
+    const PADY = 14;
+    const n    = trend.length;
+    const stepX = n > 1 ? (VW - PADX * 2) / (n - 1) : 0;
+    const yFor  = (lvl) => PADY + (1 - Math.min(lvl, 10) / 10) * H;
+
+    const pts = trend.map((d, i) => ({
+        x:     PADX + i * stepX,
+        y:     yFor(d.level),
+        level: d.level,
+        label: d.week,
+    }));
+
+    const pathD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+
+    const dotColor = (lvl) => lvl >= 7 ? '#ef4444' : lvl >= 5 ? '#f59e0b' : '#16a34a';
+
+    return (
+        <svg viewBox={`0 0 ${VW} ${H + PADY * 2 + 20}`} style={{ width: '100%', display: 'block', overflow: 'visible' }}>
+            {/* Grid lines at 2, 4, 6, 8, 10 */}
+            {[2, 4, 6, 8, 10].map(v => {
+                const y = yFor(v);
+                return (
+                    <g key={v}>
+                        <line x1={PADX} y1={y} x2={VW - PADX / 2} y2={y} stroke="currentColor" strokeWidth="0.5" opacity="0.12" />
+                        <text x={PADX - 4} y={y + 3} textAnchor="end" fontSize="9" fill="currentColor" opacity="0.45">{v}</text>
+                    </g>
+                );
+            })}
+            {/* Line */}
+            <path d={pathD} fill="none" stroke="#3E4772" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" opacity="0.7" />
+            {/* Dots + x labels */}
+            {pts.map((p, i) => (
+                <g key={i}>
+                    <circle cx={p.x} cy={p.y} r={4} fill={dotColor(p.level)} stroke="var(--surface, #fff)" strokeWidth="1.5" />
+                    <text x={p.x} y={H + PADY * 2 + 14} textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.5">
+                        {p.label}
+                    </text>
+                </g>
+            ))}
         </svg>
     );
 }
@@ -202,62 +313,42 @@ export default function StatusPage() {
                 </div>
             )}
 
-            {/* ── Weekly Progress Tracker + Pain Trend ─── */}
+            {/* ── Weekly Progress Chart + Pain Trend Chart ─── */}
             <div className="cd-two-col cd-section">
-                {/* Day tracker */}
+                {/* Weekly bar chart */}
                 <div className="ui-card">
                     <div className="cd-card-header">
                         <span className="cd-card-title">Weekly Progress</span>
                         {weekLabel && <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{weekLabel}</span>}
                     </div>
                     {loading ? (
-                        <Skeleton height="60px" radius="8px" />
+                        <Skeleton height="100px" radius="8px" />
                     ) : (
                         <>
-                            <DayTracker days={data?.weekly_days ?? []} />
-                            <div style={{ marginTop: '1.1rem' }}>
-                                <ProgressBar value={data?.adherence_rate ?? 0} label="Week adherence" color="primary" size="sm" />
-                            </div>
+                            <WeeklyChart days={data?.weekly_days ?? []} />
+                            {(data?.weekly_days?.length > 0) && (
+                                <div style={{ marginTop: '0.75rem' }}>
+                                    <ProgressBar value={data?.adherence_rate ?? 0} label="Week adherence" color="primary" size="sm" />
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
 
-                {/* Pain trend */}
+                {/* Pain line chart */}
                 <div className="ui-card">
                     <div className="cd-card-header">
                         <span className="cd-card-title">Pain Trend</span>
+                        {firstPain && lastPain && (
+                            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: firstPain > lastPain ? '#16a34a' : '#ef4444' }}>
+                                {firstPain > lastPain ? '↓' : '↑'} {Math.abs(firstPain - lastPain).toFixed(1)} pts
+                            </span>
+                        )}
                     </div>
                     {loading ? (
                         <Skeleton height="120px" radius="8px" />
-                    ) : painTrend.length === 0 ? (
-                        <div style={{ padding: '1.5rem', textAlign: 'center', fontSize: '0.83rem', color: 'var(--text-muted)' }}>
-                            No pain data yet — submit session feedback to track progress.
-                        </div>
                     ) : (
-                        <>
-                            <div className="cd-pain-trend">
-                                {painTrend.map(row => (
-                                    <div key={row.week} className="cd-pain-row">
-                                        <span className="cd-pain-week">{row.week}</span>
-                                        <ProgressBar
-                                            value={painPct(row.level, row.maxLevel)}
-                                            showLabel={false}
-                                            color={row.level >= 7 ? 'danger' : row.level >= 5 ? 'warning' : 'success'}
-                                            size="sm"
-                                        />
-                                        <span className="cd-pain-value">{row.level}</span>
-                                    </div>
-                                ))}
-                            </div>
-                            {firstPain && lastPain && (
-                                <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'var(--surface-dim)', borderRadius: 'var(--radius-md)', border: '0.5px solid var(--border-light)' }}>
-                                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Overall change</div>
-                                    <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.1rem', color: firstPain > lastPain ? '#16a34a' : '#ef4444' }}>
-                                        {firstPain > lastPain ? '−' : '+'}{Math.abs(firstPain - lastPain).toFixed(1)} pain reduction
-                                    </div>
-                                </div>
-                            )}
-                        </>
+                        <PainLineChart trend={painTrend} />
                     )}
                 </div>
             </div>

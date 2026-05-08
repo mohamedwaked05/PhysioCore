@@ -34,7 +34,7 @@ function BrowseClinicsIcon() {
 const CLIENT_LINKS = [
     { to: '/client/dashboard', label: 'Dashboard',     icon: <DashboardIcon /> },
     { to: '/client/profile',   label: 'Profile',       icon: <ProfileIcon /> },
-    { to: '/clinics',          label: 'Browse Clinics', icon: <BrowseClinicsIcon /> },
+    { to: '/clinics',          label: 'Browse Clinics', icon: <BrowseClinicsIcon />, isPrimary: true },
 ];
 
 export default function ClientLayout({ children }) {

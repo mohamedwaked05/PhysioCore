@@ -432,8 +432,14 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
 
                 {/* ── Nav links ── */}
                 <div className="client-nav-links">
-                    {links.map(({ to, label, icon }) => (
-                        <NavLink key={to} to={to} className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}>
+                    {links.map(({ to, label, icon, isPrimary }) => (
+                        <NavLink key={to} to={to}
+                            className={({ isActive }) =>
+                                isPrimary
+                                    ? 'client-nav-link-pill' + (isActive ? ' active' : '')
+                                    : 'client-nav-link' + (isActive ? ' active' : '')
+                            }
+                        >
                             <span className="nav-link-icon">{icon}</span>
                             {label}
                         </NavLink>

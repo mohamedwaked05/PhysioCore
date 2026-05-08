@@ -34,7 +34,6 @@ import AdminDashboardLayout from './pages/admin/dashboard/AdminDashboardLayout';
 import AdminOverviewPage    from './pages/admin/dashboard/pages/OverviewPage';
 import AdminClinicsPage     from './pages/admin/dashboard/pages/ClinicsPage';
 import AdminUsersPage       from './pages/admin/dashboard/pages/UsersPage';
-import AdminSafetyPage      from './pages/admin/dashboard/pages/SafetyPage';
 
 // Clinic pages (protected)
 import ClinicDashboardLayout from './pages/clinic/dashboard/ClinicDashboardLayout';
@@ -125,7 +124,6 @@ function App() {
                         <Route index          element={<AdminOverviewPage />} />
                         <Route path="clinics" element={<AdminClinicsPage />}  />
                         <Route path="users"   element={<AdminUsersPage />}    />
-                        <Route path="safety"  element={<AdminSafetyPage />}   />
                     </Route>
                     {/* Legacy admin redirect */}
                     <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />

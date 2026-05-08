@@ -58,7 +58,7 @@ export default function AdminOverviewPage() {
         </div>
     );
 
-    const { clinics, users, flags, recent_clinics, recent_flags } = data;
+    const { clinics, users, recent_clinics } = data;
 
     return (
         <div className="adm-page">
@@ -72,90 +72,46 @@ export default function AdminOverviewPage() {
                 <StatCard
                     label="Pending Clinics"
                     value={clinics?.pending}
-                    sub={`${clinics?.verified ?? 0} verified · ${clinics?.rejected ?? 0} rejected`}
+                    sub={`${clinics?.approved ?? 0} approved · ${clinics?.rejected ?? 0} rejected`}
                     variant={clinics?.pending > 0 ? 'warning' : ''}
                 />
                 <StatCard
-                    label="Safety Flags"
-                    value={flags?.unresolved}
-                    sub="unresolved alerts"
-                    variant={flags?.unresolved > 0 ? 'danger' : ''}
-                />
-                <StatCard
-                    label="Critical Alerts"
-                    value={flags?.critical}
-                    sub="require immediate attention"
-                    variant={flags?.critical > 0 ? 'danger' : ''}
+                    label="Total Clinics"
+                    value={(clinics?.pending ?? 0) + (clinics?.approved ?? 0) + (clinics?.rejected ?? 0)}
+                    sub="registered on the platform"
                 />
             </div>
 
-            {/* ── Recent panels ── */}
-            <div className="adm-overview-grid">
-                {/* Pending clinics */}
-                <div className="adm-card">
-                    <div className="adm-card-header">
-                        <span className="adm-card-title">Pending Clinic Approvals</span>
-                        <Link to="clinics" className="adm-card-link">View all →</Link>
-                    </div>
-                    {recent_clinics?.length === 0 ? (
-                        <div className="adm-empty">
-                            <div className="adm-empty-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            </div>
-                            <p className="adm-empty-text">No pending approvals.</p>
-                        </div>
-                    ) : (
-                        recent_clinics.map(c => {
-                            const initials = c.name?.slice(0, 2).toUpperCase() ?? '??';
-                            return (
-                                <div key={c.id} className="adm-list-item">
-                                    <div className="adm-list-avatar" style={{ background: 'rgba(217,119,6,0.1)', color: '#d97706' }}>
-                                        {initials}
-                                    </div>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div className="adm-list-name">{c.name}</div>
-                                        <div className="adm-list-meta">{c.email} · {timeAgo(c.created_at)}</div>
-                                    </div>
-                                    <span className="adm-badge adm-badge--pending">Pending</span>
-                                </div>
-                            );
-                        })
-                    )}
+            {/* ── Recent pending clinics ── */}
+            <div className="adm-card">
+                <div className="adm-card-header">
+                    <span className="adm-card-title">Pending Clinic Approvals</span>
+                    <Link to="clinics" className="adm-card-link">View all →</Link>
                 </div>
-
-                {/* Recent safety flags */}
-                <div className="adm-card">
-                    <div className="adm-card-header">
-                        <span className="adm-card-title">Recent Safety Flags</span>
-                        <Link to="safety" className="adm-card-link">View all →</Link>
-                    </div>
-                    {recent_flags?.length === 0 ? (
-                        <div className="adm-empty">
-                            <div className="adm-empty-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            </div>
-                            <p className="adm-empty-text">No active safety flags.</p>
+                {recent_clinics?.length === 0 ? (
+                    <div className="adm-empty">
+                        <div className="adm-empty-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
-                    ) : (
-                        recent_flags.map(f => (
-                            <div key={f.id} className="adm-list-item">
-                                <div className="adm-list-avatar" style={{
-                                    background: f.severity === 'critical' ? 'rgba(220,38,38,0.1)' : 'rgba(217,119,6,0.1)',
-                                    color: f.severity === 'critical' ? '#dc2626' : '#d97706',
-                                }}>
-                                    {f.severity === 'critical' ? '🚨' : '⚠️'}
+                        <p className="adm-empty-text">No pending approvals.</p>
+                    </div>
+                ) : (
+                    recent_clinics.map(c => {
+                        const initials = c.name?.slice(0, 2).toUpperCase() ?? '??';
+                        return (
+                            <div key={c.id} className="adm-list-item">
+                                <div className="adm-list-avatar" style={{ background: 'rgba(217,119,6,0.1)', color: '#d97706' }}>
+                                    {initials}
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div className="adm-list-name">{f.patient}</div>
-                                    <div className="adm-list-meta" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {f.flag_reason} · {f.clinic_name}
-                                    </div>
+                                    <div className="adm-list-name">{c.name}</div>
+                                    <div className="adm-list-meta">{c.email} · {timeAgo(c.created_at)}</div>
                                 </div>
-                                <span className={`adm-badge adm-badge--${f.severity}`}>{f.severity}</span>
+                                <span className="adm-badge adm-badge--pending">Pending</span>
                             </div>
-                        ))
-                    )}
-                </div>
+                        );
+                    })
+                )}
             </div>
         </div>
     );

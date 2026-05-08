@@ -260,9 +260,10 @@
     white-space: nowrap;
 }
 
-.adm-badge--pending  { background: #fffbeb; color: #92400e; border: 0.5px solid #fcd34d; }
-.adm-badge--verified { background: #f0fdf4; color: #15803d; border: 0.5px solid #bbf7d0; }
-.adm-badge--rejected { background: #fef2f2; color: #991b1b; border: 0.5px solid #fca5a5; }
+.adm-badge--pending           { background: #fffbeb; color: #92400e; border: 0.5px solid #fcd34d; }
+.adm-badge--verified,
+.adm-badge--approved          { background: #f0fdf4; color: #15803d; border: 0.5px solid #bbf7d0; }
+.adm-badge--rejected          { background: #fef2f2; color: #991b1b; border: 0.5px solid #fca5a5; }
 .adm-badge--active   { background: #f0fdf4; color: #15803d; border: 0.5px solid #bbf7d0; }
 .adm-badge--suspended{ background: #fef2f2; color: #991b1b; border: 0.5px solid #fca5a5; }
 .adm-badge--client   { background: rgba(123,143,232,0.1); color: var(--primary); border: 0.5px solid rgba(123,143,232,0.3); }

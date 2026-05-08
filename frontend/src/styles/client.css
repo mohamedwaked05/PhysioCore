@@ -83,8 +83,9 @@
 
 .client-nav-link.active {
   color: #fff;
-  background: rgba(255, 255, 255, 0.15);
-  font-weight: 600;
+  background: rgba(255, 255, 255, 0.22);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
 
 .nav-link-icon {
@@ -97,6 +98,39 @@
 
 .client-nav-link:hover .nav-link-icon,
 .client-nav-link.active .nav-link-icon {
+  opacity: 1;
+}
+
+/* ─── Browse Clinics CTA pill (client navbar) ──────────────── */
+.client-nav-link-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.83rem;
+  font-weight: 600;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+  transition: background 0.15s, opacity 0.15s;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  white-space: nowrap;
+}
+.client-nav-link-pill:hover {
+  background: rgba(255, 255, 255, 0.28);
+  color: #fff;
+}
+.client-nav-link-pill.active {
+  background: rgba(255, 255, 255, 0.32);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.client-nav-link-pill .nav-link-icon {
+  opacity: 0.9;
+}
+.client-nav-link-pill:hover .nav-link-icon,
+.client-nav-link-pill.active .nav-link-icon {
   opacity: 1;
 }
 

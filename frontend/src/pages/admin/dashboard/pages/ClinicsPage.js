@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getAdminClinics, getAdminClinic, approveClinic, rejectClinic } from '../../../../api/admin';
+import { getAdminClinics, getAdminClinic, getAdminStats, approveClinic, rejectClinic } from '../../../../api/admin';
 import { useToast } from '../../../../context/ToastContext';
 import Skeleton from '../../../../components/ui/Skeleton';
 
-const STATUS_FILTERS = ['all', 'pending', 'verified', 'rejected'];
+const STATUS_FILTERS = ['all', 'pending', 'approved', 'rejected'];
 
 function formatDate(iso) {
     return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -250,6 +250,7 @@ export default function ClinicsPage() {
     const [page,         setPage]         = useState(1);
     const [meta,         setMeta]         = useState(null);
     const [reviewId,     setReviewId]     = useState(null);
+    const [counts,       setCounts]       = useState({});
 
     const fetchClinics = useCallback(() => {
         setLoading(true);
@@ -266,8 +267,32 @@ export default function ClinicsPage() {
     useEffect(() => { fetchClinics(); }, [fetchClinics]);
     useEffect(() => { setPage(1); }, [filter, search]);
 
-    const handleApproved = (id) => setClinics(prev => prev.map(c => c.id === id ? { ...c, verification_status: 'verified' } : c));
-    const handleRejected = (id) => setClinics(prev => prev.map(c => c.id === id ? { ...c, verification_status: 'rejected' } : c));
+    // Load tab counts from stats
+    useEffect(() => {
+        getAdminStats()
+            .then(res => setCounts(res.data?.clinics ?? {}))
+            .catch(() => {});
+    }, []);
+
+    // Remove approved/rejected clinic from filtered list and refresh counts
+    const handleApproved = (id) => {
+        setClinics(prev => prev.filter(c => c.id !== id));
+        setCounts(prev => ({ ...prev, pending: Math.max((prev.pending ?? 1) - 1, 0), approved: (prev.approved ?? 0) + 1 }));
+    };
+    const handleRejected = (id) => {
+        setClinics(prev => prev.filter(c => c.id !== id));
+        setCounts(prev => ({ ...prev, pending: Math.max((prev.pending ?? 1) - 1, 0), rejected: (prev.rejected ?? 0) + 1 }));
+    };
+
+    const tabLabel = (s) => {
+        const count = s === 'pending' ? counts.pending : s === 'approved' ? counts.approved : s === 'rejected' ? counts.rejected : null;
+        return (
+            <>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+                {count != null && <span style={{ marginLeft: '0.35rem', fontSize: '0.7rem', fontWeight: 700, background: filter === s ? 'rgba(255,255,255,0.25)' : 'var(--surface-dim)', color: filter === s ? '#fff' : 'var(--text-muted)', padding: '1px 6px', borderRadius: 999 }}>{count}</span>}
+            </>
+        );
+    };
 
     return (
         <div className="adm-page">
@@ -285,7 +310,7 @@ export default function ClinicsPage() {
                     <div className="adm-filter-bar">
                         {STATUS_FILTERS.map(s => (
                             <button key={s} className={`adm-filter-btn${filter === s ? ' active' : ''}`} onClick={() => setFilter(s)}>
-                                {s.charAt(0).toUpperCase() + s.slice(1)}
+                                {tabLabel(s)}
                             </button>
                         ))}
                     </div>
