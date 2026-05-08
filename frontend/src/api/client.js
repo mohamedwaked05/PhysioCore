@@ -1,10 +1,7 @@
 import api from './axios';
 
 export const getProfile        = ()     => api.get('/client/profile');
-export const updateProfile     = (formData) =>
-    api.post('/client/profile/update', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-    });
+export const updateProfile     = (formData) => api.post('/client/profile/update', formData);
 export const getClinics        = ()     => api.get('/client/clinics');
 export const getClinic         = (id)   => api.get(`/client/clinics/${id}`);
 export const getAccessRequests = ()     => api.get('/client/access-requests');

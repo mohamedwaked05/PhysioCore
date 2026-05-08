@@ -25,8 +25,8 @@ class RegisterRequest extends FormRequest
         if ($this->input('role') === 'clinic') {
             $rules['clinic_mobile']   = ['required', 'string', 'max:30'];
             $rules['payment_methods'] = ['required', 'string', 'max:255'];
-            $rules['license_file']    = ['required', 'file', 'mime_types:application/pdf,image/jpeg,image/png', 'max:5120'];
-            $rules['cert_file']       = ['required', 'file', 'mime_types:application/pdf,image/jpeg,image/png', 'max:5120'];
+            $rules['license_file']    = ['required', 'file', 'mime_types:application/pdf,image/jpeg,image/png', 'max:10240'];
+            $rules['cert_file']       = ['required', 'file', 'mime_types:application/pdf,image/jpeg,image/png', 'max:10240'];
         }
 
         return $rules;

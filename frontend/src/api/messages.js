@@ -12,5 +12,5 @@ export const markSeen                 = (params)   => api.post('/messages/seen',
 export const uploadChatImage          = (file)     => {
     const fd = new FormData();
     fd.append('image', file);
-    return api.post('/messages/upload-image', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return api.post('/messages/upload-image', fd);
 };
