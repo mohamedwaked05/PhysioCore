@@ -209,8 +209,6 @@ export default function StatusPage() {
             .finally(() => setLoading(false));
     }, [clinicId]);
 
-    const painPct = (level, max) => Math.round((level / max) * 100);
-
     // Derive week range label from weekly_days
     const weekLabel = data?.weekly_days?.length
         ? `${data.weekly_days[0].date} – ${data.weekly_days[6]?.date ?? ''}`
