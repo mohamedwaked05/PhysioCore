@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 /* ── Icons ──────────────────────────────────────────────────── */
 function CheckIcon() {
@@ -34,6 +35,57 @@ function ShuffleIcon() {
             <polyline points="21 16 21 21 16 21"/>
             <line x1="15" y1="15" x2="21" y2="21"/>
         </svg>
+    );
+}
+
+function PlayIcon() {
+    return (
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+    );
+}
+
+/* ── Video helpers ──────────────────────────────────────────── */
+function extractVideoEmbed(url) {
+    if (!url) return null;
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch) return { src: `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0` };
+    const vmMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vmMatch) return { src: `https://player.vimeo.com/video/${vmMatch[1]}?autoplay=1` };
+    return null;
+}
+
+/* ── Video Modal ────────────────────────────────────────────── */
+function VideoModal({ url, onClose }) {
+    const embed = extractVideoEmbed(url);
+    if (!embed) return null;
+
+    useEffect(() => {
+        const handler = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
+
+    return createPortal(
+        <div className="cd-video-overlay" onClick={onClose}>
+            <div className="cd-video-modal" onClick={e => e.stopPropagation()}>
+                <button className="cd-video-close" onClick={onClose} aria-label="Close video">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+                <div className="cd-video-wrap">
+                    <iframe
+                        src={embed.src}
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowFullScreen
+                        title="Exercise tutorial"
+                    />
+                </div>
+            </div>
+        </div>,
+        document.body
     );
 }
 
@@ -79,6 +131,7 @@ export default function ExerciseItem({ exercise, completed = false, onComplete, 
     const [useSub,       setUseSub]       = useState(false);
     const [awaitingLog,  setAwaitingLog]  = useState(false);
     const [logErrors,    setLogErrors]    = useState(false);
+    const [videoOpen,    setVideoOpen]    = useState(false);
 
     const intervalRef = useRef(null);
 
@@ -86,6 +139,7 @@ export default function ExerciseItem({ exercise, completed = false, onComplete, 
     useEffect(() => () => clearInterval(intervalRef.current), []);
 
     const displayName = useSub && exercise.substitute ? exercise.substitute : exercise.name;
+    const hasVideo    = !!extractVideoEmbed(exercise.videoUrl);
 
     const startRest = () => {
         const total = restDuration * 60;
@@ -157,6 +211,11 @@ export default function ExerciseItem({ exercise, completed = false, onComplete, 
                         {useSub && exercise.substitute && (
                             <span className="cd-ex-alt-badge">alt</span>
                         )}
+                        {hasVideo && (
+                            <span className="cd-ex-video-badge">
+                                <PlayIcon /> video
+                            </span>
+                        )}
                     </div>
                     <div className="cd-exercise-meta">
                         {[
@@ -189,6 +248,11 @@ export default function ExerciseItem({ exercise, completed = false, onComplete, 
             {/* ── Expanded panel (logs only when done) ─── */}
             {expanded && completed && (
                 <div className="cd-ex-panel cd-ex-panel--done">
+                    {hasVideo && (
+                        <button type="button" className="cd-video-watch-btn" onClick={() => setVideoOpen(true)}>
+                            <PlayIcon /> Watch Tutorial
+                        </button>
+                    )}
                     <div className="cd-ex-logs">
                         <LogButtons label="Pain"   value={pain}   onChange={setPain}   />
                         <LogButtons label="Effort" value={effort} onChange={setEffort} />
@@ -199,6 +263,13 @@ export default function ExerciseItem({ exercise, completed = false, onComplete, 
             {/* ── Expanded panel (full when active) ─── */}
             {expanded && !completed && (
                 <div className="cd-ex-panel">
+
+                    {/* Watch Tutorial — above pain/effort so patient watches first */}
+                    {hasVideo && (
+                        <button type="button" className="cd-video-watch-btn" onClick={() => setVideoOpen(true)}>
+                            <PlayIcon /> Watch Tutorial
+                        </button>
+                    )}
 
                     {/* Set tracker */}
                     <div className="cd-ex-set-row">
@@ -309,6 +380,8 @@ export default function ExerciseItem({ exercise, completed = false, onComplete, 
 
                 </div>
             )}
+
+            {videoOpen && <VideoModal url={exercise.videoUrl} onClose={() => setVideoOpen(false)} />}
         </div>
     );
 }

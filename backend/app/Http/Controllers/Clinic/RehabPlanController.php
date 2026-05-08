@@ -136,6 +136,7 @@ class RehabPlanController extends Controller
                 'reps'                 => $e['reps'],
                 'notes'                => $e['notes'] ?? null,
                 'alternative_exercise' => $e['alternative_exercise'] ?? null,
+                'video_url'            => $e['video_url'] ?? null,
             ])->toArray()
         );
 
@@ -168,6 +169,7 @@ class RehabPlanController extends Controller
             'exercises.*.reps'                 => ['required_with:exercises', 'integer', 'min:1', 'max:999'],
             'exercises.*.notes'                => ['nullable', 'string', 'max:500'],
             'exercises.*.alternative_exercise' => ['nullable', 'string', 'max:200'],
+            'exercises.*.video_url'            => ['nullable', 'url', 'max:500'],
         ]);
 
         // Update plan-level fields
@@ -204,6 +206,7 @@ class RehabPlanController extends Controller
                         'reps'                 => $e['reps'],
                         'notes'                => $e['notes'] ?? null,
                         'alternative_exercise' => $e['alternative_exercise'] ?? null,
+                        'video_url'            => $e['video_url'] ?? null,
                     ])->toArray()
                 );
             }
@@ -255,6 +258,7 @@ class RehabPlanController extends Controller
             'reps'                 => ['required', 'integer', 'min:1', 'max:999'],
             'notes'                => ['nullable', 'string', 'max:500'],
             'alternative_exercise' => ['nullable', 'string', 'max:200'],
+            'video_url'            => ['nullable', 'url', 'max:500'],
         ]);
 
         $exercise = $rehabPlan->exercises()->create($data);
@@ -279,6 +283,7 @@ class RehabPlanController extends Controller
             'reps'                 => ['sometimes', 'integer', 'min:1', 'max:999'],
             'notes'                => ['nullable', 'string', 'max:500'],
             'alternative_exercise' => ['nullable', 'string', 'max:200'],
+            'video_url'            => ['nullable', 'url', 'max:500'],
         ]);
 
         $exercise->update($data);
@@ -345,6 +350,7 @@ class RehabPlanController extends Controller
             'reps'                 => $ex->reps,
             'notes'                => $ex->notes,
             'alternative_exercise' => $ex->alternative_exercise,
+            'video_url'            => $ex->video_url,
         ]));
 
         $newPlan->load(['exercises', 'progress']);

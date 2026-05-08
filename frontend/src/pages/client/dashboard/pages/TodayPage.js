@@ -24,6 +24,7 @@ function mapExercise(ex) {
         difficulty: null,
         substitute: ex.alternative_exercise || null,
         restTime:   2,
+        videoUrl:   ex.video_url || null,
     };
 }
 

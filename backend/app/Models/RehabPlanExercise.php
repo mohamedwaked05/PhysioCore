@@ -15,6 +15,7 @@ class RehabPlanExercise extends Model
         'reps',
         'notes',
         'alternative_exercise',
+        'video_url',
     ];
 
     public function plan(): BelongsTo

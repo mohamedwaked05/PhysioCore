@@ -20,6 +20,7 @@ const EMPTY_EX = () => ({
     reps:                 15,
     notes:                '',
     alternative_exercise: '',
+    video_url:            '',
 });
 
 const EMPTY_WEEK = () =>
@@ -139,8 +140,33 @@ function ExerciseRow({ ex, onChange, onRemove, locked }) {
                 <input className="ui-input" style={{ fontSize: '0.82rem' }} placeholder="Optional instructions"
                     value={ex.notes} onChange={e => onChange({ ...ex, notes: e.target.value })} />
             </div>
+            <div>
+                <label style={labelStyle}>Video URL</label>
+                <input className="ui-input" style={{ fontSize: '0.82rem' }}
+                    placeholder="YouTube or Vimeo URL (optional)"
+                    value={ex.video_url}
+                    onChange={e => onChange({ ...ex, video_url: e.target.value })} />
+                {extractYouTubeId(ex.video_url) && (
+                    <div style={{ marginTop: '0.45rem', display: 'inline-flex', position: 'relative', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+                        <img
+                            src={`https://img.youtube.com/vi/${extractYouTubeId(ex.video_url)}/mqdefault.jpg`}
+                            alt="Video preview"
+                            style={{ width: 120, height: 67, objectFit: 'cover', display: 'block', border: '0.5px solid var(--border)' }}
+                        />
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.25)' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
+}
+
+function extractYouTubeId(url) {
+    if (!url) return null;
+    const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return m ? m[1] : null;
 }
 
 function buildWeekFromPlan(plan) {
@@ -154,6 +180,7 @@ function buildWeekFromPlan(plan) {
                 reps:                 ex.reps,
                 notes:                ex.notes ?? '',
                 alternative_exercise: ex.alternative_exercise ?? '',
+                video_url:            ex.video_url ?? '',
             }));
         });
     }
@@ -250,6 +277,7 @@ export default function CreatePlanModal({ patient, existingPlan, defaultWeekNum,
                     reps:                 e.reps,
                     notes:                e.notes.trim() || null,
                     alternative_exercise: e.alternative_exercise.trim() || null,
+                    video_url:            e.video_url.trim() || null,
                 }))
             );
             const planMeta = {

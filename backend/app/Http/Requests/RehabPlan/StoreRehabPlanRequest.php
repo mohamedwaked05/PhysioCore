@@ -26,6 +26,7 @@ class StoreRehabPlanRequest extends FormRequest
             'exercises.*.reps'                 => ['required', 'integer', 'min:1', 'max:999'],
             'exercises.*.notes'                => ['nullable', 'string', 'max:500'],
             'exercises.*.alternative_exercise' => ['nullable', 'string', 'max:200'],
+            'exercises.*.video_url'            => ['nullable', 'url', 'max:500'],
         ];
     }
 
