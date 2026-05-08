@@ -323,7 +323,10 @@
 .cld-btn-approve,
 .cld-btn-deny,
 .cld-btn-review,
-.cld-btn-action {
+.cld-btn-action,
+.cld-btn-plan,
+.cld-btn-message,
+.cld-btn-feedback {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
@@ -366,6 +369,47 @@
     border-color: var(--border);
 }
 .cld-btn-action:hover { background: var(--bg); color: var(--text); }
+
+/* ── Patient action buttons (colored) ────────────────────── */
+.cld-btn-plan {
+    background: #4F6AF5;
+    color: #fff;
+    border-color: #4F6AF5;
+    min-height: 36px;
+    font-weight: 600;
+}
+.cld-btn-plan:hover { background: #3d58e0; border-color: #3d58e0; color: #fff; }
+
+.cld-btn-message {
+    background: #22c55e;
+    color: #fff;
+    border-color: #22c55e;
+    min-height: 36px;
+    font-weight: 600;
+}
+.cld-btn-message:hover { background: #16a34a; border-color: #16a34a; color: #fff; }
+
+.cld-btn-feedback {
+    background: #f59e0b;
+    color: #fff;
+    border-color: #f59e0b;
+    min-height: 36px;
+    font-weight: 600;
+}
+.cld-btn-feedback:hover { background: #d97706; border-color: #d97706; color: #fff; }
+
+@media (max-width: 520px) {
+    .cld-patient-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .cld-btn-plan,
+    .cld-btn-message,
+    .cld-btn-feedback {
+        width: 100%;
+        justify-content: center;
+    }
+}
 
 /* ── Safety Flag Items ────────────────────────────────────── */
 .cld-flag-group { margin-bottom: 1.25rem; }

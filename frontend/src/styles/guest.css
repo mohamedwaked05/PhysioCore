@@ -193,6 +193,12 @@
     align-items: center;
 }
 
+.lp-hero-inner--single {
+    grid-template-columns: 1fr;
+    max-width: 720px;
+    text-align: left;
+}
+
 /* ── Hero content (left) ──────────────────────────────────── */
 .lp-hero-content {
     animation: heroContentIn 0.55s ease both;
@@ -976,4 +982,30 @@
     .lp-features-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* ─── Find a Clinic CTA button (guest navbar) ─────────────── */
+.guest-find-clinic-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.2rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-size: 0.83rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, opacity 0.15s;
+    white-space: nowrap;
+}
+.guest-find-clinic-btn:hover {
+    background: #323a5e;
+    color: #fff;
+}
+[data-theme="dark"] .guest-find-clinic-btn:hover {
+    background: #6578d4;
 }

@@ -169,11 +169,8 @@ export default function GuestLayout({ children }) {
 
                 {/* Desktop links */}
                 <div className="client-nav-links">
-                    <NavLink
-                        to="/clinics"
-                        className={({ isActive }) => 'client-nav-link' + (isActive ? ' active' : '')}
-                    >
-                        <span className="nav-link-icon"><FindClinicIcon /></span>
+                    <NavLink to="/clinics" className="guest-find-clinic-btn">
+                        <FindClinicIcon />
                         Find a Clinic
                     </NavLink>
                 </div>

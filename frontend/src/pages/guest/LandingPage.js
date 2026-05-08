@@ -57,88 +57,12 @@ function IconSafe() {
         </svg>
     );
 }
-function IconPin() {
-    return (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-            <circle cx="12" cy="10" r="3"/>
-        </svg>
-    );
-}
-function IconStar() {
-    return (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-        </svg>
-    );
-}
 function IconArrowRight() {
     return (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="5" y1="12" x2="19" y2="12"/>
             <polyline points="12 5 19 12 12 19"/>
         </svg>
-    );
-}
-function IconLock() {
-    return (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <rect x="3" y="11" width="18" height="11" rx="2"/>
-            <path d="M7 11V7a5 5 0 0110 0v4"/>
-        </svg>
-    );
-}
-function IconCheck() {
-    return (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <polyline points="20 6 9 17 4 12"/>
-        </svg>
-    );
-}
-
-/* ── Hero Visual ─────────────────────────────────────────────── */
-function HeroVisual() {
-    return (
-        <div className="lp-hero-visual">
-            {/* Floating chip — top */}
-            <div className="lp-hero-chip lp-hero-chip--top">
-                <span className="lp-hero-chip-icon lp-hero-chip-icon--green"><IconCheck /></span>
-                Access request sent!
-            </div>
-
-            {/* Main clinic card */}
-            <div className="lp-hero-card">
-                <div className="lp-hero-card-header">
-                    <div className="lp-hero-card-avatar">AN</div>
-                    <div className="lp-hero-card-meta">
-                        <div className="lp-hero-card-name">Al Noor Physiotherapy</div>
-                        <div className="lp-hero-card-loc"><IconPin /> Dubai, UAE</div>
-                    </div>
-                    <div className="lp-hero-card-verified">Verified</div>
-                </div>
-
-                <div className="lp-tag-row">
-                    <span className="lp-tag">Sports Recovery</span>
-                    <span className="lp-tag">Post-Surgery</span>
-                    <span className="lp-tag">Manual Therapy</span>
-                </div>
-
-                <div className="lp-hero-card-rating">
-                    <span className="lp-stars">
-                        {[0,1,2,3,4].map(i => <IconStar key={i} />)}
-                    </span>
-                    <span className="lp-rating-text">4.9 · 128 reviews</span>
-                </div>
-
-                <div className="lp-hero-card-btn">View Profile</div>
-            </div>
-
-            {/* Floating chip — bottom */}
-            <div className="lp-hero-chip lp-hero-chip--bottom">
-                <span className="lp-hero-chip-dot" />
-                <strong>500+</strong>&nbsp;verified clinics
-            </div>
-        </div>
     );
 }
 
@@ -161,80 +85,13 @@ const STEPS = [
     },
 ];
 
-/* ── Clinic preview data ─────────────────────────────────────── */
-const MOCK_CLINICS = [
-    {
-        initials: 'AN',
-        bg: 'linear-gradient(135deg, #3E4772 0%, #4d5690 100%)',
-        name: 'Al Noor Physiotherapy',
-        location: 'Dubai, UAE',
-        rating: '4.9',
-        reviews: 128,
-        tags: ['Sports Recovery', 'Post-Surgery'],
-    },
-    {
-        initials: 'LB',
-        bg: 'linear-gradient(135deg, #1d6a4f 0%, #2d8a66 100%)',
-        name: 'LifeBack Clinic',
-        location: 'Abu Dhabi, UAE',
-        rating: '4.8',
-        reviews: 94,
-        tags: ['Orthopedic', 'Dry Needling'],
-    },
-    {
-        initials: 'MH',
-        bg: 'linear-gradient(135deg, #7b4f12 0%, #9a6520 100%)',
-        name: 'Motion Health Center',
-        location: 'Sharjah, UAE',
-        rating: '4.7',
-        reviews: 67,
-        tags: ['Neurological', 'Manual Therapy'],
-    },
-];
-
-/* ── Clinic preview card ─────────────────────────────────────── */
-function ClinicPreviewCard({ clinic, visible, delay }) {
-    return (
-        <div
-            className={`lp-clinic-card ${visible ? 'is-visible' : ''}`}
-            style={{ animationDelay: `${delay}ms` }}
-        >
-            <div className="lp-clinic-card-header">
-                <div className="lp-clinic-avatar" style={{ background: clinic.bg }}>
-                    {clinic.initials}
-                </div>
-                <div className="lp-clinic-info">
-                    <div className="lp-clinic-name">{clinic.name}</div>
-                    <div className="lp-clinic-loc"><IconPin /> {clinic.location}</div>
-                </div>
-            </div>
-
-            <div className="lp-tag-row">
-                {clinic.tags.map(t => <span key={t} className="lp-tag">{t}</span>)}
-            </div>
-
-            <div className="lp-clinic-footer">
-                <div className="lp-clinic-rating">
-                    <span className="lp-stars"><IconStar /></span>
-                    {clinic.rating}
-                    <span className="lp-clinic-reviews">({clinic.reviews})</span>
-                </div>
-                <div className="lp-clinic-hint">
-                    <IconLock /> Sign in to request
-                </div>
-            </div>
-        </div>
-    );
-}
-
 /* ── Main page ───────────────────────────────────────────────── */
 export default function LandingPage() {
     const navigate = useNavigate();
     const { user } = useAuth();
 
-    const [stepsRef,   stepsInView]   = useInView();
-    const [previewRef, previewInView] = useInView();
-    const [ctaRef,     ctaInView]     = useInView();
+    const [stepsRef, stepsInView] = useInView();
+    const [ctaRef,   ctaInView]   = useInView();
 
     if (user?.role === 'clinic')  return <Navigate to="/clinic/dashboard"  replace />;
     if (user?.role === 'client')  return <Navigate to="/client/dashboard"  replace />;
@@ -245,9 +102,9 @@ export default function LandingPage() {
 
             {/* ── 1. Hero ─────────────────────────────────────────── */}
             <section className="landing-hero">
-                <div className="lp-hero-inner">
+                <div className="lp-hero-inner lp-hero-inner--single">
 
-                    {/* Left: content */}
+                    {/* Content */}
                     <div className="lp-hero-content">
                         <div className="landing-hero-pill">
                             <span className="landing-hero-pill-dot" />
@@ -273,7 +130,7 @@ export default function LandingPage() {
                                 onClick={() => navigate('/clinics')}
                             >
                                 <IconSearch />
-                                Browse clinics
+                                Browse verified clinics
                             </Button>
                             <Button
                                 variant="ghost"
@@ -300,11 +157,6 @@ export default function LandingPage() {
                                 <span>Avg. rating</span>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Right: visual */}
-                    <div className="lp-hero-visual-col">
-                        <HeroVisual />
                     </div>
                 </div>
             </section>
@@ -337,37 +189,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* ── 3. Clinic Browse Preview ─────────────────────────── */}
-            <section className="landing-preview" ref={previewRef}>
-                <div className="landing-container">
-                    <div className={`lp-preview-head ${previewInView ? 'is-visible' : ''}`}>
-                        <div>
-                            <p className="landing-section-label">Browse clinics</p>
-                            <h2 className="landing-section-title">Find the right clinic for you.</h2>
-                            <p className="landing-section-sub">
-                                Explore verified physiotherapy clinics filtered by specialty,
-                                location, and availability. Start browsing — no account required.
-                            </p>
-                        </div>
-                        <Button variant="primary" size="lg" onClick={() => navigate('/clinics')}>
-                            View all clinics <IconArrowRight />
-                        </Button>
-                    </div>
-
-                    <div className="lp-clinics-grid">
-                        {MOCK_CLINICS.map((clinic, i) => (
-                            <ClinicPreviewCard
-                                key={i}
-                                clinic={clinic}
-                                visible={previewInView}
-                                delay={i * 90}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ── 4. CTA ──────────────────────────────────────────── */}
+            {/* ── 3. CTA ──────────────────────────────────────────── */}
             <section className="landing-cta" ref={ctaRef}>
                 <div className={`lp-cta-inner ${ctaInView ? 'is-visible' : ''}`}>
                     <p className="lp-cta-label">Get started today</p>
@@ -378,7 +200,7 @@ export default function LandingPage() {
                     </p>
                     <div className="lp-cta-actions">
                         <Button variant="primary" size="lg" onClick={() => navigate('/clinics')}>
-                            <IconSearch /> Browse clinics
+                            <IconSearch /> Browse verified clinics
                         </Button>
                         <button className="lp-cta-outline-btn" onClick={() => navigate('/register')}>
                             Create account <IconArrowRight />

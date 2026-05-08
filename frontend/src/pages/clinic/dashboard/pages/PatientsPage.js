@@ -165,7 +165,7 @@ export default function PatientsPage() {
 
                                 <div className="cld-patient-actions">
                                     <button
-                                        className="cld-btn-action"
+                                        className="cld-btn-plan"
                                         style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem', opacity: planLoadingId === p.id ? 0.6 : 1 }}
                                         disabled={planLoadingId === p.id}
                                         onClick={async () => {
@@ -188,7 +188,7 @@ export default function PatientsPage() {
                                         {planLoadingId === p.id ? 'Loading…' : 'Plan'}
                                     </button>
                                     <button
-                                        className="cld-btn-action"
+                                        className="cld-btn-message"
                                         style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}
                                         onClick={() => setChatPatient(p)}
                                     >
@@ -199,11 +199,11 @@ export default function PatientsPage() {
                                     </button>
                                     <Link
                                         to={`${p.clientProfileId}/feedback`}
-                                        className="cld-btn-review"
+                                        className="cld-btn-feedback"
                                         style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}
                                     >
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                                         </svg>
                                         Feedback
                                     </Link>
