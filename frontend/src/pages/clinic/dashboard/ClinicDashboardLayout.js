@@ -69,10 +69,10 @@ function PlansIcon({ size = 14 }) {
 export default function ClinicDashboardLayout() {
     const { user } = useAuth();
     const [verificationStatus, setVerificationStatus] = useState(null);
-    // Initialise from sessionStorage so the QR button is visible immediately
-    // on every navigation without waiting for getClinicProfile() to resolve.
+    // Initialise from localStorage (persists across tabs and sessions) so the
+    // QR button is visible immediately without waiting for getClinicProfile().
     const [clinicId, setClinicId] = useState(() => {
-        const cached = sessionStorage.getItem('clinic_id');
+        const cached = localStorage.getItem('physiocore_clinic_id');
         return cached ? Number(cached) : null;
     });
     const [counts, setCounts] = useState(null);
@@ -82,7 +82,7 @@ export default function ClinicDashboardLayout() {
             .then(res => {
                 setVerificationStatus(res.data?.verification_status ?? 'pending');
                 const id = res.data?.id ?? null;
-                if (id) sessionStorage.setItem('clinic_id', String(id));
+                if (id) localStorage.setItem('physiocore_clinic_id', String(id));
                 setClinicId(id);
             })
             .catch(() => {});

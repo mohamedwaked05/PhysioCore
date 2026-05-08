@@ -5,7 +5,6 @@ import ProgressBar from '../components/ProgressBar';
 import MilestoneItem from '../components/MilestoneItem';
 import Skeleton from '../../../../components/ui/Skeleton';
 import { getAccessRequests, getTrackingStatus, getLatestAiInsight } from '../../../../api/client';
-import { useTheme } from '../../../../context/ThemeContext';
 
 /* ── Icons ───────────────────────────────────────────────────── */
 function HeartIcon() {
@@ -63,9 +62,6 @@ function DumbellIcon() {
 
 /* ── SVG Weekly Bar Chart ─────────────────────────────────────── */
 function WeeklyChart({ days }) {
-    const { theme } = useTheme();
-    const dark = theme === 'dark';
-
     if (!days || days.length === 0) {
         return (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.83rem' }}>
@@ -80,12 +76,15 @@ function WeeklyChart({ days }) {
     const PADX = 8;
     const totalW = days.length * (BAR_W + BAR_GAP) - BAR_GAP + PADX * 2;
 
-    const trackFill   = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
-    const barColor = (status) => {
+    // CSS variables in SVG style props — adapts to dark/light automatically
+    const barFill = (status) => {
         if (status === 'complete') return '#16a34a';
         if (status === 'partial')  return '#f59e0b';
-        if (status === 'rest')     return dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
-        return dark ? 'rgba(123,143,232,0.3)' : 'rgba(62,71,114,0.15)';
+        return null; // use CSS var via style
+    };
+    const barStyleForEmpty = (status) => {
+        if (status === 'rest')     return { fill: 'var(--border)' };
+        return { fill: 'var(--primary-light, #7b8fe8)', opacity: 0.25 };
     };
 
     return (
@@ -95,32 +94,40 @@ function WeeklyChart({ days }) {
                 const pct  = d.completion ?? 0;
                 const barH = Math.max((pct / 100) * H, pct > 0 ? 3 : 0);
                 const y    = PADY + H - barH;
-                const fill = barColor(d.status);
+                const solidFill = barFill(d.status);
                 return (
                     <g key={d.id ?? i}>
-                        <rect x={x} y={PADY} width={BAR_W} height={H} fill={trackFill} rx={4} />
-                        {barH > 0 && <rect x={x} y={y} width={BAR_W} height={barH} fill={fill} rx={4} />}
-                        <text x={x + BAR_W / 2} y={H + PADY + 16} textAnchor="middle" fontSize="10" fill="currentColor" opacity="0.6">
+                        {/* Background track — uses CSS var so it's visible in both modes */}
+                        <rect x={x} y={PADY} width={BAR_W} height={H}
+                              style={{ fill: 'var(--border-light, rgba(128,128,128,0.15))' }} rx={4} />
+                        {/* Value bar */}
+                        {barH > 0 && (
+                            solidFill
+                                ? <rect x={x} y={y} width={BAR_W} height={barH} fill={solidFill} rx={4} />
+                                : <rect x={x} y={y} width={BAR_W} height={barH}
+                                        style={barStyleForEmpty(d.status)} rx={4} />
+                        )}
+                        <text x={x + BAR_W / 2} y={H + PADY + 16} textAnchor="middle" fontSize="10"
+                              style={{ fill: 'var(--text-secondary)' }}>
                             {d.short}
                         </text>
                         {pct > 0 && (
-                            <text x={x + BAR_W / 2} y={y - 4} textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.75">
+                            <text x={x + BAR_W / 2} y={y - 4} textAnchor="middle" fontSize="9"
+                                  style={{ fill: 'var(--text-muted)' }}>
                                 {pct}%
                             </text>
                         )}
                     </g>
                 );
             })}
-            <line x1={PADX} y1={PADY} x2={PADX} y2={PADY + H} stroke="currentColor" strokeWidth="0.5" opacity="0.2" />
+            <line x1={PADX} y1={PADY} x2={PADX} y2={PADY + H}
+                  style={{ stroke: 'var(--border)' }} strokeWidth="1" />
         </svg>
     );
 }
 
 /* ── SVG Pain Line Chart ──────────────────────────────────────── */
 function PainLineChart({ trend }) {
-    const { theme } = useTheme();
-    const dark = theme === 'dark';
-
     if (!trend || trend.length === 0) {
         return (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.83rem' }}>
@@ -146,8 +153,6 @@ function PainLineChart({ trend }) {
 
     const pathD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
     const dotColor = (lvl) => lvl >= 7 ? '#ef4444' : lvl >= 5 ? '#f59e0b' : '#16a34a';
-    const lineStroke = dark ? '#7b8fe8' : '#3E4772';
-    const dotStroke  = dark ? '#1a1f35' : '#ffffff';
 
     return (
         <svg viewBox={`0 0 ${VW} ${H + PADY * 2 + 20}`} style={{ width: '100%', display: 'block', overflow: 'visible' }}>
@@ -155,18 +160,24 @@ function PainLineChart({ trend }) {
                 const y = yFor(v);
                 return (
                     <g key={v}>
+                        {/* Grid lines via CSS var — visible in both themes */}
                         <line x1={PADX} y1={y} x2={VW - PADX / 2} y2={y}
-                              stroke="currentColor" strokeWidth="0.5"
-                              opacity={dark ? '0.2' : '0.12'} />
-                        <text x={PADX - 4} y={y + 3} textAnchor="end" fontSize="9" fill="currentColor" opacity="0.55">{v}</text>
+                              style={{ stroke: 'var(--border)' }} strokeWidth="0.5" />
+                        <text x={PADX - 4} y={y + 3} textAnchor="end" fontSize="9"
+                              style={{ fill: 'var(--text-muted)' }}>{v}</text>
                     </g>
                 );
             })}
-            <path d={pathD} fill="none" stroke={lineStroke} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+            {/* Line — var(--primary) adapts to dark (#7b8fe8) / light (#3E4772) */}
+            <path d={pathD} fill="none" style={{ stroke: 'var(--primary)' }}
+                  strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
             {pts.map((p, i) => (
                 <g key={i}>
-                    <circle cx={p.x} cy={p.y} r={4} fill={dotColor(p.level)} stroke={dotStroke} strokeWidth="1.5" />
-                    <text x={p.x} y={H + PADY * 2 + 14} textAnchor="middle" fontSize="9" fill="currentColor" opacity="0.6">
+                    {/* Dot ring uses var(--surface) so it contrasts in both themes */}
+                    <circle cx={p.x} cy={p.y} r={4} fill={dotColor(p.level)}
+                            style={{ stroke: 'var(--surface)' }} strokeWidth="2" />
+                    <text x={p.x} y={H + PADY * 2 + 14} textAnchor="middle" fontSize="9"
+                          style={{ fill: 'var(--text-muted)' }}>
                         {p.label}
                     </text>
                 </g>

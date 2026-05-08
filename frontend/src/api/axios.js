@@ -9,11 +9,17 @@ const api = axios.create({
     },
 });
 
-// Attach token to every request if it exists
+// Attach token + handle FormData uploads.
+// IMPORTANT: When the body is FormData, delete the default 'Content-Type: application/json'
+// header so axios can set 'Content-Type: multipart/form-data; boundary=...' automatically.
+// Without this, the axios default header overrides the boundary and PHP cannot parse the body.
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+    }
+    if (config.data instanceof FormData) {
+        delete config.headers['Content-Type'];
     }
     return config;
 });
