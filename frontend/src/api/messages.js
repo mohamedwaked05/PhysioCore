@@ -9,3 +9,8 @@ export const markAllNotificationsRead = ()         => api.post('/messages/notifi
 export const markMessageRead          = (id)       => api.patch(`/messages/${id}/read`);
 export const markDelivered            = (ids)      => api.post('/messages/delivered', { message_ids: ids }, { ...SKIP });
 export const markSeen                 = (params)   => api.post('/messages/seen', params, { ...SKIP });
+export const uploadChatImage          = (file)     => {
+    const fd = new FormData();
+    fd.append('image', file);
+    return api.post('/messages/upload-image', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+};

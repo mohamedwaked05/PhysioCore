@@ -12,6 +12,7 @@ class Message extends Model
         'context',
         'reference_id',
         'content',
+        'image_url',
         'is_read',
         'delivered_at',
         'seen_at',

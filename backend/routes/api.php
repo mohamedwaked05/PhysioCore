@@ -187,6 +187,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('messages')->group(function () {
     Route::get('/',                      [MessageController::class, 'index']);
     Route::post('/',                     [MessageController::class, 'store']);
+    Route::post('/upload-image',         [MessageController::class, 'uploadImage']);
     Route::get('/notifications',         [MessageController::class, 'notifications']);
     Route::post('/notifications/read',   [MessageController::class, 'markAllRead']);
     Route::patch('/{id}/read',           [MessageController::class, 'markOneRead']);

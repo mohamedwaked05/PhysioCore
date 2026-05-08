@@ -17,8 +17,20 @@ class SendMessageRequest extends FormRequest
             'receiver_id'  => ['required', 'integer', 'exists:users,id', 'different:' . $this->user()->id],
             'context'      => ['required', 'string', 'in:inquiry,treatment,feedback'],
             'reference_id' => ['nullable', 'integer'],
-            'content'      => ['required', 'string', 'max:2000'],
+            'content'      => ['nullable', 'string', 'max:2000'],
+            'image_url'    => ['nullable', 'string', 'max:5000000'], // base64 data URI
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($v) {
+            $content = $this->input('content');
+            $image   = $this->input('image_url');
+            if (empty(trim((string) $content)) && empty($image)) {
+                $v->errors()->add('content', 'A message or image is required.');
+            }
+        });
     }
 
     public function messages(): array
@@ -27,8 +39,6 @@ class SendMessageRequest extends FormRequest
             'receiver_id.exists'    => 'The recipient does not exist.',
             'receiver_id.different' => 'You cannot message yourself.',
             'context.in'            => 'Invalid message context.',
-            'content.required'      => 'Message content is required.',
-            'content.max'           => 'Message cannot exceed 2000 characters.',
         ];
     }
 }

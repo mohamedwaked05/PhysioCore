@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { getMessages, sendMessage, markDelivered, markSeen } from '../../api/messages';
+import { createPortal } from 'react-dom';
+import { getMessages, sendMessage, markDelivered, markSeen, uploadChatImage } from '../../api/messages';
 import { getEcho } from '../../services/echo';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -7,20 +8,81 @@ import Button from '../ui/Button';
 import Spinner from '../Spinner';
 import '../../styles/chat.css';
 
-// Fallback poll — WebSocket handles new messages in real-time via NotificationCreated;
-// this is a safety net for missed events only.
 const POLL_INTERVAL = 30000;
 
 function formatTime(iso) {
-    const d = new Date(iso);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-/* ── Status tick for sent messages ───────────────────────── */
+/* ── Status tick ──────────────────────────────────────────── */
 function MessageTick({ msg }) {
     if (msg.seen_at)      return <span className="chat-tick chat-tick--seen"      aria-label="Seen">✓✓</span>;
     if (msg.delivered_at) return <span className="chat-tick chat-tick--delivered" aria-label="Delivered">✓✓</span>;
     return                       <span className="chat-tick chat-tick--sent"      aria-label="Sent">✓</span>;
+}
+
+/* ── Lightbox ─────────────────────────────────────────────── */
+function Lightbox({ src, onClose }) {
+    useEffect(() => {
+        const handler = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
+
+    const handleDownload = () => {
+        const a = document.createElement('a');
+        a.href = src;
+        a.download = 'image.jpg';
+        a.click();
+    };
+
+    return createPortal(
+        <div className="chat-lightbox" onClick={onClose}>
+            <button className="chat-lightbox-close" onClick={onClose} aria-label="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <button className="chat-lightbox-download" onClick={e => { e.stopPropagation(); handleDownload(); }} aria-label="Download">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+            </button>
+            <img
+                src={src}
+                alt="Full size"
+                className="chat-lightbox-img"
+                onClick={e => e.stopPropagation()}
+            />
+        </div>,
+        document.body
+    );
+}
+
+/* ── ChatImage ────────────────────────────────────────────── */
+function ChatImage({ src, isSent }) {
+    const [loaded, setLoaded] = useState(false);
+    const [lightbox, setLightbox] = useState(false);
+    return (
+        <>
+            <div
+                className={`chat-bubble-img-wrap${loaded ? ' loaded' : ''}`}
+                style={{ textAlign: isSent ? 'right' : 'left' }}
+            >
+                {!loaded && <div className="chat-img-skeleton" />}
+                <img
+                    src={src}
+                    alt="Shared image"
+                    className="chat-bubble-img"
+                    onLoad={() => setLoaded(true)}
+                    onClick={() => setLightbox(true)}
+                    style={{ display: loaded ? 'block' : 'none' }}
+                />
+            </div>
+            {lightbox && <Lightbox src={src} onClose={() => setLightbox(false)} />}
+        </>
+    );
 }
 
 /* ── MessageList ──────────────────────────────────────────── */
@@ -30,13 +92,7 @@ function MessageList({ messages, currentUserId, loading, newCount, listRef }) {
         listRef.current.scrollTop = listRef.current.scrollHeight;
     }, [messages.length, listRef]);
 
-    if (loading) {
-        return (
-            <div className="chat-loading">
-                <Spinner />
-            </div>
-        );
-    }
+    if (loading) return <div className="chat-loading"><Spinner /></div>;
 
     if (messages.length === 0) {
         return (
@@ -62,19 +118,19 @@ function MessageList({ messages, currentUserId, loading, newCount, listRef }) {
             {messages.map((msg) => {
                 const isSent = msg.sender_id === currentUserId;
                 return (
-                    <div
-                        key={msg.id}
-                        className={`chat-bubble-row chat-bubble-row--${isSent ? 'sent' : 'received'}`}
-                    >
+                    <div key={msg.id} className={`chat-bubble-row chat-bubble-row--${isSent ? 'sent' : 'received'}`}>
                         <div className="chat-bubble-wrap">
                             {!isSent && (
                                 <div className="chat-bubble-sender">
                                     {msg.sender?.first_name} {msg.sender?.last_name}
                                 </div>
                             )}
-                            <div className={`chat-bubble chat-bubble--${isSent ? 'sent' : 'received'}`}>
-                                {msg.content}
-                            </div>
+                            {msg.image_url && <ChatImage src={msg.image_url} isSent={isSent} />}
+                            {msg.content && (
+                                <div className={`chat-bubble chat-bubble--${isSent ? 'sent' : 'received'}`}>
+                                    {msg.content}
+                                </div>
+                            )}
                             <div className="chat-bubble-meta">
                                 {formatTime(msg.created_at)}
                                 {isSent && <MessageTick msg={msg} />}
@@ -89,13 +145,19 @@ function MessageList({ messages, currentUserId, loading, newCount, listRef }) {
 
 /* ── MessageInput ─────────────────────────────────────────── */
 function MessageInput({ onSend, sending, listRef }) {
+    const { addToast }   = useToast();
     const [text, setText] = useState('');
-    const textareaRef = useRef(null);
+    const [imagePreview, setImagePreview] = useState(null); // { localUrl, uploading, uploadedUrl }
+    const textareaRef  = useRef(null);
+    const fileInputRef = useRef(null);
 
     const handleSend = () => {
-        if (!text.trim() || sending) return;
-        onSend(text.trim());
+        const hasText  = text.trim().length > 0;
+        const hasImage = imagePreview?.uploadedUrl;
+        if ((!hasText && !hasImage) || sending || imagePreview?.uploading) return;
+        onSend(text.trim(), hasImage ? imagePreview.uploadedUrl : null);
         setText('');
+        setImagePreview(null);
         textareaRef.current?.focus();
     };
 
@@ -107,62 +169,124 @@ function MessageInput({ onSend, sending, listRef }) {
     };
 
     const handleFocus = () => {
-        // Capture window scroll BEFORE iOS focus-driven auto-scroll fires.
-        // We restore it after to prevent the browser from pushing the page
-        // (and the chat box with it) upward when the keyboard opens.
         const startScrollY = window.scrollY;
         setTimeout(() => {
-            if (listRef?.current) {
-                listRef.current.scrollTop = listRef.current.scrollHeight;
-            }
-            if (Math.abs(window.scrollY - startScrollY) > 4) {
-                window.scrollTo(0, startScrollY);
-            }
+            if (listRef?.current) listRef.current.scrollTop = listRef.current.scrollHeight;
+            if (Math.abs(window.scrollY - startScrollY) > 4) window.scrollTo(0, startScrollY);
         }, 100);
     };
 
+    const handleImageSelect = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        e.target.value = '';
+
+        const localUrl = URL.createObjectURL(file);
+        setImagePreview({ localUrl, uploading: true, uploadedUrl: null });
+
+        try {
+            const res = await uploadChatImage(file);
+            setImagePreview({ localUrl, uploading: false, uploadedUrl: res.data.url });
+        } catch {
+            addToast('Image upload failed. Please try again.', 'error');
+            setImagePreview(null);
+            URL.revokeObjectURL(localUrl);
+        }
+    };
+
+    const removeImage = () => {
+        if (imagePreview?.localUrl) URL.revokeObjectURL(imagePreview.localUrl);
+        setImagePreview(null);
+    };
+
+    const canSend = (text.trim() || imagePreview?.uploadedUrl) && !sending && !imagePreview?.uploading;
+
     return (
         <div className="chat-input-area">
-            <textarea
-                ref={textareaRef}
-                rows={1}
-                placeholder="Message…"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onFocus={handleFocus}
-                autoComplete="off"
-                autoCorrect="on"
-                spellCheck={true}
-            />
-            <button
-                className="chat-send-btn"
-                onClick={handleSend}
-                disabled={!text.trim() || sending}
-                aria-label="Send"
-            >
-                {sending ? (
-                    <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
-                ) : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                        <line x1="22" y1="2" x2="11" y2="13"/>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            {/* Image preview row */}
+            {imagePreview && (
+                <div className="chat-input-img-preview">
+                    <div className="chat-input-img-thumb">
+                        <img src={imagePreview.localUrl} alt="Preview" />
+                        {imagePreview.uploading && (
+                            <div className="chat-input-img-uploading">
+                                <span className="chat-input-img-spinner" />
+                            </div>
+                        )}
+                    </div>
+                    {!imagePreview.uploading && (
+                        <button
+                            type="button"
+                            className="chat-input-img-remove"
+                            onClick={removeImage}
+                            aria-label="Remove image"
+                        >
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* Main input row */}
+            <div className="chat-input-row">
+                {/* Attachment / camera button */}
+                <button
+                    type="button"
+                    className="chat-attach-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    aria-label="Attach image"
+                    title="Attach image or take photo"
+                >
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
                     </svg>
-                )}
-            </button>
+                </button>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    style={{ display: 'none' }}
+                    onChange={handleImageSelect}
+                />
+
+                <textarea
+                    ref={textareaRef}
+                    rows={1}
+                    placeholder="Message…"
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onFocus={handleFocus}
+                    autoComplete="off"
+                    autoCorrect="on"
+                    spellCheck={true}
+                />
+
+                <button
+                    className="chat-send-btn"
+                    onClick={handleSend}
+                    disabled={!canSend}
+                    aria-label="Send"
+                >
+                    {sending ? (
+                        <span className="chat-send-spinner" />
+                    ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                    )}
+                </button>
+            </div>
         </div>
     );
 }
 
 /* ── ChatBox (main export) ────────────────────────────────── */
-/**
- * Props:
- *   context     — 'inquiry' | 'treatment' | 'feedback'
- *   referenceId — clinic_id or access_request_id
- *   receiverId  — user_id of the other party (for sending messages)
- *   withUserId  — user_id of the other party (for filtering fetch)
- *   onGuestAction — called when guest tries to interact (optional)
- */
 export default function ChatBox({ context, referenceId, receiverId, withUserId, onGuestAction, fullscreen = false }) {
     const { user }     = useAuth();
     const { addToast } = useToast();
@@ -175,10 +299,9 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
     const listRef                 = useRef(null);
     const boxRef                  = useRef(null);
 
-    // The other party's user id (used for markSeen sender filter)
     const otherUserId = withUserId || receiverId;
 
-    /* ── visualViewport: keyboard-aware layout on mobile ─────── */
+    /* ── visualViewport: keyboard-aware layout on mobile ─── */
     useEffect(() => {
         const vv = window.visualViewport;
         if (!vv || window.innerWidth > 768) return;
@@ -186,33 +309,21 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
 
         const onResize = () => {
             if (fullscreen) {
-                // Full-screen chat: shrink the chat box to fit above the keyboard
-                if (boxRef.current) {
-                    boxRef.current.style.height = `${vv.height - 64}px`;
-                }
+                if (boxRef.current) boxRef.current.style.height = `${vv.height - 64}px`;
             } else {
-                // Embedded chat: scroll the page so the entire chat box is visible
                 if (boxRef.current) {
                     const rect = boxRef.current.getBoundingClientRect();
                     const overflow = rect.bottom - vv.height;
-                    if (overflow > 0) {
-                        window.scrollBy({ top: overflow + 8, behavior: 'instant' });
-                    }
+                    if (overflow > 0) window.scrollBy({ top: overflow + 8, behavior: 'instant' });
                 }
             }
-            if (listRef.current) {
-                listRef.current.scrollTop = listRef.current.scrollHeight;
-            }
+            if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
         };
 
         vv.addEventListener('resize', onResize);
-        return () => {
-            vv.removeEventListener('resize', onResize);
-            if (box) box.style.height = '';
-        };
+        return () => { vv.removeEventListener('resize', onResize); if (box) box.style.height = ''; };
     }, [fullscreen]);
 
-    /* ── Optimistic status patch helpers ─────────────────── */
     const applySeen = useCallback((messageIds, seenAt) => {
         const idSet = new Set(messageIds);
         setMessages(prev => prev.map(m =>
@@ -222,28 +333,16 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
         ));
     }, []);
 
-    /* ── After fetch: side-effects for delivery/seen ─────── */
     const processFetch = useCallback(async (fetched) => {
         if (!user) return;
-
-        // Mark received messages as delivered (batch, no downgrade — backend handles it)
-        const undelivered = fetched
-            .filter(m => m.sender_id !== user.id && !m.delivered_at)
-            .map(m => m.id);
-        if (undelivered.length > 0) {
-            try { await markDelivered(undelivered); } catch {}
-        }
-
-        // Mark received messages as seen (user opened the chat)
+        const undelivered = fetched.filter(m => m.sender_id !== user.id && !m.delivered_at).map(m => m.id);
+        if (undelivered.length > 0) { try { await markDelivered(undelivered); } catch {} }
         const unseen = fetched.filter(m => m.sender_id !== user.id && !m.seen_at);
         if (unseen.length > 0) {
-            try {
-                await markSeen({ sender_id: otherUserId, context, reference_id: referenceId });
-            } catch {}
+            try { await markSeen({ sender_id: otherUserId, context, reference_id: referenceId }); } catch {}
         }
     }, [user, otherUserId, context, referenceId]);
 
-    /* ── Fetch messages ───────────────────────────────────── */
     const fetchMessages = useCallback(async (silent = false) => {
         if (!user) return;
         try {
@@ -259,20 +358,16 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
             setMessages(fetched);
             if (!silent) setNewCount(0);
             await processFetch(fetched);
-        } catch {
-            // silent failure on poll
-        } finally {
+        } catch {} finally {
             if (!silent) setLoading(false);
         }
     }, [user, context, referenceId, withUserId, processFetch]);
 
-    // Initial load
     useEffect(() => {
         if (!user) { setLoading(false); return; }
         fetchMessages(false);
     }, [fetchMessages, user]);
 
-    // Polling — skipped when WebSocket is connected (safety net only)
     useEffect(() => {
         if (!user) return;
         const id = setInterval(() => {
@@ -283,51 +378,34 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
         return () => clearInterval(id);
     }, [fetchMessages, user]);
 
-    /* ── WebSocket: new messages + delivery/seen acks ────── */
     useEffect(() => {
         if (!user) return;
         const token = localStorage.getItem('token');
         if (!token) return;
-
         const echo = getEcho(token);
         const ch   = echo.private(`user.${user.id}`);
 
-        // Instant new-message delivery via NotificationCreated.
-        // The backend embeds the full message object in notification.data.message,
-        // so we can append it directly to state with no HTTP round-trip.
-        // Falls back to fetchMessages(true) only for legacy events without the payload.
         ch.listen('.NotificationCreated', ({ notification }) => {
             if (notification?.type !== 'message') return;
             const d = notification.data ?? {};
             if (String(d.context) !== String(context) || String(d.reference_id) !== String(referenceId)) return;
-
             if (d.message?.id) {
-                // Direct append — no refetch needed
-                setMessages(prev =>
-                    prev.some(m => m.id === d.message.id) ? prev : [...prev, d.message]
-                );
+                setMessages(prev => prev.some(m => m.id === d.message.id) ? prev : [...prev, d.message]);
                 prevCountRef.current += 1;
                 setNewCount(c => c + 1);
                 setTimeout(() => setNewCount(0), 4000);
-                // Fire delivery + seen side-effects in the background (same as processFetch)
                 processFetch([d.message]);
             } else {
-                // Fallback: event predates the message payload addition
                 fetchMessages(true);
             }
         });
 
-        // Delivery / seen ACKs for outgoing messages
         ch.listen('.MessageDelivered', ({ message_ids, delivered_at }) => {
             const idSet = new Set(message_ids);
-            setMessages(prev => prev.map(m =>
-                idSet.has(m.id) && !m.delivered_at ? { ...m, delivered_at } : m
-            ));
+            setMessages(prev => prev.map(m => idSet.has(m.id) && !m.delivered_at ? { ...m, delivered_at } : m));
         });
 
-        ch.listen('.MessageSeen', ({ message_ids, seen_at }) => {
-            applySeen(message_ids, seen_at);
-        });
+        ch.listen('.MessageSeen', ({ message_ids, seen_at }) => { applySeen(message_ids, seen_at); });
 
         return () => {
             try { ch.stopListening('.NotificationCreated'); } catch {}
@@ -336,22 +414,26 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
         };
     }, [user?.id, context, referenceId, fetchMessages, applySeen, processFetch]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    /* ── Send ─────────────────────────────────────────────── */
-    const handleSend = async (content) => {
+    const handleSend = async (content, imageUrl = null) => {
         if (!user) { onGuestAction?.(); return; }
         setSending(true);
         try {
-            const res = await sendMessage({ receiver_id: receiverId, context, reference_id: referenceId, content });
-            setMessages((prev) => [...prev, res.data]);
+            const res = await sendMessage({
+                receiver_id:  receiverId,
+                context,
+                reference_id: referenceId,
+                content:      content || '',
+                image_url:    imageUrl || undefined,
+            });
+            setMessages(prev => [...prev, res.data]);
             prevCountRef.current += 1;
         } catch (err) {
-            addToast(err.response?.data?.message ?? 'Failed to send message. Please try again.', 'error');
+            addToast(err.response?.data?.message ?? 'Failed to send message.', 'error');
         } finally {
             setSending(false);
         }
     };
 
-    // Guest gate
     if (!user) {
         return (
             <div className="chat-box">
@@ -359,13 +441,9 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                     </svg>
-                    <strong style={{ color: 'var(--text)', fontFamily: 'Syne', fontSize: '0.9rem' }}>
-                        Sign in to chat
-                    </strong>
+                    <strong style={{ color: 'var(--text)', fontFamily: 'Syne', fontSize: '0.9rem' }}>Sign in to chat</strong>
                     <p>Create an account or log in to send a message to this clinic.</p>
-                    <Button variant="primary" size="sm" onClick={() => onGuestAction?.()}>
-                        Sign in
-                    </Button>
+                    <Button variant="primary" size="sm" onClick={() => onGuestAction?.()}>Sign in</Button>
                 </div>
             </div>
         );

@@ -78,6 +78,7 @@ class MessageController extends Controller
         $message = Message::create([
             ...$request->validated(),
             'sender_id' => $request->user()->id,
+            'content'   => $request->input('content', ''),
         ]);
 
         $message->load(['sender:id,first_name,last_name', 'receiver:id,first_name,last_name']);
@@ -95,6 +96,53 @@ class MessageController extends Controller
         ]);
 
         return response()->json($message, 201);
+    }
+
+    /**
+     * POST /api/messages/upload-image
+     * Accepts a multipart image, compresses it via GD, returns a base64 data URI.
+     * Stored as base64 in the DB so it survives Railway redeploys.
+     */
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+        ]);
+
+        $file    = $request->file('image');
+        $maxDim  = 1200;
+        $quality = 82;
+
+        // GIF: store raw without resizing (GD loses animation)
+        if (strtolower($file->getClientOriginalExtension()) === 'gif') {
+            $data = base64_encode(file_get_contents($file->getRealPath()));
+            return response()->json(['url' => 'data:image/gif;base64,' . $data]);
+        }
+
+        $src = imagecreatefromstring(file_get_contents($file->getRealPath()));
+        if (!$src) {
+            return response()->json(['message' => 'Could not process image.'], 422);
+        }
+
+        $w = imagesx($src);
+        $h = imagesy($src);
+
+        if ($w > $maxDim || $h > $maxDim) {
+            $ratio = $w > $h ? $maxDim / $w : $maxDim / $h;
+            $newW  = (int) round($w * $ratio);
+            $newH  = (int) round($h * $ratio);
+            $dst   = imagecreatetruecolor($newW, $newH);
+            imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $w, $h);
+            imagedestroy($src);
+            $src = $dst;
+        }
+
+        ob_start();
+        imagejpeg($src, null, $quality);
+        $jpeg = ob_get_clean();
+        imagedestroy($src);
+
+        return response()->json(['url' => 'data:image/jpeg;base64,' . base64_encode($jpeg)]);
     }
 
     public function notifications(Request $request)
