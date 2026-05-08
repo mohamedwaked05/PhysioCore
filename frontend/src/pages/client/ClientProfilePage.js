@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getProfile, updateProfile } from '../../api/client';
 import ClientLayout from '../../components/ClientLayout';
 import Avatar from '../../components/ui/Avatar';
+import ProfileBanner from '../../components/ui/ProfileBanner';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import SectionHeader from '../../components/ui/SectionHeader';
@@ -78,8 +79,10 @@ const INITIAL_FORM = {
 
 export default function ClientProfilePage() {
     const [form, setForm]             = useState(INITIAL_FORM);
-    const [photoFile, setPhotoFile]   = useState(null);
+    const [photoFile, setPhotoFile]       = useState(null);
     const [photoPreview, setPhotoPreview] = useState('');
+    const [coverFile, setCoverFile]       = useState(null);
+    const [coverPreview, setCoverPreview] = useState('');
     const [errors, setErrors]         = useState({});
     const [loading, setLoading]       = useState(true);
     const [saving, setSaving]         = useState(false);
@@ -109,6 +112,7 @@ export default function ClientProfilePage() {
                     emergency_contact:   d.emergency_contact   ?? '',
                 });
                 setPhotoPreview(d.profile_photo_url ?? '');
+                setCoverPreview(d.cover_photo_url ?? '');
 
                 try {
                     const u = JSON.parse(localStorage.getItem('user') || '{}');
@@ -139,13 +143,17 @@ export default function ClientProfilePage() {
         setErrors(prev => ({ ...prev, profile_photo: null }));
     };
 
+    const handleCoverChange = (file) => {
+        setCoverFile(file);
+        setCoverPreview(URL.createObjectURL(file));
+    };
+
     const handleCancel = () => {
         setEditing(false);
         setErrors({});
         setErrorMsg('');
-        if (photoFile) {
-            setPhotoFile(null);
-        }
+        setPhotoFile(null);
+        setCoverFile(null);
     };
 
     const handleSubmit = async (e) => {
@@ -158,13 +166,16 @@ export default function ClientProfilePage() {
         Object.entries(form).forEach(([k, v]) => {
             if (v !== null && v !== undefined && v !== '') formData.append(k, v);
         });
-        if (photoFile) formData.append('profile_photo', photoFile);
+        if (photoFile)  formData.append('profile_photo', photoFile);
+        if (coverFile)  formData.append('cover_photo',   coverFile);
 
         try {
             const res = await updateProfile(formData);
             const d   = res.data ?? {};
             setPhotoPreview(d.profile_photo_url ?? photoPreview);
+            setCoverPreview(d.cover_photo_url   ?? coverPreview);
             setPhotoFile(null);
+            setCoverFile(null);
             setEditing(false);
             setSuccess(true);
             setTimeout(() => setSuccess(false), 3500);
@@ -211,38 +222,47 @@ export default function ClientProfilePage() {
             {success  && <div className="ui-alert ui-alert--success">Profile updated successfully.</div>}
             {errorMsg && <div className="ui-alert ui-alert--error">{errorMsg}</div>}
 
-            {/* Profile Header */}
-            <div className="ui-profile-header" style={{ marginBottom: '1.25rem' }}>
-                <Avatar
-                    src={photoPreview}
-                    name={userName}
-                    size="xl"
+            {/* Cover Banner */}
+            <div style={{ marginBottom: '1.25rem' }}>
+                <ProfileBanner
+                    coverUrl={coverPreview}
                     editable={editing}
-                    onFileChange={handlePhotoChange}
-                />
-                <div className="ui-profile-header-info">
-                    <h1 className="ui-profile-header-name">{displayName}</h1>
-                    <p className="ui-profile-header-sub">
-                        {form.country && form.language
-                            ? `${form.country} · ${form.language}`
-                            : form.country || form.language || 'Complete your profile to get started'}
-                    </p>
-                    {errors.profile_photo && (
-                        <span className="ui-field-error" style={{ marginTop: '0.25rem', display: 'block' }}>
-                            {errors.profile_photo}
-                        </span>
-                    )}
-                </div>
-                <div className="ui-profile-header-actions">
-                    {editing
-                        ? <>
-                            <Button variant="ghost" size="sm" onClick={handleCancel} disabled={saving}>Cancel</Button>
-                            <Button variant="primary" size="sm" type="submit" form="profile-form" loading={saving}>
-                                Save Changes
-                            </Button>
-                          </>
-                        : <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>Edit Profile</Button>
+                    onCoverChange={handleCoverChange}
+                    avatarSlot={
+                        <Avatar
+                            src={photoPreview}
+                            name={userName}
+                            size="xl"
+                            editable={editing}
+                            onFileChange={handlePhotoChange}
+                        />
                     }
+                />
+                <div className="ui-profile-header" style={{ marginTop: '0.75rem', paddingTop: 0, borderTop: 'none' }}>
+                    <div className="ui-profile-header-info" style={{ flex: 1 }}>
+                        <h1 className="ui-profile-header-name">{displayName}</h1>
+                        <p className="ui-profile-header-sub">
+                            {form.country && form.language
+                                ? `${form.country} · ${form.language}`
+                                : form.country || form.language || 'Complete your profile to get started'}
+                        </p>
+                        {errors.profile_photo && (
+                            <span className="ui-field-error" style={{ marginTop: '0.25rem', display: 'block' }}>
+                                {errors.profile_photo}
+                            </span>
+                        )}
+                    </div>
+                    <div className="ui-profile-header-actions">
+                        {editing
+                            ? <>
+                                <Button variant="ghost" size="sm" onClick={handleCancel} disabled={saving}>Cancel</Button>
+                                <Button variant="primary" size="sm" type="submit" form="profile-form" loading={saving}>
+                                    Save Changes
+                                </Button>
+                              </>
+                            : <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>Edit Profile</Button>
+                        }
+                    </div>
                 </div>
             </div>
 

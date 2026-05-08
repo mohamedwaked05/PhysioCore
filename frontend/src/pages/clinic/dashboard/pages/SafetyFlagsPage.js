@@ -2,9 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../../../context/AuthContext';
 import { useToast } from '../../../../context/ToastContext';
-import { getSafetyFlags, resolveSafetyFlag } from '../../../../api/clinic';
+import { getSafetyFlags, resolveSafetyFlag, getPatientProfile } from '../../../../api/clinic';
 import { getEcho } from '../../../../services/echo';
 import Skeleton from '../../../../components/ui/Skeleton';
+import PatientProfilePopup from '../components/PatientProfilePopup';
 
 const PRIORITY_FILTERS = ['All', 'High', 'Medium', 'Low'];
 
@@ -27,7 +28,7 @@ function fmtDate(iso) {
 }
 
 /* ── Active flag card ────────────────────────────────────────── */
-function FlagCard({ flag, onResolved }) {
+function FlagCard({ flag, onResolved, onAvatarClick }) {
     const [resolving,   setResolving]   = useState(false);
     const [resolved,    setResolved]    = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -48,14 +49,20 @@ function FlagCard({ flag, onResolved }) {
 
     return (
         <div className={`cld-flag-item ${priority}`} style={{ opacity: resolved ? 0.45 : 1, transition: 'opacity 0.3s' }}>
-            <div className="cld-request-avatar" style={{
-                background: priority === 'high'   ? 'rgba(220,38,38,0.1)'  :
-                            priority === 'medium' ? 'rgba(217,119,6,0.1)'  :
-                                                    'rgba(22,163,74,0.1)',
-                color:      priority === 'high'   ? '#dc2626' :
-                            priority === 'medium' ? '#d97706' :
-                                                    '#16a34a',
-            }}>
+            <div
+                className="cld-request-avatar"
+                style={{
+                    background: priority === 'high'   ? 'rgba(220,38,38,0.1)'  :
+                                priority === 'medium' ? 'rgba(217,119,6,0.1)'  :
+                                                        'rgba(22,163,74,0.1)',
+                    color:      priority === 'high'   ? '#dc2626' :
+                                priority === 'medium' ? '#d97706' :
+                                                        '#16a34a',
+                    cursor: 'pointer',
+                }}
+                title={`View ${flag.patient_name}'s profile`}
+                onClick={() => onAvatarClick?.(flag)}
+            >
                 {flag.initials}
             </div>
 
@@ -204,6 +211,18 @@ export default function SafetyFlagsPage() {
         };
     }, [user, clinicId, silentRefetch, addToast]);
 
+    const [popupPatient, setPopupPatient] = useState(null);
+
+    const openPopup = async (flag) => {
+        if (!flag.client_profile_id) return;
+        try {
+            const res = await getPatientProfile(flag.client_profile_id);
+            setPopupPatient(res.data);
+        } catch {
+            setPopupPatient({ id: flag.client_profile_id, name: flag.patient_name, initials: flag.initials, condition: null });
+        }
+    };
+
     const handleResolved = (id) => setFlags(prev => prev.filter(f => f.id !== id));
 
     const withPriority = flags.map(f => ({ ...f, priority: severityToPriority(f.severity) }));
@@ -226,6 +245,13 @@ export default function SafetyFlagsPage() {
 
     return (
         <div className="cld-page">
+            {popupPatient && (
+                <PatientProfilePopup
+                    patient={popupPatient}
+                    onClose={() => setPopupPatient(null)}
+                />
+            )}
+
             <div className="cld-page-header">
                 <h2 className="cld-page-title">Safety Flags</h2>
                 <p className="cld-page-subtitle">
@@ -301,7 +327,7 @@ export default function SafetyFlagsPage() {
                                 <span style={{ marginLeft: '0.25rem', fontWeight: 700 }}>({grouped.high.length})</span>
                             </div>
                             <div className="cld-flag-list">
-                                {grouped.high.map(flag => <FlagCard key={flag.id} flag={flag} onResolved={handleResolved} />)}
+                                {grouped.high.map(flag => <FlagCard key={flag.id} flag={flag} onResolved={handleResolved} onAvatarClick={openPopup} />)}
                             </div>
                         </div>
                     )}
@@ -313,7 +339,7 @@ export default function SafetyFlagsPage() {
                                 <span style={{ marginLeft: '0.25rem', fontWeight: 700 }}>({grouped.medium.length})</span>
                             </div>
                             <div className="cld-flag-list">
-                                {grouped.medium.map(flag => <FlagCard key={flag.id} flag={flag} onResolved={handleResolved} />)}
+                                {grouped.medium.map(flag => <FlagCard key={flag.id} flag={flag} onResolved={handleResolved} onAvatarClick={openPopup} />)}
                             </div>
                         </div>
                     )}
@@ -325,7 +351,7 @@ export default function SafetyFlagsPage() {
                                 <span style={{ marginLeft: '0.25rem', fontWeight: 700 }}>({grouped.low.length})</span>
                             </div>
                             <div className="cld-flag-list">
-                                {grouped.low.map(flag => <FlagCard key={flag.id} flag={flag} onResolved={handleResolved} />)}
+                                {grouped.low.map(flag => <FlagCard key={flag.id} flag={flag} onResolved={handleResolved} onAvatarClick={openPopup} />)}
                             </div>
                         </div>
                     )}

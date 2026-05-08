@@ -11,6 +11,7 @@ use App\Http\Controllers\Clinic\ClinicProfileController;
 use App\Http\Controllers\Clinic\AccessRequestController as ClinicAccessRequestController;
 use App\Http\Controllers\Clinic\DashboardController;
 use App\Http\Controllers\Clinic\PatientFeedbackController;
+use App\Http\Controllers\Clinic\PatientProfileController;
 use App\Http\Controllers\Clinic\RehabPlanController;
 use App\Http\Controllers\Client\RehabPlanController as ClientRehabPlanController;
 use App\Http\Controllers\Client\SessionFeedbackController;
@@ -94,6 +95,7 @@ Route::middleware(['auth:sanctum', 'role:clinic'])->prefix('clinic')->group(func
     Route::patch('/access-requests/{accessRequest}',    [ClinicAccessRequestController::class, 'update']);
 
     // Patient session feedback (clinic reads)
+    Route::get('/patients/{clientProfileId}/profile',    [PatientProfileController::class, 'show']);
     Route::get('/patients/{clientProfileId}/feedback',   [PatientFeedbackController::class, 'index']);
 
     // Rehab plans

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getClinicProfile, getClinicAccessRequests } from '../../../../api/clinic';
+import { getClinicProfile, getClinicAccessRequests, getPatientProfile } from '../../../../api/clinic';
 import { getPatientRehabPlan } from '../../../../api/rehabPlans';
 import CreatePlanModal from '../components/CreatePlanModal';
+import PatientProfilePopup from '../components/PatientProfilePopup';
 import ChatBox from '../../../../components/chat/ChatBox';
 import Skeleton from '../../../../components/ui/Skeleton';
 import '../../../../styles/chat.css';
@@ -66,7 +67,9 @@ export default function PatientsPage() {
     const [planPatient, setPlanPatient] = useState(null);
     const [existingPlan, setExistingPlan] = useState(null);
     const [planLoadingId, setPlanLoadingId] = useState(null);
-    const [chatPatient, setChatPatient] = useState(null);
+    const [chatPatient,    setChatPatient]    = useState(null);
+    const [popupPatient,   setPopupPatient]   = useState(null);
+    const [popupLoading,   setPopupLoading]   = useState(false);
 
     useEffect(() => {
         Promise.all([getClinicProfile(), getClinicAccessRequests()])
@@ -85,6 +88,18 @@ export default function PatientsPage() {
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.condition.toLowerCase().includes(search.toLowerCase())
     );
+
+    const openPatientPopup = async (p) => {
+        setPopupLoading(true);
+        try {
+            const res = await getPatientProfile(p.clientProfileId);
+            setPopupPatient(res.data);
+        } catch {
+            setPopupPatient({ id: p.clientProfileId, name: p.name, initials: p.initials, condition: p.condition });
+        } finally {
+            setPopupLoading(false);
+        }
+    };
 
     /* Build locked days set from plan's progress_by_day */
     const lockedDays = new Set(
@@ -153,7 +168,14 @@ export default function PatientsPage() {
                                 onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-dim)'}
                                 onMouseLeave={e => e.currentTarget.style.background = ''}
                             >
-                                <div className="cld-patient-avatar">{p.initials}</div>
+                                <div
+                                    className="cld-patient-avatar"
+                                    style={{ cursor: 'pointer' }}
+                                    title={`View ${p.name}'s profile`}
+                                    onClick={e => { e.stopPropagation(); openPatientPopup(p); }}
+                                >
+                                    {popupLoading ? '…' : p.initials}
+                                </div>
 
                                 <div className="cld-patient-info" style={{ flex: 1, minWidth: 0 }}>
                                     <p className="cld-patient-name">{p.name}</p>
@@ -213,6 +235,14 @@ export default function PatientsPage() {
                     </div>
                 )}
             </div>
+
+            {popupPatient && (
+                <PatientProfilePopup
+                    patient={popupPatient}
+                    onClose={() => setPopupPatient(null)}
+                    onMessage={(p) => setChatPatient(p)}
+                />
+            )}
 
             {planPatient && (
                 <CreatePlanModal

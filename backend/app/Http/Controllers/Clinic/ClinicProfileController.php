@@ -14,9 +14,12 @@ class ClinicProfileController extends Controller
 {
     public function show(Request $request)
     {
-        $userId = $request->user()->id;
-        $clinic = Cache::remember("clinic_profile_{$userId}", 60, fn() => $request->user()->clinic);
-        return response()->json($clinic);
+        $user   = $request->user();
+        $userId = $user->id;
+        $clinic = Cache::remember("clinic_profile_{$userId}", 60, fn() => $user->clinic);
+        $data   = $clinic ? $clinic->toArray() : [];
+        $data['cover_photo_url'] = $user->cover_photo_url;
+        return response()->json($data);
     }
 
     public function store(StoreClinicProfileRequest $request)
@@ -54,7 +57,8 @@ class ClinicProfileController extends Controller
 
     public function update(UpdateClinicProfileRequest $request)
     {
-        $clinic = $request->user()->clinic;
+        $user   = $request->user();
+        $clinic = $user->clinic;
         $data   = $request->validated();
 
         if ($request->hasFile('license_file')) {
@@ -78,12 +82,21 @@ class ClinicProfileController extends Controller
             $data['profile_photo_url'] = $this->storeFile($request, 'profile_photo', 'clinic-photos');
         }
 
-        unset($data['license_file'], $data['cert_file'], $data['profile_photo']);
+        if ($request->hasFile('cover_photo')) {
+            if ($user->cover_photo_url) {
+                $this->deleteStoredFile($user->cover_photo_url);
+            }
+            $user->update(['cover_photo_url' => $this->storeFile($request, 'cover_photo', 'covers')]);
+        }
+
+        unset($data['license_file'], $data['cert_file'], $data['profile_photo'], $data['cover_photo']);
         $clinic->update($data);
 
-        Cache::forget("clinic_profile_{$request->user()->id}");
+        Cache::forget("clinic_profile_{$user->id}");
 
-        return response()->json($clinic->fresh());
+        $fresh = $clinic->fresh()->toArray();
+        $fresh['cover_photo_url'] = $user->fresh()->cover_photo_url;
+        return response()->json($fresh);
     }
 
     private function storeFile(Request $request, string $field, string $folder): string
@@ -98,7 +111,7 @@ class ClinicProfileController extends Controller
     private function deleteStoredFile(string $url): void
     {
         $relativePath = Str::after(parse_url($url, PHP_URL_PATH), '/storage/');
-        if (!preg_match('#^(client-photos|clinic-photos|licenses|certifications)/#', $relativePath)) {
+        if (!preg_match('#^(client-photos|clinic-photos|covers|licenses|certifications)/#', $relativePath)) {
             return;
         }
         Storage::disk('public')->delete($relativePath);

@@ -23,6 +23,7 @@ class UpdateProfileRequest extends FormRequest
             'phone'               => ['nullable', 'string', 'max:20'],
             'address'             => ['nullable', 'string', 'max:255'],
             'profile_photo'       => ['nullable', 'image', 'mime_types:image/jpeg,image/png', 'max:5120'],
+            'cover_photo'         => ['nullable', 'image', 'mime_types:image/jpeg,image/png', 'max:8192'],
             'condition_summary'   => ['nullable', 'string', 'max:500'],
             'injury_details'      => ['nullable', 'string', 'max:2000'],
             'medical_history'     => ['nullable', 'string', 'max:2000'],

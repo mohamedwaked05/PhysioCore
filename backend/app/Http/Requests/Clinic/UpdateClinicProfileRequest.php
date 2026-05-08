@@ -26,6 +26,7 @@ class UpdateClinicProfileRequest extends FormRequest
             'license_file'      => ['nullable', 'file', 'mime_types:application/pdf,image/jpeg,image/png', 'max:5120'],
             'cert_file'         => ['nullable', 'file', 'mime_types:application/pdf,image/jpeg,image/png', 'max:5120'],
             'profile_photo'     => ['nullable', 'image', 'mime_types:image/jpeg,image/png', 'max:5120'],
+            'cover_photo'       => ['nullable', 'image', 'mime_types:image/jpeg,image/png', 'max:8192'],
             'certifications'    => ['nullable', 'string', 'max:2000'],
             'experience'        => ['nullable', 'string', 'max:255'],
             'payment_methods'          => ['sometimes', 'required', 'string', 'max:255'],

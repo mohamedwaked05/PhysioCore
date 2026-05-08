@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getClinicProfile, createClinicProfile, updateClinicProfile } from '../../api/clinic';
 import ClinicLayout from '../../components/ClinicLayout';
 import Avatar from '../../components/ui/Avatar';
+import ProfileBanner from '../../components/ui/ProfileBanner';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import SectionHeader from '../../components/ui/SectionHeader';
@@ -236,8 +237,10 @@ export default function ClinicProfilePage() {
     const [licenseUrl, setLicenseUrl]   = useState('');
     const [certFile, setCertFile]       = useState(null);
     const [certFileUrl, setCertFileUrl] = useState('');
-    const [photoFile, setPhotoFile]     = useState(null);
+    const [photoFile, setPhotoFile]       = useState(null);
     const [photoPreview, setPhotoPreview] = useState('');
+    const [coverFile, setCoverFile]       = useState(null);
+    const [coverPreview, setCoverPreview] = useState('');
     const [isRegistered, setIsRegistered] = useState(false);
     const [errors, setErrors]           = useState({});
     const [loading, setLoading]         = useState(true);
@@ -273,6 +276,7 @@ export default function ClinicProfilePage() {
                 setLicenseUrl(d.license_file_url ?? '');
                 setCertFileUrl(d.cert_file_url ?? '');
                 setPhotoPreview(d.profile_photo_url ?? '');
+                setCoverPreview(d.cover_photo_url   ?? '');
                 setIsRegistered(!!d.clinic_email);
                 // New clinic starts in edit mode
                 if (!d.clinic_email) setEditing(true);
@@ -339,7 +343,8 @@ export default function ClinicProfilePage() {
         setEditing(false);
         setErrors({});
         setErrorMsg('');
-        if (photoFile) setPhotoFile(null);
+        setPhotoFile(null);
+        setCoverFile(null);
         if (licenseFile) setLicenseFile(null);
         if (certFile) setCertFile(null);
     };
@@ -366,6 +371,7 @@ export default function ClinicProfilePage() {
         if (licenseFile) formData.append('license_file', licenseFile);
         if (certFile)    formData.append('cert_file', certFile);
         if (photoFile)   formData.append('profile_photo', photoFile);
+        if (coverFile)   formData.append('cover_photo',   coverFile);
 
         try {
             const fn  = isRegistered ? updateClinicProfile : createClinicProfile;
@@ -374,6 +380,8 @@ export default function ClinicProfilePage() {
             setLicenseUrl(d.license_file_url ?? licenseUrl);
             setCertFileUrl(d.cert_file_url ?? certFileUrl);
             setPhotoPreview(d.profile_photo_url ?? photoPreview);
+            setCoverPreview(d.cover_photo_url   ?? coverPreview);
+            setCoverFile(null);
 
             setIsRegistered(true);
             setLicenseFile(null);
@@ -425,40 +433,49 @@ export default function ClinicProfilePage() {
             {success  && <div className="ui-alert ui-alert--success">Clinic profile saved successfully.</div>}
             {errorMsg && <div className="ui-alert ui-alert--error">{errorMsg}</div>}
 
-            {/* Profile Header */}
-            <div className="ui-profile-header" style={{ marginBottom: '1.25rem' }}>
-                <Avatar
-                    src={photoPreview}
-                    name={displayName}
-                    size="xl"
+            {/* Cover Banner */}
+            <div style={{ marginBottom: '1.25rem' }}>
+                <ProfileBanner
+                    coverUrl={coverPreview}
                     editable={editing}
-                    onFileChange={handlePhotoChange}
-                />
-                <div className="ui-profile-header-info">
-                    <h1 className="ui-profile-header-name">{displayName}</h1>
-                    <p className="ui-profile-header-sub">
-                        {form.specialty_text
-                            ? form.specialty_text
-                            : isRegistered ? form.address || '' : 'Complete your clinic registration'}
-                    </p>
-                    {errors.profile_photo && (
-                        <span className="ui-field-error" style={{ marginTop: '0.25rem', display: 'block' }}>
-                            {errors.profile_photo}
-                        </span>
-                    )}
-                </div>
-                <div className="ui-profile-header-actions">
-                    {editing
-                        ? <>
-                            {isRegistered && (
-                                <Button variant="ghost" size="sm" onClick={handleCancel} disabled={saving}>Cancel</Button>
-                            )}
-                            <Button variant="primary" size="sm" type="submit" form="clinic-form" loading={saving}>
-                                {isRegistered ? 'Save Changes' : 'Submit Registration'}
-                            </Button>
-                          </>
-                        : <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>Edit Profile</Button>
+                    onCoverChange={(file) => { setCoverFile(file); setCoverPreview(URL.createObjectURL(file)); }}
+                    avatarSlot={
+                        <Avatar
+                            src={photoPreview}
+                            name={displayName}
+                            size="xl"
+                            editable={editing}
+                            onFileChange={handlePhotoChange}
+                        />
                     }
+                />
+                <div className="ui-profile-header" style={{ marginTop: '0.75rem', paddingTop: 0, borderTop: 'none' }}>
+                    <div className="ui-profile-header-info" style={{ flex: 1 }}>
+                        <h1 className="ui-profile-header-name">{displayName}</h1>
+                        <p className="ui-profile-header-sub">
+                            {form.specialty_text
+                                ? form.specialty_text
+                                : isRegistered ? form.address || '' : 'Complete your clinic registration'}
+                        </p>
+                        {errors.profile_photo && (
+                            <span className="ui-field-error" style={{ marginTop: '0.25rem', display: 'block' }}>
+                                {errors.profile_photo}
+                            </span>
+                        )}
+                    </div>
+                    <div className="ui-profile-header-actions">
+                        {editing
+                            ? <>
+                                {isRegistered && (
+                                    <Button variant="ghost" size="sm" onClick={handleCancel} disabled={saving}>Cancel</Button>
+                                )}
+                                <Button variant="primary" size="sm" type="submit" form="clinic-form" loading={saving}>
+                                    {isRegistered ? 'Save Changes' : 'Submit Registration'}
+                                </Button>
+                              </>
+                            : <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>Edit Profile</Button>
+                        }
+                    </div>
                 </div>
             </div>
 

@@ -13,14 +13,18 @@ class ClientProfileController extends Controller
 {
     public function show(Request $request)
     {
-        $userId  = $request->user()->id;
-        $profile = Cache::remember("client_profile_{$userId}", 60, fn() => $request->user()->clientProfile);
-        return response()->json($profile);
+        $user    = $request->user();
+        $userId  = $user->id;
+        $profile = Cache::remember("client_profile_{$userId}", 60, fn() => $user->clientProfile);
+        $data    = $profile ? $profile->toArray() : [];
+        $data['cover_photo_url'] = $user->cover_photo_url;
+        return response()->json($data);
     }
 
     public function update(UpdateProfileRequest $request)
     {
-        $profile = $request->user()->clientProfile;
+        $user    = $request->user();
+        $profile = $user->clientProfile;
         $data    = $request->validated();
 
         if ($request->hasFile('profile_photo')) {
@@ -30,12 +34,21 @@ class ClientProfileController extends Controller
             $data['profile_photo_url'] = $this->storePhoto($request, 'profile_photo', 'client-photos');
         }
 
-        unset($data['profile_photo']);
+        if ($request->hasFile('cover_photo')) {
+            if ($user->cover_photo_url) {
+                $this->deleteStoredFile($user->cover_photo_url);
+            }
+            $user->update(['cover_photo_url' => $this->storePhoto($request, 'cover_photo', 'covers')]);
+        }
+
+        unset($data['profile_photo'], $data['cover_photo']);
         $profile->update($data);
 
-        Cache::forget("client_profile_{$request->user()->id}");
+        Cache::forget("client_profile_{$user->id}");
 
-        return response()->json($profile->fresh());
+        $fresh = $profile->fresh()->toArray();
+        $fresh['cover_photo_url'] = $user->fresh()->cover_photo_url;
+        return response()->json($fresh);
     }
 
     private function storePhoto(Request $request, string $field, string $folder): string
@@ -50,7 +63,7 @@ class ClientProfileController extends Controller
     private function deleteStoredFile(string $url): void
     {
         $relativePath = Str::after(parse_url($url, PHP_URL_PATH), '/storage/');
-        if (!preg_match('#^(client-photos|clinic-photos|licenses|certifications)/#', $relativePath)) {
+        if (!preg_match('#^(client-photos|clinic-photos|covers|licenses|certifications)/#', $relativePath)) {
             return;
         }
         Storage::disk('public')->delete($relativePath);
