@@ -73,7 +73,7 @@ function ChatImage({ src, isSent }) {
                 {!loaded && <div className="chat-img-skeleton" />}
                 <img
                     src={src}
-                    alt="Shared image"
+                    alt="Attachment"
                     className="chat-bubble-img"
                     onLoad={() => setLoaded(true)}
                     onClick={() => setLightbox(true)}
