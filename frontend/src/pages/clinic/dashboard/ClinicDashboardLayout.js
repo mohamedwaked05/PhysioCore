@@ -69,14 +69,21 @@ function PlansIcon({ size = 14 }) {
 export default function ClinicDashboardLayout() {
     const { user } = useAuth();
     const [verificationStatus, setVerificationStatus] = useState(null);
-    const [clinicId, setClinicId] = useState(null);
+    // Initialise from sessionStorage so the QR button is visible immediately
+    // on every navigation without waiting for getClinicProfile() to resolve.
+    const [clinicId, setClinicId] = useState(() => {
+        const cached = sessionStorage.getItem('clinic_id');
+        return cached ? Number(cached) : null;
+    });
     const [counts, setCounts] = useState(null);
 
     useEffect(() => {
         getClinicProfile()
             .then(res => {
                 setVerificationStatus(res.data?.verification_status ?? 'pending');
-                setClinicId(res.data?.id ?? null);
+                const id = res.data?.id ?? null;
+                if (id) sessionStorage.setItem('clinic_id', String(id));
+                setClinicId(id);
             })
             .catch(() => {});
 

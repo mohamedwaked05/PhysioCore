@@ -18,7 +18,7 @@ class SendMessageRequest extends FormRequest
             'context'      => ['required', 'string', 'in:inquiry,treatment,feedback'],
             'reference_id' => ['nullable', 'integer'],
             'content'      => ['nullable', 'string', 'max:2000'],
-            'image_url'    => ['nullable', 'string', 'max:5000000'], // base64 data URI
+            'image_url'    => ['nullable', 'string', 'max:15000000'], // base64 data URI (~10MB image)
         ];
     }
 

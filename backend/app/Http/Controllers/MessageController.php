@@ -109,40 +109,51 @@ class MessageController extends Controller
             'image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
         ]);
 
-        $file    = $request->file('image');
-        $maxDim  = 1200;
-        $quality = 82;
+        $file     = $request->file('image');
+        $rawBytes = file_get_contents($file->getRealPath());
+        $mime     = $file->getMimeType() ?? 'image/jpeg';
+        $ext      = strtolower($file->getClientOriginalExtension());
 
-        // GIF: store raw without resizing (GD loses animation)
-        if (strtolower($file->getClientOriginalExtension()) === 'gif') {
-            $data = base64_encode(file_get_contents($file->getRealPath()));
-            return response()->json(['url' => 'data:image/gif;base64,' . $data]);
+        // GIF or WebP: skip GD resize to avoid animation/format loss
+        if ($ext === 'gif' || $ext === 'webp') {
+            return response()->json(['url' => "data:{$mime};base64," . base64_encode($rawBytes)]);
         }
 
-        $src = imagecreatefromstring(file_get_contents($file->getRealPath()));
-        if (!$src) {
-            return response()->json(['message' => 'Could not process image.'], 422);
-        }
+        // Attempt GD resize for JPEG/PNG to keep payloads small
+        try {
+            $src = @imagecreatefromstring($rawBytes);
+            if (!$src) {
+                // GD failed — fall back to raw base64
+                return response()->json(['url' => "data:{$mime};base64," . base64_encode($rawBytes)]);
+            }
 
-        $w = imagesx($src);
-        $h = imagesy($src);
+            $maxDim = 1200;
+            $w = imagesx($src);
+            $h = imagesy($src);
 
-        if ($w > $maxDim || $h > $maxDim) {
-            $ratio = $w > $h ? $maxDim / $w : $maxDim / $h;
-            $newW  = (int) round($w * $ratio);
-            $newH  = (int) round($h * $ratio);
-            $dst   = imagecreatetruecolor($newW, $newH);
-            imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $w, $h);
+            if ($w > $maxDim || $h > $maxDim) {
+                $ratio = $w > $h ? $maxDim / $w : $maxDim / $h;
+                $newW  = (int) round($w * $ratio);
+                $newH  = (int) round($h * $ratio);
+                $dst   = imagecreatetruecolor($newW, $newH);
+                // Preserve transparency for PNG
+                imagealphablending($dst, false);
+                imagesavealpha($dst, true);
+                imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $w, $h);
+                imagedestroy($src);
+                $src = $dst;
+            }
+
+            ob_start();
+            imagejpeg($src, null, 82);
+            $jpeg = ob_get_clean();
             imagedestroy($src);
-            $src = $dst;
+
+            return response()->json(['url' => 'data:image/jpeg;base64,' . base64_encode($jpeg)]);
+        } catch (\Throwable $e) {
+            // Any GD failure → return raw base64 so upload never hard-fails
+            return response()->json(['url' => "data:{$mime};base64," . base64_encode($rawBytes)]);
         }
-
-        ob_start();
-        imagejpeg($src, null, $quality);
-        $jpeg = ob_get_clean();
-        imagedestroy($src);
-
-        return response()->json(['url' => 'data:image/jpeg;base64,' . base64_encode($jpeg)]);
     }
 
     public function notifications(Request $request)
