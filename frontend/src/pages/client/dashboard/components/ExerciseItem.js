@@ -59,13 +59,15 @@ function extractVideoEmbed(url) {
 /* ── Video Modal ────────────────────────────────────────────── */
 function VideoModal({ url, onClose }) {
     const embed = extractVideoEmbed(url);
-    if (!embed) return null;
 
     useEffect(() => {
+        if (!embed) return;
         const handler = (e) => { if (e.key === 'Escape') onClose(); };
         document.addEventListener('keydown', handler);
         return () => document.removeEventListener('keydown', handler);
-    }, [onClose]);
+    }, [embed, onClose]);
+
+    if (!embed) return null;
 
     return createPortal(
         <div className="cd-video-overlay" onClick={onClose}>
