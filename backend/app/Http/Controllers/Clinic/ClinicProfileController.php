@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Clinic\StoreClinicProfileRequest;
 use App\Http\Requests\Clinic\UpdateClinicProfileRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -36,15 +37,15 @@ class ClinicProfileController extends Controller
         $data['verification_status'] = 'pending';
 
         if ($request->hasFile('license_file')) {
-            $data['license_file_url'] = $this->storeFile($request, 'license_file', 'licenses');
+            $data['license_file_url'] = $this->storeFile($request->file('license_file'), 'licenses');
         }
 
         if ($request->hasFile('cert_file')) {
-            $data['cert_file_url'] = $this->storeFile($request, 'cert_file', 'certifications');
+            $data['cert_file_url'] = $this->storeFile($request->file('cert_file'), 'certifications');
         }
 
         if ($request->hasFile('profile_photo')) {
-            $data['profile_photo_url'] = $this->storeFile($request, 'profile_photo', 'clinic-photos');
+            $data['profile_photo_url'] = $this->fileToBase64($request->file('profile_photo'));
         }
 
         unset($data['license_file'], $data['cert_file'], $data['profile_photo']);
@@ -62,31 +63,19 @@ class ClinicProfileController extends Controller
         $data   = $request->validated();
 
         if ($request->hasFile('license_file')) {
-            if ($clinic->license_file_url) {
-                $this->deleteStoredFile($clinic->license_file_url);
-            }
-            $data['license_file_url'] = $this->storeFile($request, 'license_file', 'licenses');
+            $data['license_file_url'] = $this->storeFile($request->file('license_file'), 'licenses');
         }
 
         if ($request->hasFile('cert_file')) {
-            if ($clinic->cert_file_url) {
-                $this->deleteStoredFile($clinic->cert_file_url);
-            }
-            $data['cert_file_url'] = $this->storeFile($request, 'cert_file', 'certifications');
+            $data['cert_file_url'] = $this->storeFile($request->file('cert_file'), 'certifications');
         }
 
         if ($request->hasFile('profile_photo')) {
-            if ($clinic->profile_photo_url) {
-                $this->deleteStoredFile($clinic->profile_photo_url);
-            }
-            $data['profile_photo_url'] = $this->storeFile($request, 'profile_photo', 'clinic-photos');
+            $data['profile_photo_url'] = $this->fileToBase64($request->file('profile_photo'));
         }
 
         if ($request->hasFile('cover_photo')) {
-            if ($user->cover_photo_url) {
-                $this->deleteStoredFile($user->cover_photo_url);
-            }
-            $user->update(['cover_photo_url' => $this->storeFile($request, 'cover_photo', 'covers')]);
+            $user->update(['cover_photo_url' => $this->fileToBase64($request->file('cover_photo'))]);
         }
 
         unset($data['license_file'], $data['cert_file'], $data['profile_photo'], $data['cover_photo']);
@@ -99,21 +88,46 @@ class ClinicProfileController extends Controller
         return response()->json($fresh);
     }
 
-    private function storeFile(Request $request, string $field, string $folder): string
+    /** Store non-image files (PDF licenses) on the filesystem as before. */
+    private function storeFile(UploadedFile $file, string $folder): string
     {
-        $file     = $request->file($field);
         $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
         $path     = $file->storeAs($folder, $filename, 'public');
-
         return Storage::disk('public')->url($path);
     }
 
-    private function deleteStoredFile(string $url): void
+    /**
+     * Convert uploaded image to a compressed JPEG base64 data URI.
+     * Resizes to max 800px, stored in DB — survives Railway redeploys.
+     */
+    private function fileToBase64(UploadedFile $file): string
     {
-        $relativePath = Str::after(parse_url($url, PHP_URL_PATH), '/storage/');
-        if (!preg_match('#^(client-photos|clinic-photos|covers|licenses|certifications)/#', $relativePath)) {
-            return;
+        $maxDim  = 800;
+        $quality = 80;
+
+        $src = imagecreatefromstring(file_get_contents($file->getRealPath()));
+        if (!$src) {
+            return 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
         }
-        Storage::disk('public')->delete($relativePath);
+
+        $w = imagesx($src);
+        $h = imagesy($src);
+
+        if ($w > $maxDim || $h > $maxDim) {
+            $ratio = $w > $h ? $maxDim / $w : $maxDim / $h;
+            $newW  = (int) round($w * $ratio);
+            $newH  = (int) round($h * $ratio);
+            $dst   = imagecreatetruecolor($newW, $newH);
+            imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $w, $h);
+            imagedestroy($src);
+            $src = $dst;
+        }
+
+        ob_start();
+        imagejpeg($src, null, $quality);
+        $jpeg = ob_get_clean();
+        imagedestroy($src);
+
+        return 'data:image/jpeg;base64,' . base64_encode($jpeg);
     }
 }

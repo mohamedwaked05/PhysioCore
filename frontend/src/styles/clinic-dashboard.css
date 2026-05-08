@@ -1423,76 +1423,74 @@
     background: rgba(0, 0, 0, 0.7);
 }
 
-/* ── Profile Banner (pb-) ────────────────────────────────────── */
+/* ── Profile Banner (pb-) — LinkedIn proportions ─────────────── */
 .pb-banner-wrap {
     position: relative;
-    margin-bottom: 52px; /* space for overlapping avatar */
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    overflow: visible;
+    margin-bottom: 70px; /* space for the 120px avatar overlapping -60px */
 }
 
 .pb-banner {
-    height: 180px;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    height: 200px;
+    width: 100%;
+    border-radius: 12px 12px 0 0;
     background: linear-gradient(135deg, #3E4772 0%, #5c6aad 60%, #7b8fe8 100%);
     background-size: cover;
     background-position: center;
     position: relative;
+    overflow: hidden;
 }
 
 .pb-avatar-anchor {
     position: absolute;
-    bottom: -44px;
+    bottom: -60px;
     left: 24px;
     z-index: 2;
 }
 
 .pb-avatar-anchor .ui-avatar,
-.pb-avatar-anchor img,
 .pb-avatar-anchor > div {
-    width: 80px !important;
-    height: 80px !important;
-    font-size: 1.5rem !important;
-    border: 4px solid var(--surface);
-    border-radius: 50%;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    width: 120px !important;
+    height: 120px !important;
+    font-size: 2.2rem !important;
+    border: 4px solid var(--surface) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
 }
 
 .pb-edit-btn {
     position: absolute;
-    bottom: 10px;
+    top: 12px;
     right: 12px;
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
-    background: rgba(0, 0, 0, 0.55);
+    gap: 0.3rem;
+    padding: 0.35rem 0.8rem;
+    background: rgba(0, 0, 0, 0.5);
     color: #fff;
     border: none;
-    border-radius: var(--radius-pill);
-    font-size: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(6px);
     transition: background 0.15s;
 }
-.pb-edit-btn:hover { background: rgba(0,0,0,0.72); }
+.pb-edit-btn:hover { background: rgba(0, 0, 0, 0.72); }
 
 @media (max-width: 520px) {
-    .pb-banner { height: 120px; }
+    .pb-banner { height: 130px; border-radius: 0; }
+    .pb-banner-wrap { margin-bottom: 55px; }
     .pb-avatar-anchor {
-        bottom: -32px;
+        bottom: -45px;
         left: 16px;
     }
     .pb-avatar-anchor .ui-avatar,
-    .pb-avatar-anchor img,
     .pb-avatar-anchor > div {
-        width: 64px !important;
-        height: 64px !important;
-        font-size: 1.1rem !important;
+        width: 90px !important;
+        height: 90px !important;
+        font-size: 1.6rem !important;
     }
-    .pb-banner-wrap { margin-bottom: 38px; }
 }
 
 /* ── Patient Profile Popup (ppp-) ────────────────────────────── */
@@ -1550,7 +1548,7 @@
 .ppp-close:hover { background: rgba(0,0,0,0.65); }
 
 .ppp-banner {
-    height: 110px;
+    height: 120px;
     background: linear-gradient(135deg, #3E4772 0%, #5c6aad 60%, #7b8fe8 100%);
     background-size: cover;
     background-position: center;
@@ -1558,7 +1556,7 @@
 
 .ppp-avatar-anchor {
     position: absolute;
-    top: 62px;
+    top: 68px;
     left: 20px;
     z-index: 2;
 }

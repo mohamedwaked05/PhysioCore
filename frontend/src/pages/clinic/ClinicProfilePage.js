@@ -449,7 +449,7 @@ export default function ClinicProfilePage() {
                         />
                     }
                 />
-                <div className="ui-profile-header" style={{ marginTop: '0.75rem', paddingTop: 0, borderTop: 'none' }}>
+                <div className="ui-profile-header" style={{ marginTop: '1rem', paddingTop: 0, borderTop: 'none' }}>
                     <div className="ui-profile-header-info" style={{ flex: 1 }}>
                         <h1 className="ui-profile-header-name">{displayName}</h1>
                         <p className="ui-profile-header-sub">

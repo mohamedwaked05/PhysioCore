@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Client\UpdateProfileRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class ClientProfileController extends Controller
 {
@@ -28,17 +26,11 @@ class ClientProfileController extends Controller
         $data    = $request->validated();
 
         if ($request->hasFile('profile_photo')) {
-            if ($profile->profile_photo_url) {
-                $this->deleteStoredFile($profile->profile_photo_url);
-            }
-            $data['profile_photo_url'] = $this->storePhoto($request, 'profile_photo', 'client-photos');
+            $data['profile_photo_url'] = $this->fileToBase64($request->file('profile_photo'));
         }
 
         if ($request->hasFile('cover_photo')) {
-            if ($user->cover_photo_url) {
-                $this->deleteStoredFile($user->cover_photo_url);
-            }
-            $user->update(['cover_photo_url' => $this->storePhoto($request, 'cover_photo', 'covers')]);
+            $user->update(['cover_photo_url' => $this->fileToBase64($request->file('cover_photo'))]);
         }
 
         unset($data['profile_photo'], $data['cover_photo']);
@@ -51,21 +43,40 @@ class ClientProfileController extends Controller
         return response()->json($fresh);
     }
 
-    private function storePhoto(Request $request, string $field, string $folder): string
+    /**
+     * Convert uploaded image to a compressed JPEG base64 data URI.
+     * Resizes to max 800px on either axis to keep payloads small.
+     * Stored directly in the DB — survives Railway redeploys.
+     */
+    private function fileToBase64(\Illuminate\Http\UploadedFile $file): string
     {
-        $file     = $request->file($field);
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $path     = $file->storeAs($folder, $filename, 'public');
+        $maxDim  = 800;
+        $quality = 80;
 
-        return Storage::disk('public')->url($path);
-    }
-
-    private function deleteStoredFile(string $url): void
-    {
-        $relativePath = Str::after(parse_url($url, PHP_URL_PATH), '/storage/');
-        if (!preg_match('#^(client-photos|clinic-photos|covers|licenses|certifications)/#', $relativePath)) {
-            return;
+        $src = imagecreatefromstring(file_get_contents($file->getRealPath()));
+        if (!$src) {
+            // Fallback: store raw base64 without resize
+            return 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file->getRealPath()));
         }
-        Storage::disk('public')->delete($relativePath);
+
+        $w = imagesx($src);
+        $h = imagesy($src);
+
+        if ($w > $maxDim || $h > $maxDim) {
+            $ratio  = $w > $h ? $maxDim / $w : $maxDim / $h;
+            $newW   = (int) round($w * $ratio);
+            $newH   = (int) round($h * $ratio);
+            $dst    = imagecreatetruecolor($newW, $newH);
+            imagecopyresampled($dst, $src, 0, 0, 0, 0, $newW, $newH, $w, $h);
+            imagedestroy($src);
+            $src = $dst;
+        }
+
+        ob_start();
+        imagejpeg($src, null, $quality);
+        $jpeg = ob_get_clean();
+        imagedestroy($src);
+
+        return 'data:image/jpeg;base64,' . base64_encode($jpeg);
     }
 }

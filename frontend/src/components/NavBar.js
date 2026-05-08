@@ -549,6 +549,14 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
                         )}
                     </div>
 
+                    {/* ── QR Code button (clinic only) ── */}
+                    {qrClinicId && (
+                        <button className="nav-settings-btn" onClick={() => setQrOpen(true)}
+                            aria-label="My QR Code" title="My QR Code">
+                            <QrIcon />
+                        </button>
+                    )}
+
                     {/* ── Settings gear ── */}
                     <div className="nav-settings-wrap" ref={wrapRef}>
                         <button className={`nav-settings-btn${open ? ' open' : ''}`}
@@ -574,14 +582,6 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
                             </div>
                         )}
                     </div>
-
-                    {/* ── QR Code button (clinic only) ── */}
-                    {qrClinicId && (
-                        <button className="nav-settings-btn" onClick={() => setQrOpen(true)}
-                            aria-label="My QR Code" title="My QR Code">
-                            <QrIcon />
-                        </button>
-                    )}
 
                     {/* ── Mobile burger ── */}
                     <button className={`burger-btn${menuOpen ? ' open' : ''}`} onClick={menuToggle}
