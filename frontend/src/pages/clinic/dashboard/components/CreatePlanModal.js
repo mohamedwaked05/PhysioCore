@@ -144,12 +144,12 @@ function ExerciseRow({ ex, onChange, onRemove, locked }) {
                 <label style={labelStyle}>Video URL</label>
                 <input className="ui-input" style={{ fontSize: '0.82rem' }}
                     placeholder="YouTube or Vimeo URL (optional)"
-                    value={ex.video_url}
+                    value={ex.video_url ?? ''}
                     onChange={e => onChange({ ...ex, video_url: e.target.value })} />
-                {extractYouTubeId(ex.video_url) && (
+                {extractYouTubeId(ex.video_url ?? '') && (
                     <div style={{ marginTop: '0.45rem', display: 'inline-flex', position: 'relative', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
                         <img
-                            src={`https://img.youtube.com/vi/${extractYouTubeId(ex.video_url)}/mqdefault.jpg`}
+                            src={`https://img.youtube.com/vi/${extractYouTubeId(ex.video_url ?? '')}/mqdefault.jpg`}
                             alt="Video preview"
                             style={{ width: 120, height: 67, objectFit: 'cover', display: 'block', border: '0.5px solid var(--border)' }}
                         />
@@ -236,8 +236,8 @@ export default function CreatePlanModal({ patient, existingPlan, defaultWeekNum,
         const newByDay = {};
         WEEK_DAYS.forEach(d => {
             newByDay[d.key] = isDayLocked(d.key)
-                ? byDay[d.key]               // preserve locked days
-                : (weekPlan[d.key] ?? []);
+                ? byDay[d.key]
+                : (weekPlan[d.key] ?? []).map(e => ({ video_url: '', ...e, _key: Date.now() + Math.random() }));
         });
         setByDay(newByDay);
     };
@@ -277,7 +277,7 @@ export default function CreatePlanModal({ patient, existingPlan, defaultWeekNum,
                     reps:                 e.reps,
                     notes:                e.notes.trim() || null,
                     alternative_exercise: e.alternative_exercise.trim() || null,
-                    video_url:            e.video_url.trim() || null,
+                    video_url:            (e.video_url ?? '').trim() || null,
                 }))
             );
             const planMeta = {
