@@ -5,9 +5,22 @@ import '../styles/chatbot.css';
 
 const WELCOME = {
     role: 'assistant',
-    content: "Hi! I'm PhysioCore's injury assessment assistant. Describe your pain or injury — or send a photo — and I'll help you understand what might be going on.",
+    content: "Hi! I'm PhysioCore's sports injury AI. Describe what happened or send a photo — I'll give you a fast assessment.",
     time: new Date(),
 };
+
+/* Parse clinic block from AI response: returns { text, clinics } */
+function parseResponse(raw) {
+    const start = raw.indexOf('---CLINICS---');
+    if (start === -1) return { text: raw, clinics: [] };
+
+    const text    = raw.slice(0, start).trimEnd();
+    const block   = raw.slice(start + 13); // after ---CLINICS---
+    const end     = block.indexOf('---END---');
+    const lines   = block.slice(0, end === -1 ? undefined : end).trim().split('\n');
+    const clinics = lines.map(l => { try { return JSON.parse(l.trim()); } catch { return null; } }).filter(Boolean);
+    return { text, clinics };
+}
 
 const IMAGE_PLACEHOLDER = 'Please analyze this injury photo.';
 
@@ -201,13 +214,16 @@ export default function Chatbot() {
             }));
             const { data } = await assessInjury(apiPayload);
 
-            const botMsg = { role: 'assistant', content: data.message, time: new Date() };
+            const { text, clinics } = parseResponse(data.message);
+            const botMsg = {
+                role: 'assistant',
+                content: text,
+                clinics: clinics.length > 0 ? clinics : undefined,
+                time: new Date(),
+            };
             setMessages(prev => [...prev, botMsg]);
 
-            if (
-                nextMsgs.filter(m => m.role === 'user').length >= 4 &&
-                data.message.toLowerCase().includes('physiocore')
-            ) {
+            if (clinics.length > 0 || text.toLowerCase().includes('physiocore')) {
                 setAssessmentDone(true);
             }
         } catch {
@@ -276,16 +292,35 @@ export default function Chatbot() {
                         <div key={i} className={`cb-msg cb-msg--${msg.role === 'user' ? 'user' : 'bot'}`}>
                             <div className="cb-msg-bubble">
                                 {msg.image && (
-                                    <img
-                                        src={msg.image}
-                                        alt="Injury"
-                                        className="cb-msg-image"
-                                    />
+                                    <img src={msg.image} alt="Injury" className="cb-msg-image" />
                                 )}
                                 {msg.content && msg.content !== IMAGE_PLACEHOLDER && (
                                     <span>{msg.content}</span>
                                 )}
                             </div>
+
+                            {/* Clinic recommendation cards */}
+                            {msg.clinics?.length > 0 && (
+                                <div className="cb-clinics-wrap">
+                                    <p className="cb-clinics-label">Clinics that treat this</p>
+                                    {msg.clinics.map((c, j) => (
+                                        <div
+                                            key={j}
+                                            className="cb-clinic-card"
+                                            onClick={() => { handleClose(); navigate(`/clinics/${c.id}`); }}
+                                            role="button"
+                                            tabIndex={0}
+                                            onKeyDown={e => e.key === 'Enter' && navigate(`/clinics/${c.id}`)}
+                                        >
+                                            <div className="cb-clinic-name">{c.name}</div>
+                                            {c.address && <div className="cb-clinic-address">📍 {c.address}</div>}
+                                            {c.specialty && <div className="cb-clinic-specialty">{c.specialty}</div>}
+                                            <div className="cb-clinic-cta">View Clinic →</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
                             <div className="cb-msg-time">{fmt(msg.time)}</div>
                         </div>
                     ))}
@@ -302,7 +337,7 @@ export default function Chatbot() {
                                 className="cb-browse-btn"
                                 onClick={() => { handleClose(); navigate('/clinics'); }}
                             >
-                                Browse Clinics →
+                                Browse All Clinics →
                             </button>
                         </div>
                     )}
