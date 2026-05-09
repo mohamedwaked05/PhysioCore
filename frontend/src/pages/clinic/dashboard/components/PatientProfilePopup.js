@@ -62,6 +62,7 @@ export default function PatientProfilePopup({ patient, onClose, onMessage }) {
                     <Avatar
                         name={patient.name}
                         src={patient.profile_photo_url}
+                        gender={patient.gender}
                         size="lg"
                     />
                 </div>

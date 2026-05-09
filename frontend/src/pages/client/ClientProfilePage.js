@@ -232,6 +232,7 @@ export default function ClientProfilePage() {
                         <Avatar
                             src={photoPreview}
                             name={userName}
+                            gender={form.gender}
                             size="xl"
                             editable={editing}
                             onFileChange={handlePhotoChange}

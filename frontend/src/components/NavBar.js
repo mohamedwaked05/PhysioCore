@@ -468,7 +468,7 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
                 {/* ── Right side ── */}
                 <div className="client-nav-right">
                     <div className="client-nav-user-chip">
-                        <Avatar size="sm" name={fullName} src={photoUrl} />
+                        <Avatar size="sm" name={fullName} src={photoUrl} gender={user?.gender} />
                         <span className="client-nav-user">{fullName}</span>
                     </div>
 

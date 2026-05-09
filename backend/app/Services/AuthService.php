@@ -23,6 +23,7 @@ class AuthService
         $user = User::create([
             'first_name'    => $data['first_name'],
             'last_name'     => $data['last_name'],
+            'gender'        => $data['gender'] ?? 'male',
             'email'         => $data['email'],
             'password_hash' => $data['password'],   // cast handles hashing
             'role'          => $data['role'],

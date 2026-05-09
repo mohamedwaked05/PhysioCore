@@ -1,8 +1,9 @@
 import { useRef } from 'react';
+import DefaultAvatar from './DefaultAvatar';
 
 const SIZES = { sm: 'ui-avatar--sm', md: 'ui-avatar--md', lg: 'ui-avatar--lg', xl: 'ui-avatar--xl' };
 
-export default function Avatar({ src, name = '', size = 'md', editable = false, onFileChange }) {
+export default function Avatar({ src, name = '', gender = 'male', size = 'md', editable = false, onFileChange }) {
     const inputRef = useRef();
 
     const initials = name
@@ -23,7 +24,7 @@ export default function Avatar({ src, name = '', size = 'md', editable = false, 
         <div className={`ui-avatar ${SIZES[size] ?? SIZES.md}`}>
             {src
                 ? <img src={src} alt={name} />
-                : <span>{initials || '?'}</span>
+                : <DefaultAvatar gender={gender} size="100%" />
             }
             {editable && (
                 <>

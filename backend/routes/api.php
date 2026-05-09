@@ -64,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
             'id'         => $user->id,
             'first_name' => $user->first_name,
             'last_name'  => $user->last_name,
+            'gender'     => $user->gender ?? 'male',
             'email'      => $user->email,
             'role'       => $user->role,
             'status'     => $user->status,

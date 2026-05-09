@@ -16,6 +16,7 @@ class RegisterRequest extends FormRequest
         $rules = [
             'first_name' => ['required', 'string', 'max:50'],
             'last_name'  => ['required', 'string', 'max:50'],
+            'gender'     => ['nullable', 'in:male,female'],
             'email'      => ['required', 'email', 'max:255', 'unique:users,email'],
             'password'   => ['required', 'string', 'min:8', 'confirmed'],
             'role'       => ['required', 'in:client,clinic'],

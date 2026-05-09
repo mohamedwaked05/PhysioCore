@@ -110,7 +110,7 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
                 {/* User info (authenticated only) */}
                 {!isGuest && (
                     <div className="mm-user">
-                        <Avatar size="sm" name={fullName} src={photoUrl} />
+                        <Avatar size="sm" name={fullName} src={photoUrl} gender={user?.gender} />
                         <div className="mm-user-info">
                             <div className="mm-user-name">{fullName}</div>
                             <div className="mm-user-role">{user.role}</div>

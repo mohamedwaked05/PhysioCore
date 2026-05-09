@@ -320,7 +320,7 @@ export default function RegisterPage() {
 
     /* Step 1 — basic account info */
     const [form, setForm] = useState({
-        first_name: '', last_name: '', email: '',
+        first_name: '', last_name: '', gender: 'male', email: '',
         password: '', password_confirmation: '', role: initRole,
     });
     const [errors, setErrors]           = useState({});
@@ -691,6 +691,35 @@ export default function RegisterPage() {
                                     />
                                 </div>
                                 {errors.last_name && <p className="lp-field-error">{errors.last_name[0]}</p>}
+                            </div>
+                        </div>
+
+                        {/* Gender */}
+                        <div className="lp-field">
+                            <label className="lp-label">Gender</label>
+                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                {['male', 'female'].map(g => (
+                                    <button
+                                        key={g}
+                                        type="button"
+                                        onClick={() => setForm(f => ({ ...f, gender: g }))}
+                                        style={{
+                                            flex: 1,
+                                            padding: '0.6rem',
+                                            borderRadius: '8px',
+                                            border: `2px solid ${form.gender === g ? 'var(--primary)' : 'var(--border)'}`,
+                                            background: form.gender === g ? 'var(--primary)' : 'transparent',
+                                            color: form.gender === g ? '#fff' : 'var(--text)',
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                            fontSize: '0.875rem',
+                                            transition: 'all 0.15s',
+                                            textTransform: 'capitalize',
+                                        }}
+                                    >
+                                        {g}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
