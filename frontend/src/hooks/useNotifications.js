@@ -27,20 +27,14 @@ function toastKind(n) {
     return 'warning';
 }
 
-/* ── Merge: server poll should NOT downgrade optimistic seen ─ */
+/* ── Merge: add new items from server without re-adding locally dismissed ones ─ */
 function mergeItems(existing, incoming) {
-    const map = new Map(existing.map(n => [n.id, n]));
+    const existingIds = new Set(existing.map(n => n.id));
+    const merged = [...existing];
     for (const n of incoming) {
-        const cur = map.get(n.id);
-        // Optimistic seen beats a stale delivered/unread from server
-        if (cur?.status === 'seen' && n.status !== 'seen') {
-            map.set(n.id, { ...n, status: 'seen' });
-        } else {
-            map.set(n.id, n);
-        }
+        if (!existingIds.has(n.id)) merged.push(n);
     }
-    return Array.from(map.values())
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    return merged.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 }
 
 /* ── Hook ─────────────────────────────────────────────────── */
@@ -168,14 +162,15 @@ export function useNotifications(user) {
 
     /* ── Actions ─────────────────────────────────────────── */
     const markSeen = useCallback(async (id) => {
-        // Optimistic first — API call is fire-and-forget
-        setItems(prev => prev.map(n => n.id === id ? { ...n, status: 'seen' } : n));
+        // Remove immediately — seen notifications never reappear
+        setItems(prev => prev.filter(n => n.id !== id));
         setCount(prev => Math.max(0, prev - 1));
         try { await markNotificationSeen(id); } catch {}
     }, []);
 
     const markAllSeen = useCallback(async () => {
-        setItems(prev => prev.map(n => ({ ...n, status: 'seen' })));
+        // Clear the list — backend will return empty on next fetch
+        setItems([]);
         setCount(0);
         try { await markAllNotificationsSeen(); } catch {}
     }, []);

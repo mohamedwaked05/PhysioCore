@@ -12,7 +12,9 @@ class NotificationController extends Controller
     {
         $userId = $request->user()->id;
 
+        // Only return unseen notifications — once seen they leave the dropdown permanently
         $items = UserNotification::where('user_id', $userId)
+            ->whereIn('status', ['unread', 'delivered'])
             ->latest()
             ->limit(50)
             ->get()
@@ -24,10 +26,7 @@ class NotificationController extends Controller
                 'created_at' => $n->created_at,
             ]);
 
-        // Badge count = unread + delivered (user has not yet seen either)
-        $unreadCount = UserNotification::where('user_id', $userId)
-            ->whereIn('status', ['unread', 'delivered'])
-            ->count();
+        $unreadCount = $items->count();
 
         return response()->json([
             'unread_count' => $unreadCount,

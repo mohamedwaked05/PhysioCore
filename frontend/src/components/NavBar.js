@@ -419,22 +419,19 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
         return () => document.removeEventListener('mousedown', h);
     }, [notifOpen]);
 
-    // Mark all seen when the dropdown opens.
-    // Debounced 350ms so any in-flight WS state updates settle first
-    // (prevents race where markAllSeen fires before new notification lands in state)
+    // After the dropdown has been open for 2s, mark everything seen and clear the list.
+    // The 2s delay lets the user read what's there before it disappears.
     useEffect(() => {
         if (!notifOpen) return;
         if (unreadCountRef.current === 0) return;
-        const timer = setTimeout(markAllSeen, 350);
+        const timer = setTimeout(markAllSeen, 2000);
         return () => clearTimeout(timer);
     }, [notifOpen, markAllSeen]);
 
     const handleGroupClick = (group) => {
-        // Mark all items in the group as seen
         const route = resolveRoute(group.type, group.items[0]?.data, user?.role);
-        for (const item of group.items) {
-            if (item.status !== 'seen') markSeen(item.id);
-        }
+        // markSeen removes each item from the list immediately
+        for (const item of group.items) markSeen(item.id);
         setNotifOpen(false);
         navigate(route);
     };
@@ -512,22 +509,28 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
                                         <span style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>
                                             Notifications
                                         </span>
-                                        {groups.reduce((s, g) => s + g.unread, 0) > 0 && (
+                                        {groups.length > 0 && (
                                             <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '1px 6px', borderRadius: 999 }}>
-                                                {groups.reduce((s, g) => s + g.unread, 0)}
+                                                {groups.length}
                                             </span>
                                         )}
                                     </div>
-                                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                                        {groups.length} {groups.length === 1 ? 'group' : 'groups'}
-                                    </span>
+                                    {groups.length > 0 && (
+                                        <button
+                                            onClick={markAllSeen}
+                                            style={{ fontSize: '0.7rem', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                                        >
+                                            Clear all
+                                        </button>
+                                    )}
                                 </div>
 
                                 {/* Groups */}
                                 <div style={{ maxHeight: 380, overflowY: 'auto' }}>
                                     {groups.length === 0 ? (
                                         <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-                                            No new notifications
+                                            <div style={{ fontSize: '1.4rem', marginBottom: '0.5rem', color: '#16a34a' }}>✓</div>
+                                            You're all caught up!
                                         </div>
                                     ) : (
                                         groups.map((group, i) => (
