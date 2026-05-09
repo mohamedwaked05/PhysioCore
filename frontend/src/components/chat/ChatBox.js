@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { getMessages, sendMessage, markDelivered, markSeen, uploadChatImage } from '../../api/messages';
+import { getMessages, getMessage, sendMessage, markDelivered, markSeen, uploadChatImage } from '../../api/messages';
 import { getEcho } from '../../services/echo';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -384,22 +384,25 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
         const echo = getEcho(token);
         const ch   = echo.private(`user.${user.id}`);
 
-        ch.listen('.NotificationCreated', ({ notification }) => {
+        ch.listen('.NotificationCreated', async ({ notification }) => {
             if (notification?.type !== 'message') return;
             const d = notification.data ?? {};
             if (String(d.context) !== String(context) || String(d.reference_id) !== String(referenceId)) return;
-            if (d.message?.id) {
-                setMessages(prev => prev.some(m => m.id === d.message.id) ? prev : [...prev, d.message]);
+
+            const msgId = d.message_id;
+            if (!msgId) { fetchMessages(true); return; }
+
+            // Always fetch the full message by ID — never trust the WS payload
+            // for the image (base64 is too large to travel through Reverb safely).
+            try {
+                const res = await getMessage(msgId);
+                const full = res.data;
+                setMessages(prev => prev.some(m => m.id === full.id) ? prev : [...prev, full]);
                 prevCountRef.current += 1;
                 setNewCount(c => c + 1);
                 setTimeout(() => setNewCount(0), 4000);
-                processFetch([d.message]);
-                // If the server signals there's an image but Reverb dropped it (payload
-                // exceeded max_message_size), re-fetch to get the full message with image_url.
-                if (d.has_image && !d.message.image_url) {
-                    fetchMessages(true);
-                }
-            } else {
+                processFetch([full]);
+            } catch {
                 fetchMessages(true);
             }
         });

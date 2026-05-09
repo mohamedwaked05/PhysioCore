@@ -85,6 +85,9 @@ class MessageController extends Controller
 
         $sender = $message->sender;
 
+        // WS payload carries only metadata — receiver fetches the full message by ID.
+        // This keeps the payload tiny and avoids base64 image data ever going
+        // through Reverb (which has a hard message-size limit).
         $this->notifications->notify($request->receiver_id, 'message', [
             'sender_name'  => $sender ? trim($sender->first_name . ' ' . $sender->last_name) : 'System',
             'content'      => mb_strimwidth($message->content, 0, 120, '…'),
@@ -92,12 +95,23 @@ class MessageController extends Controller
             'message_id'   => $message->id,
             'reference_id' => $message->reference_id,
             'has_image'    => (bool) $message->image_url,
-            // Full message object — receiver appends it directly without a refetch.
-            // image_url is intentionally kept here so the bubble renders immediately.
-            'message'      => $message->toArray(),
         ]);
 
         return response()->json($message, 201);
+    }
+
+    public function show(Request $request, int $id)
+    {
+        $userId  = $request->user()->id;
+        $message = Message::where('id', $id)
+            ->where(function ($q) use ($userId) {
+                $q->where('sender_id', $userId)
+                  ->orWhere('receiver_id', $userId);
+            })
+            ->with(['sender:id,first_name,last_name', 'receiver:id,first_name,last_name'])
+            ->firstOrFail();
+
+        return response()->json($message);
     }
 
     /**
