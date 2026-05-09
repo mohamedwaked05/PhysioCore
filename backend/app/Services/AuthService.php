@@ -33,11 +33,12 @@ class AuthService
 
         $this->initializeProfile($user, $data);
 
-        // Auto-verify immediately so users can log in without waiting for an email.
-        // The Registered event still queues a verification email — once the Resend
-        // domain is configured the email will reach the user (the link click is idempotent).
-        $user->markEmailAsVerified();
+        // Dispatch verification email first (listener skips if already verified).
+        // Then mark as verified so login works regardless of email delivery.
+        // Once the Resend domain is configured: remove markEmailAsVerified()
+        // and users will verify via the emailed link as intended.
         event(new Registered($user));
+        $user->markEmailAsVerified();
 
         return $user;
     }
