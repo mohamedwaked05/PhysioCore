@@ -7,14 +7,17 @@ use App\Events\RehabPlanUpdated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RehabPlan\StoreRehabPlanRequest;
 use App\Models\AccessRequest;
+use App\Models\ClientProfile;
 use App\Models\RehabPlan;
 use App\Models\RehabPlanExercise;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class RehabPlanController extends Controller
 {
+    public function __construct(private NotificationService $notifications) {}
     /* GET /clinic/plans — all clients with their plans */
     public function index(Request $request)
     {
@@ -146,6 +149,20 @@ class RehabPlanController extends Controller
         Cache::forget("rehab_plan_{$plan->client_profile_id}_{$clinic->id}");
 
         broadcast(new RehabPlanUpdated((int) $plan->client_profile_id, $this->buildClientPayload($plan)));
+
+        // Notify the client that a new plan has been assigned
+        try {
+            $clientUserId = ClientProfile::find($plan->client_profile_id)?->user_id;
+            if ($clientUserId) {
+                $clinicName = $clinic->commercial_name ?? $clinic->legal_name ?? 'Your clinic';
+                $this->notifications->notify($clientUserId, 'rehab_plan_assigned', [
+                    'clinic_name' => $clinicName,
+                    'clinic_id'   => $clinic->id,
+                    'injury_type' => $plan->injury_type,
+                    'week_number' => $plan->week_number,
+                ]);
+            }
+        } catch (\Throwable) {}
 
         return response()->json($this->formatForClinic($plan), 201);
     }

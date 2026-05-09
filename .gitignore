@@ -5,7 +5,7 @@ start-dev.bat
 notes.md
 db.md
 dump.rdb
-production.md1
+production.md
 
 # Python bytecode caches
 __pycache__/

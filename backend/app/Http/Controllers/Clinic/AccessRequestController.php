@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Clinic\UpdateAccessRequestRequest;
 use App\Models\AccessRequest;
 use App\Models\Message;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class AccessRequestController extends Controller
 {
+    public function __construct(private NotificationService $notifications) {}
+
     public function index(Request $request)
     {
         $clinic = $request->user()->clinic;
@@ -47,7 +50,7 @@ class AccessRequestController extends Controller
         Cache::forget("clinic_access_requests_{$clinic->id}");
         Cache::forget("clinic_counts_{$clinic->id}");
 
-        // Notify the client
+        // Notify the client via message + bell notification
         try {
             $clinic      = $request->user()->clinic;
             $clientUser  = $accessRequest->clientProfile?->user;
@@ -64,6 +67,15 @@ class AccessRequestController extends Controller
                     'reference_id' => $clinic->id,
                     'content'      => $body,
                     'is_read'      => false,
+                ]);
+
+                $notifType = $newStatus === 'approved'
+                    ? 'access_request_approved'
+                    : 'access_request_rejected';
+
+                $this->notifications->notify($clientUser->id, $notifType, [
+                    'clinic_name' => $clinicName,
+                    'clinic_id'   => $clinic->id,
                 ]);
             }
         } catch (\Throwable) {}

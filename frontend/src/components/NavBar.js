@@ -78,8 +78,9 @@ const COLORS = {
 
 function notifColor(type, ctx) {
     if (type === 'safety_flag' || ctx === 'safety_alert') return COLORS.safety;
-    if (type === 'clinic_approved' || type === 'user_activated') return COLORS.approved;
-    if (type === 'clinic_rejected' || type === 'user_suspended') return COLORS.rejected;
+    if (type === 'clinic_approved' || type === 'user_activated' || type === 'access_request_approved') return COLORS.approved;
+    if (type === 'clinic_rejected' || type === 'user_suspended' || type === 'access_request_rejected') return COLORS.rejected;
+    if (type === 'rehab_plan_assigned') return COLORS.default;
     if (ctx === 'inquiry') return COLORS.inquiry;
     return COLORS.default;
 }
@@ -92,14 +93,21 @@ function NotifIcon({ type, ctx, size = 13 }) {
             <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
     );
-    if (type === 'clinic_approved' || type === 'user_activated') return (
+    if (type === 'clinic_approved' || type === 'user_activated' || type === 'access_request_approved') return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"/>
         </svg>
     );
-    if (type === 'clinic_rejected' || type === 'user_suspended') return (
+    if (type === 'clinic_rejected' || type === 'user_suspended' || type === 'access_request_rejected') return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+    );
+    if (type === 'rehab_plan_assigned') return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
         </svg>
     );
     if (ctx === 'inquiry') return (
@@ -115,34 +123,45 @@ function NotifIcon({ type, ctx, size = 13 }) {
 }
 
 function notifTitle(type, data) {
-    if (type === 'message')         return data?.sender_name ?? 'New message';
-    if (type === 'safety_flag')     return data?.patient_name ?? 'Safety Alert';
-    if (type === 'clinic_approved') return 'Clinic Application Approved';
-    if (type === 'clinic_rejected') return 'Clinic Application Rejected';
-    if (type === 'user_suspended')  return 'Account Suspended';
-    if (type === 'user_activated')  return 'Account Reactivated';
+    if (type === 'message')                  return data?.sender_name ?? 'New message';
+    if (type === 'safety_flag')              return data?.patient_name ?? 'Safety Alert';
+    if (type === 'clinic_approved')          return 'Clinic Application Approved';
+    if (type === 'clinic_rejected')          return 'Clinic Application Rejected';
+    if (type === 'user_suspended')           return 'Account Suspended';
+    if (type === 'user_activated')           return 'Account Reactivated';
+    if (type === 'access_request_approved')  return data?.clinic_name ?? 'Access Approved';
+    if (type === 'access_request_rejected')  return data?.clinic_name ?? 'Access Request';
+    if (type === 'rehab_plan_assigned')      return data?.clinic_name ?? 'New Treatment Plan';
     return 'Notification';
 }
 
 function notifBody(type, data) {
-    if (type === 'message')         return data?.content ?? '';
-    if (type === 'safety_flag')     return data?.flag_reason ?? 'Safety concern detected.';
-    if (type === 'clinic_approved') return `Your clinic "${data?.clinic_name}" has been approved and is now active.`;
-    if (type === 'clinic_rejected') return data?.rejection_reason ?? 'Your application was not approved.';
-    if (type === 'user_suspended')  return 'Your account has been suspended. Please contact support.';
-    if (type === 'user_activated')  return 'Your account has been reactivated.';
+    if (type === 'message')                  return data?.content ?? '';
+    if (type === 'safety_flag')              return data?.flag_reason ?? 'Safety concern detected.';
+    if (type === 'clinic_approved')          return `Your clinic "${data?.clinic_name}" has been approved and is now active.`;
+    if (type === 'clinic_rejected')          return data?.rejection_reason ?? 'Your application was not approved.';
+    if (type === 'user_suspended')           return 'Your account has been suspended. Please contact support.';
+    if (type === 'user_activated')           return 'Your account has been reactivated.';
+    if (type === 'access_request_approved')  return 'Your access request has been approved. You can now start your sessions.';
+    if (type === 'access_request_rejected')  return 'Your access request was reviewed and not approved at this time.';
+    if (type === 'rehab_plan_assigned')      return data?.injury_type
+        ? `Week ${data.week_number} plan assigned for ${data.injury_type}.`
+        : `Week ${data?.week_number ?? '1'} treatment plan is ready.`;
     return '';
 }
 
 function notifLabel(type, ctx) {
-    if (type === 'safety_flag' || ctx === 'safety_alert') return { text: '⚠ Safety Alert', color: '#dc2626' };
-    if (type === 'clinic_approved') return { text: '✓ Approved', color: '#16a34a' };
-    if (type === 'clinic_rejected') return { text: '✕ Rejected', color: '#dc2626' };
-    if (type === 'user_suspended')  return { text: 'Suspended', color: '#dc2626' };
-    if (type === 'user_activated')  return { text: '✓ Activated', color: '#16a34a' };
-    if (ctx === 'inquiry')          return { text: 'Inquiry', color: '#3b82f6' };
-    if (ctx === 'treatment')        return { text: 'Treatment', color: 'var(--primary)' };
-    if (ctx === 'safety_alert')     return { text: '⚠ Safety Alert', color: '#dc2626' };
+    if (type === 'safety_flag' || ctx === 'safety_alert')    return { text: '⚠ Safety Alert', color: '#dc2626' };
+    if (type === 'clinic_approved')                          return { text: '✓ Approved', color: '#16a34a' };
+    if (type === 'clinic_rejected')                          return { text: '✕ Rejected', color: '#dc2626' };
+    if (type === 'user_suspended')                           return { text: 'Suspended', color: '#dc2626' };
+    if (type === 'user_activated')                           return { text: '✓ Activated', color: '#16a34a' };
+    if (type === 'access_request_approved')                  return { text: '✓ Approved', color: '#16a34a' };
+    if (type === 'access_request_rejected')                  return { text: '✕ Rejected', color: '#dc2626' };
+    if (type === 'rehab_plan_assigned')                      return { text: 'New Plan', color: 'var(--primary)' };
+    if (ctx === 'inquiry')                                   return { text: 'Inquiry', color: '#3b82f6' };
+    if (ctx === 'treatment')                                 return { text: 'Treatment', color: 'var(--primary)' };
+    if (ctx === 'safety_alert')                              return { text: '⚠ Safety Alert', color: '#dc2626' };
     return { text: 'Message', color: 'var(--primary)' };
 }
 
@@ -152,6 +171,9 @@ function resolveRoute(type, data, role) {
     }
     if (type === 'clinic_approved' || type === 'clinic_rejected') return '/clinic/dashboard';
     if (type === 'user_suspended' || type === 'user_activated')    return `/${role}/dashboard`;
+    if (type === 'access_request_approved') return '/client/dashboard/today';
+    if (type === 'access_request_rejected') return '/clinics';
+    if (type === 'rehab_plan_assigned')     return '/client/dashboard/today';
     if (type === 'message') {
         const ctx = data?.context;
         if (role === 'client') return '/client/dashboard/messages';
