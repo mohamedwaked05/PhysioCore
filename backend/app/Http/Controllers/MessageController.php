@@ -75,8 +75,18 @@ class MessageController extends Controller
             }
         }
 
+        $validated  = $request->validated();
+        $imageUrl   = $validated['image_url'] ?? null;
+        $imageBytes = $imageUrl ? strlen($imageUrl) : 0;
+
+        \Log::info('MSG_STORE_DEBUG', [
+            'has_image'   => (bool) $imageUrl,
+            'image_bytes' => $imageBytes,
+            'context'     => $validated['context'] ?? null,
+        ]);
+
         $message = Message::create([
-            ...$request->validated(),
+            ...$validated,
             'sender_id' => $request->user()->id,
             'content'   => $request->input('content', ''),
         ]);
@@ -84,15 +94,19 @@ class MessageController extends Controller
         $message->load(['sender:id,first_name,last_name', 'receiver:id,first_name,last_name']);
 
         $sender = $message->sender;
+
+        // Strip image_url from the notification payload — it can be megabytes
+        // of base64 and the client already has the image via the optimistic UI.
+        $msgArray = $message->toArray();
+        unset($msgArray['image_url']);
+
         $this->notifications->notify($request->receiver_id, 'message', [
             'sender_name'  => $sender ? trim($sender->first_name . ' ' . $sender->last_name) : 'System',
             'content'      => mb_strimwidth($message->content, 0, 120, '…'),
             'context'      => $message->context,
             'message_id'   => $message->id,
             'reference_id' => $message->reference_id,
-            // Full message object lets the receiver append it directly in the UI
-            // without a follow-up GET /messages refetch (already loaded above).
-            'message'      => $message->toArray(),
+            'message'      => $msgArray,
         ]);
 
         return response()->json($message, 201);
