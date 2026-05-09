@@ -278,7 +278,7 @@ export default function Chatbot() {
                                 {msg.image && (
                                     <img
                                         src={msg.image}
-                                        alt="Injury photo"
+                                        alt="Injury"
                                         className="cb-msg-image"
                                     />
                                 )}
