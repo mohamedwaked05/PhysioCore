@@ -85,17 +85,16 @@ class MessageController extends Controller
 
         $sender = $message->sender;
 
-        // Exclude image_url from notification payload (can be megabytes of base64)
-        $msgArray = $message->toArray();
-        unset($msgArray['image_url']);
-
         $this->notifications->notify($request->receiver_id, 'message', [
             'sender_name'  => $sender ? trim($sender->first_name . ' ' . $sender->last_name) : 'System',
             'content'      => mb_strimwidth($message->content, 0, 120, '…'),
             'context'      => $message->context,
             'message_id'   => $message->id,
             'reference_id' => $message->reference_id,
-            'message'      => $msgArray,
+            'has_image'    => (bool) $message->image_url,
+            // Full message object — receiver appends it directly without a refetch.
+            // image_url is intentionally kept here so the bubble renders immediately.
+            'message'      => $message->toArray(),
         ]);
 
         return response()->json($message, 201);

@@ -394,6 +394,11 @@ export default function ChatBox({ context, referenceId, receiverId, withUserId, 
                 setNewCount(c => c + 1);
                 setTimeout(() => setNewCount(0), 4000);
                 processFetch([d.message]);
+                // If the server signals there's an image but Reverb dropped it (payload
+                // exceeded max_message_size), re-fetch to get the full message with image_url.
+                if (d.has_image && !d.message.image_url) {
+                    fetchMessages(true);
+                }
             } else {
                 fetchMessages(true);
             }
