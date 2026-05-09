@@ -5,9 +5,11 @@ import '../styles/chatbot.css';
 
 const WELCOME = {
     role: 'assistant',
-    content: "Hi! I'm PhysioCore's injury assessment assistant. Describe your pain or injury and I'll help you understand what might be going on.",
+    content: "Hi! I'm PhysioCore's injury assessment assistant. Describe your pain or injury — or send a photo — and I'll help you understand what might be going on.",
     time: new Date(),
 };
+
+const IMAGE_PLACEHOLDER = 'Please analyze this injury photo.';
 
 function fmt(date) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -59,6 +61,16 @@ function SendIcon() {
     );
 }
 
+function CameraIcon() {
+    return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+            <circle cx="12" cy="13" r="4" />
+        </svg>
+    );
+}
+
 function EcgIcon() {
     return (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -69,23 +81,44 @@ function EcgIcon() {
     );
 }
 
+/* Compress image via canvas to max 800px wide at 75% JPEG quality */
+function compressImage(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const maxW   = 800;
+                const scale  = Math.min(1, maxW / img.width);
+                const canvas = document.createElement('canvas');
+                canvas.width  = Math.round(img.width  * scale);
+                canvas.height = Math.round(img.height * scale);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.75));
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
 export default function Chatbot() {
     const [open, setOpen]               = useState(false);
     const [messages, setMessages]       = useState([WELCOME]);
     const [input, setInput]             = useState('');
     const [loading, setLoading]         = useState(false);
     const [assessmentDone, setAssessmentDone] = useState(false);
+    const [selectedImage, setSelectedImage]   = useState(null);
 
-    const listRef  = useRef(null);
-    const inputRef = useRef(null);
-    const panelRef = useRef(null);
-    const navigate = useNavigate();
+    const listRef        = useRef(null);
+    const inputRef       = useRef(null);
+    const panelRef       = useRef(null);
+    const cameraInputRef = useRef(null);
+    const navigate       = useNavigate();
 
     /* Auto-scroll to latest message */
     useEffect(() => {
-        if (listRef.current) {
-            listRef.current.scrollTop = listRef.current.scrollHeight;
-        }
+        if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
     }, [messages, loading]);
 
     /* iOS keyboard: shrink panel to visible viewport height */
@@ -93,14 +126,12 @@ export default function Chatbot() {
         if (!open) return;
         const vv = window.visualViewport;
         if (!vv) return;
-
         const adjust = () => {
             if (panelRef.current && window.innerWidth <= 768) {
                 panelRef.current.style.height = vv.height + 'px';
                 panelRef.current.style.top    = vv.offsetTop + 'px';
             }
         };
-
         adjust();
         vv.addEventListener('resize', adjust);
         vv.addEventListener('scroll', adjust);
@@ -126,12 +157,8 @@ export default function Chatbot() {
     const handleInputFocus = () => {
         const savedY = window.scrollY;
         setTimeout(() => {
-            if (Math.abs(window.scrollY - savedY) > 4) {
-                window.scrollTo(0, savedY);
-            }
-            if (listRef.current) {
-                listRef.current.scrollTop = listRef.current.scrollHeight;
-            }
+            if (Math.abs(window.scrollY - savedY) > 4) window.scrollTo(0, savedY);
+            if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
         }, 100);
     };
 
@@ -140,29 +167,43 @@ export default function Chatbot() {
         el.style.height = Math.min(el.scrollHeight, 100) + 'px';
     };
 
+    const handleImageSelect = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        e.target.value = '';
+        const compressed = await compressImage(file);
+        setSelectedImage(compressed);
+    };
+
     const send = useCallback(async () => {
         const text = input.trim();
-        if (!text || loading) return;
+        if ((!text && !selectedImage) || loading) return;
 
-        const userMsg    = { role: 'user', content: text, time: new Date() };
-        const nextMsgs   = [...messages, userMsg];
+        const userMsg = {
+            role:    'user',
+            content: text || IMAGE_PLACEHOLDER,
+            time:    new Date(),
+            ...(selectedImage ? { image: selectedImage } : {}),
+        };
 
+        const nextMsgs = [...messages, userMsg];
         setMessages(nextMsgs);
         setInput('');
+        setSelectedImage(null);
         setLoading(true);
-
-        if (inputRef.current) {
-            inputRef.current.style.height = 'auto';
-        }
+        if (inputRef.current) inputRef.current.style.height = 'auto';
 
         try {
-            const apiPayload = nextMsgs.map(({ role, content }) => ({ role, content }));
-            const { data }   = await assessInjury(apiPayload);
+            const apiPayload = nextMsgs.map(({ role, content, image }) => ({
+                role,
+                content,
+                ...(image ? { image } : {}),
+            }));
+            const { data } = await assessInjury(apiPayload);
 
             const botMsg = { role: 'assistant', content: data.message, time: new Date() };
             setMessages(prev => [...prev, botMsg]);
 
-            /* Detect end of assessment — system prompt closes with "PhysioCore." */
             if (
                 nextMsgs.filter(m => m.role === 'user').length >= 4 &&
                 data.message.toLowerCase().includes('physiocore')
@@ -173,15 +214,15 @@ export default function Chatbot() {
             setMessages(prev => [
                 ...prev,
                 {
-                    role: 'assistant',
+                    role:    'assistant',
                     content: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
-                    time: new Date(),
+                    time:    new Date(),
                 },
             ]);
         } finally {
             setLoading(false);
         }
-    }, [input, loading, messages]);
+    }, [input, selectedImage, loading, messages]);
 
     const handleKey = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -189,6 +230,8 @@ export default function Chatbot() {
             send();
         }
     };
+
+    const canSend = (!!input.trim() || !!selectedImage) && !loading;
 
     return (
         <>
@@ -215,17 +258,13 @@ export default function Chatbot() {
                     <button className="cb-back-btn" onClick={handleClose} aria-label="Close chat">
                         <BackIcon />
                     </button>
-
                     <div className="cb-header-info">
-                        <div className="cb-header-avatar">
-                            <EcgIcon />
-                        </div>
+                        <div className="cb-header-avatar"><EcgIcon /></div>
                         <div>
                             <div className="cb-header-name">PhysioCore Assistant</div>
-                            <div className="cb-header-sub">Injury Assessment</div>
+                            <div className="cb-header-sub">Injury Assessment · Vision enabled</div>
                         </div>
                     </div>
-
                     <button className="cb-close-btn" onClick={handleClose} aria-label="Close chat">
                         <CloseIcon />
                     </button>
@@ -235,7 +274,18 @@ export default function Chatbot() {
                 <div className="cb-messages" ref={listRef}>
                     {messages.map((msg, i) => (
                         <div key={i} className={`cb-msg cb-msg--${msg.role === 'user' ? 'user' : 'bot'}`}>
-                            <div className="cb-msg-bubble">{msg.content}</div>
+                            <div className="cb-msg-bubble">
+                                {msg.image && (
+                                    <img
+                                        src={msg.image}
+                                        alt="Injury photo"
+                                        className="cb-msg-image"
+                                    />
+                                )}
+                                {msg.content && msg.content !== IMAGE_PLACEHOLDER && (
+                                    <span>{msg.content}</span>
+                                )}
+                            </div>
                             <div className="cb-msg-time">{fmt(msg.time)}</div>
                         </div>
                     ))}
@@ -258,27 +308,65 @@ export default function Chatbot() {
                     )}
                 </div>
 
-                {/* Input */}
-                <div className="cb-input-area">
-                    <textarea
-                        ref={inputRef}
-                        className="cb-input"
-                        value={input}
-                        rows={1}
-                        placeholder="Describe your symptoms…"
-                        onChange={e => { setInput(e.target.value); autoResize(e.target); }}
-                        onKeyDown={handleKey}
-                        onFocus={handleInputFocus}
-                        aria-label="Message input"
-                    />
-                    <button
-                        className="cb-send"
-                        onClick={send}
-                        disabled={!input.trim() || loading}
-                        aria-label="Send message"
-                    >
-                        <SendIcon />
-                    </button>
+                {/* Input area */}
+                <div className={`cb-input-area${selectedImage ? ' cb-input-area--preview' : ''}`}>
+                    {/* Image preview */}
+                    {selectedImage && (
+                        <div className="cb-img-preview-row">
+                            <div className="cb-img-preview-thumb">
+                                <img src={selectedImage} alt="Preview" />
+                                <button
+                                    className="cb-img-preview-remove"
+                                    onClick={() => setSelectedImage(null)}
+                                    aria-label="Remove image"
+                                >
+                                    <CloseIcon />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="cb-input-row">
+                        {/* Camera button */}
+                        <button
+                            className="cb-camera"
+                            onClick={() => cameraInputRef.current?.click()}
+                            aria-label="Attach photo"
+                            title="Attach injury photo"
+                            type="button"
+                        >
+                            <CameraIcon />
+                        </button>
+
+                        <input
+                            ref={cameraInputRef}
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={handleImageSelect}
+                        />
+
+                        <textarea
+                            ref={inputRef}
+                            className="cb-input"
+                            value={input}
+                            rows={1}
+                            placeholder={selectedImage ? 'Add a description…' : 'Describe your symptoms…'}
+                            onChange={e => { setInput(e.target.value); autoResize(e.target); }}
+                            onKeyDown={handleKey}
+                            onFocus={handleInputFocus}
+                            aria-label="Message input"
+                        />
+
+                        <button
+                            className="cb-send"
+                            onClick={send}
+                            disabled={!canSend}
+                            aria-label="Send message"
+                        >
+                            <SendIcon />
+                        </button>
+                    </div>
                 </div>
             </div>
         </>

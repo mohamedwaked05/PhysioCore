@@ -9,6 +9,8 @@ class ChatbotController extends Controller
 {
     private const SYSTEM_PROMPT = 'You are PhysioCore\'s injury assessment assistant. Your role is to help users understand potential musculoskeletal injuries through conversational questions.
 
+Users may send photos of their injury. When they do, describe what you visually observe (swelling, bruising, redness, deformity, wound, skin discolouration) and factor it into your assessment. Never make a definitive diagnosis from images alone — always recommend professional evaluation.
+
 Ask ONE question at a time about:
 - Location of pain (be specific: which body part)
 - Type of pain (sharp, dull, burning, throbbing)
@@ -34,9 +36,10 @@ IMPORTANT RULES:
     public function assess(Request $request)
     {
         $request->validate([
-            'messages'             => ['required', 'array', 'min:1', 'max:40'],
-            'messages.*.role'      => ['required', 'string', 'in:user,assistant'],
-            'messages.*.content'   => ['required', 'string', 'max:1500'],
+            'messages'           => ['required', 'array', 'min:1', 'max:40'],
+            'messages.*.role'    => ['required', 'string', 'in:user,assistant'],
+            'messages.*.content' => ['nullable', 'string', 'max:1500'],
+            'messages.*.image'   => ['nullable', 'string'],
         ]);
 
         $apiKey = config('services.groq.api_key');
@@ -44,15 +47,37 @@ IMPORTANT RULES:
             return response()->json(['error' => 'Assessment service not configured.'], 503);
         }
 
-        $messages = array_merge(
-            [['role' => 'system', 'content' => self::SYSTEM_PROMPT]],
-            $request->input('messages')
-        );
+        $messages = [['role' => 'system', 'content' => self::SYSTEM_PROMPT]];
+
+        foreach ($request->input('messages') as $msg) {
+            $role    = $msg['role'];
+            $content = $msg['content'] ?? '';
+            $image   = $msg['image']   ?? null;
+
+            if ($image && $role === 'user') {
+                // Vision message: image + optional text
+                $messages[] = [
+                    'role'    => 'user',
+                    'content' => [
+                        [
+                            'type'      => 'image_url',
+                            'image_url' => ['url' => $image],
+                        ],
+                        [
+                            'type' => 'text',
+                            'text' => $content ?: 'Please analyze this injury photo.',
+                        ],
+                    ],
+                ];
+            } else {
+                $messages[] = ['role' => $role, 'content' => $content];
+            }
+        }
 
         $response = Http::withToken($apiKey)
-            ->timeout(20)
+            ->timeout(25)
             ->post('https://api.groq.com/openai/v1/chat/completions', [
-                'model'       => 'llama-3.3-70b-versatile',
+                'model'       => 'meta-llama/llama-4-scout-17b-16e-instruct',
                 'messages'    => $messages,
                 'max_tokens'  => 300,
                 'temperature' => 0.7,

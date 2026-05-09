@@ -263,16 +263,108 @@
     box-shadow: 0 6px 20px rgba(62, 71, 114, 0.45);
 }
 
+/* ── Image in chat bubble ────────────────────────────────── */
+.cb-msg-image {
+    display: block;
+    max-width: 200px;
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 4px;
+}
+
+.cb-msg--user .cb-msg-image {
+    border-bottom-right-radius: 3px;
+}
+
 /* ── Input area ──────────────────────────────────────────── */
 .cb-input-area {
     display: flex;
-    align-items: flex-end;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0;
     padding: 0.7rem 0.875rem;
     padding-bottom: max(0.7rem, env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--border);
     background: var(--surface);
     flex-shrink: 0;
+}
+
+.cb-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+/* ── Image preview (above input row) ─────────────────────── */
+.cb-img-preview-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.cb-img-preview-thumb {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: visible;
+    flex-shrink: 0;
+}
+
+.cb-img-preview-thumb img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: block;
+}
+
+.cb-img-preview-remove {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--text);
+    color: var(--surface);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+}
+
+.cb-img-preview-remove svg {
+    width: 10px;
+    height: 10px;
+    stroke-width: 3;
+}
+
+/* ── Camera button ───────────────────────────────────────── */
+.cb-camera {
+    width: 40px;
+    height: 40px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 50%;
+    background: var(--surface-dim, var(--bg));
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+}
+
+.cb-camera:hover {
+    color: var(--primary);
+    background: var(--border-light);
 }
 
 .cb-input {
