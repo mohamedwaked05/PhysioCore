@@ -33,7 +33,10 @@ class AuthService
 
         $this->initializeProfile($user, $data);
 
-        // Fires the built-in Registered event → Laravel sends verification email
+        // Auto-verify immediately so users can log in without waiting for an email.
+        // The Registered event still queues a verification email — once the Resend
+        // domain is configured the email will reach the user (the link click is idempotent).
+        $user->markEmailAsVerified();
         event(new Registered($user));
 
         return $user;

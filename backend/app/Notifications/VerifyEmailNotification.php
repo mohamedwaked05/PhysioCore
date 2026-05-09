@@ -13,6 +13,9 @@ class VerifyEmailNotification extends VerifyEmail implements ShouldQueue
 {
     use Queueable;
 
+    public int $tries   = 1;
+    public int $timeout = 30;
+
     protected function verificationUrl($notifiable): string
     {
         // Sign only the path (absolute: false) so the signature validates
