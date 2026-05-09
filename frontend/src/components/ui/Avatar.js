@@ -6,13 +6,6 @@ const SIZES = { sm: 'ui-avatar--sm', md: 'ui-avatar--md', lg: 'ui-avatar--lg', x
 export default function Avatar({ src, name = '', gender = 'male', size = 'md', editable = false, onFileChange }) {
     const inputRef = useRef();
 
-    const initials = name
-        .trim()
-        .split(/\s+/)
-        .slice(0, 2)
-        .map(w => w[0]?.toUpperCase() ?? '')
-        .join('');
-
     const handleFile = (e) => {
         const file = e.target.files[0];
         if (!file) return;
