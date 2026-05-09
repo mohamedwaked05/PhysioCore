@@ -79,24 +79,37 @@ class MessageController extends Controller
         $imageUrl   = $validated['image_url'] ?? null;
         $imageBytes = $imageUrl ? strlen($imageUrl) : 0;
 
-        \Log::info('MSG_STORE_DEBUG', [
+        \Log::info('MSG_STORE_1_VALIDATED', [
             'has_image'   => (bool) $imageUrl,
             'image_bytes' => $imageBytes,
             'context'     => $validated['context'] ?? null,
+            'content_len' => strlen($validated['content'] ?? ''),
         ]);
 
-        $message = Message::create([
-            ...$validated,
-            'sender_id' => $request->user()->id,
-            'content'   => $request->input('content', ''),
-        ]);
+        try {
+            $message = Message::create([
+                ...$validated,
+                'sender_id' => $request->user()->id,
+                'content'   => $request->input('content', ''),
+            ]);
+            \Log::info('MSG_STORE_2_CREATED', ['id' => $message->id]);
+        } catch (\Throwable $e) {
+            \Log::error('MSG_STORE_2_FAILED', ['err' => $e->getMessage(), 'class' => get_class($e)]);
+            throw $e;
+        }
 
-        $message->load(['sender:id,first_name,last_name', 'receiver:id,first_name,last_name']);
+        try {
+            $message->load(['sender:id,first_name,last_name', 'receiver:id,first_name,last_name']);
+            \Log::info('MSG_STORE_3_LOADED');
+        } catch (\Throwable $e) {
+            \Log::error('MSG_STORE_3_FAILED', ['err' => $e->getMessage()]);
+            throw $e;
+        }
 
         $sender = $message->sender;
 
-        // Strip image_url from the notification payload — it can be megabytes
-        // of base64 and the client already has the image via the optimistic UI.
+        // Strip image_url from the notification payload — megabytes of base64
+        // the receiver doesn't need in a push notification.
         $msgArray = $message->toArray();
         unset($msgArray['image_url']);
 
@@ -108,6 +121,8 @@ class MessageController extends Controller
             'reference_id' => $message->reference_id,
             'message'      => $msgArray,
         ]);
+
+        \Log::info('MSG_STORE_4_NOTIFIED');
 
         return response()->json($message, 201);
     }
