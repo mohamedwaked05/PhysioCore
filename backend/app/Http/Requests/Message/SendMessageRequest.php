@@ -14,11 +14,11 @@ class SendMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'receiver_id'  => ['required', 'integer', 'exists:users,id', 'different:' . $this->user()->id],
+            'receiver_id'  => ['required', 'integer'],
             'context'      => ['required', 'string', 'in:inquiry,treatment,feedback'],
             'reference_id' => ['nullable', 'integer'],
-            'content'      => ['nullable', 'string', 'max:2000'],
-            'image_url'    => ['nullable', 'string', 'max:15000000'], // base64 data URI (~10MB image)
+            'content'      => ['nullable', 'string'],
+            'image_url'    => ['nullable', 'string'],
         ];
     }
 

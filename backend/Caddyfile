@@ -8,7 +8,7 @@
 	root * /app/public
 	encode zstd br gzip
 	request_body {
-		max_size 15mb
+		max_size 50mb
 	}
 	php_server
 }
