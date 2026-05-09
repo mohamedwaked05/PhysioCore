@@ -675,36 +675,34 @@
     text-align: center;
 }
 
-/* ── Mobile: list/chat as separate views ──────────────────────── */
+/* ── Mobile: list always full-width, chat panel hidden (portal handles it) ── */
 @media (max-width: 768px) {
-    .cld-inquiries-grid {
-        position: relative;
-    }
-
     .cld-inquiries-list {
         width: 100%;
         max-height: none;
     }
 
+    /* Desktop inline chat panel hidden on mobile — portal overlay is used instead */
     .cld-inquiries-chat {
         display: none;
     }
 
-    /* Show back button only on mobile */
+    /* Back button visible on mobile */
     .cld-inquiries-back {
         display: flex;
     }
+}
 
-    /* When a chat is open: hide list, show chat fullscreen */
-    .cld-inquiries--chat-open .cld-inquiries-header {
-        display: none;
-    }
+/* ── Mobile chat overlay (portalled to document.body) ───────────── */
+/* Portalled directly into body so it is NOT a child of the animated
+   .cld-page — this avoids the transform:translateY(0) fill-mode
+   containing-block issue that breaks position:fixed inside animations. */
+.cld-inquiries-mobile-overlay {
+    display: none; /* hidden on desktop — portal only renders on mobile click */
+}
 
-    .cld-inquiries--chat-open .cld-inquiries-list {
-        display: none;
-    }
-
-    .cld-inquiries--chat-open .cld-inquiries-chat {
+@media (max-width: 768px) {
+    .cld-inquiries-mobile-overlay {
         display: flex;
         flex-direction: column;
         position: fixed;
@@ -712,14 +710,12 @@
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: 150;
-        border-radius: 0;
-        border: none;
+        z-index: 300;
         background: var(--bg);
+        border-radius: 0;
     }
 
-    /* Make ChatBox fill the available height in the fullscreen view */
-    .cld-inquiries--chat-open .chat-box {
+    .cld-inquiries-mobile-overlay .chat-box {
         flex: 1;
         height: auto;
         max-height: none;
@@ -727,12 +723,12 @@
         min-height: 0;
     }
 
-    .cld-inquiries--chat-open .chat-messages {
+    .cld-inquiries-mobile-overlay .chat-messages {
         flex: 1;
         min-height: 0;
     }
 
-    .cld-inquiries--chat-open .chat-input-area {
+    .cld-inquiries-mobile-overlay .chat-input-area {
         flex-shrink: 0;
         padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }

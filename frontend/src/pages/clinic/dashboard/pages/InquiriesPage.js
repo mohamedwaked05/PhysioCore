@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../../../context/AuthContext';
 import { getClinicProfile } from '../../../../api/clinic';
 import { getMessages } from '../../../../api/messages';
@@ -117,75 +118,90 @@ export default function InquiriesPage() {
         );
     }
 
-    return (
-        <div className={`cld-page cld-inquiries${mobileChatOpen ? ' cld-inquiries--chat-open' : ''}`}>
-            <div className="cld-page-header cld-inquiries-header">
-                <h2 className="cld-page-title">Inquiries</h2>
-                <p className="cld-page-subtitle">
-                    {threads.length} conversation{threads.length !== 1 ? 's' : ''} from prospective clients.
-                </p>
+    // Shared chat panel content (used both in desktop inline and mobile portal)
+    const chatContent = selected && clinic ? (
+        <>
+            <div className="cld-inquiries-chat-header">
+                <button
+                    type="button"
+                    className="cld-inquiries-back"
+                    onClick={closeThread}
+                    aria-label="Back to inquiries"
+                >
+                    <BackArrowIcon />
+                </button>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>
+                        {selected.first_name} {selected.last_name}
+                    </p>
+                    <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
+                        Inquiry · Pre-treatment
+                    </p>
+                </div>
             </div>
+            <ChatBox
+                context="inquiry"
+                referenceId={clinic.id}
+                receiverId={selected.id}
+                withUserId={selected.id}
+            />
+        </>
+    ) : (
+        <div className="cld-inquiries-empty-chat">
+            <p>Select a conversation to view messages.</p>
+        </div>
+    );
 
-            <div className="cld-inquiries-grid">
-                {/* Client list */}
-                <div className="cld-inquiries-list">
-                    {threads.map(client => (
-                        <button
-                            key={client.id}
-                            onClick={() => openThread(client)}
-                            className={`cld-inquiries-list-item${selected?.id === client.id ? ' active' : ''}`}
-                        >
-                            <div className="cld-inquiries-avatar">
-                                {getInitials(client.first_name, client.last_name)}
-                            </div>
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                                <p className="cld-inquiries-name">
-                                    {client.first_name} {client.last_name}
-                                </p>
-                                <p className="cld-inquiries-preview">
-                                    {client.lastMessage}
-                                </p>
-                            </div>
-                        </button>
-                    ))}
+    return (
+        <>
+            <div className="cld-page cld-inquiries">
+                <div className="cld-page-header">
+                    <h2 className="cld-page-title">Inquiries</h2>
+                    <p className="cld-page-subtitle">
+                        {threads.length} conversation{threads.length !== 1 ? 's' : ''} from prospective clients.
+                    </p>
                 </div>
 
-                {/* Chat area */}
-                <div className="cld-inquiries-chat">
-                    {selected && clinic ? (
-                        <>
-                            <div className="cld-inquiries-chat-header">
-                                <button
-                                    type="button"
-                                    className="cld-inquiries-back"
-                                    onClick={closeThread}
-                                    aria-label="Back to inquiries"
-                                >
-                                    <BackArrowIcon />
-                                </button>
+                <div className="cld-inquiries-grid">
+                    {/* Client list — always visible on desktop; hidden on mobile when chat open */}
+                    <div className="cld-inquiries-list">
+                        {threads.map(client => (
+                            <button
+                                key={client.id}
+                                onClick={() => openThread(client)}
+                                className={`cld-inquiries-list-item${selected?.id === client.id ? ' active' : ''}`}
+                            >
+                                <div className="cld-inquiries-avatar">
+                                    {getInitials(client.first_name, client.last_name)}
+                                </div>
                                 <div style={{ minWidth: 0, flex: 1 }}>
-                                    <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>
-                                        {selected.first_name} {selected.last_name}
+                                    <p className="cld-inquiries-name">
+                                        {client.first_name} {client.last_name}
                                     </p>
-                                    <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
-                                        Inquiry · Pre-treatment
+                                    <p className="cld-inquiries-preview">
+                                        {client.lastMessage}
                                     </p>
                                 </div>
-                            </div>
-                            <ChatBox
-                                context="inquiry"
-                                referenceId={clinic.id}
-                                receiverId={selected.id}
-                                withUserId={selected.id}
-                            />
-                        </>
-                    ) : (
-                        <div className="cld-inquiries-empty-chat">
-                            <p>Select a conversation to view messages.</p>
-                        </div>
-                    )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Desktop chat panel (inline, not portalled) */}
+                    <div className="cld-inquiries-chat">
+                        {chatContent}
+                    </div>
                 </div>
             </div>
-        </div>
+
+            {/* Mobile fullscreen chat — portalled to body to escape the animated
+                .cld-page container whose transform:translateY(0) fill-mode would
+                otherwise create a containing block and break position:fixed. */}
+            {mobileChatOpen && selected && clinic && createPortal(
+                <div className="cld-inquiries-mobile-overlay">
+                    {chatContent}
+                </div>,
+                document.body
+            )}
+        </>
     );
 }
