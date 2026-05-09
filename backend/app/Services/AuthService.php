@@ -33,12 +33,7 @@ class AuthService
 
         $this->initializeProfile($user, $data);
 
-        // Dispatch verification email first (listener skips if already verified).
-        // Then mark as verified so login works regardless of email delivery.
-        // Once the Resend domain is configured: remove markEmailAsVerified()
-        // and users will verify via the emailed link as intended.
         event(new Registered($user));
-        $user->markEmailAsVerified();
 
         return $user;
     }
