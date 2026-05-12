@@ -129,6 +129,13 @@ export default function Chatbot() {
     const cameraInputRef = useRef(null);
     const navigate       = useNavigate();
 
+    /* Open chatbot from external event (landing page card) */
+    useEffect(() => {
+        const handler = () => setOpen(true);
+        window.addEventListener('openChatbot', handler);
+        return () => window.removeEventListener('openChatbot', handler);
+    }, []);
+
     /* Auto-scroll to latest message */
     useEffect(() => {
         if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
