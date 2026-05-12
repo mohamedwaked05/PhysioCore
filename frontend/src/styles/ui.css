@@ -1147,3 +1147,191 @@ select:not(.ui-select):not(.lp-select):not(.cd-ex-rest-select):not(.wh-time-sele
     background: var(--border);
     margin: 1.25rem 0;
 }
+
+/* ══════════════════════════════════════════════════════════
+   BUTTON GLOW / BACKLIGHT EFFECT
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Smooth transition for glow (overrides base) ──────────── */
+button, .btn, [class*="btn-"], [class*="-btn"] {
+    transition:
+        transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.15s ease,
+        filter 0.15s ease,
+        background 0.2s ease,
+        color 0.15s ease;
+}
+
+/* ── Glow on press — light mode ───────────────────────────── */
+[data-theme="light"] .ui-btn--primary:active,
+[data-theme="light"] .btn-primary:active,
+[data-theme="light"] button.primary:active,
+[data-theme="light"] [class*="btn-primary"]:active {
+    box-shadow:
+        0 0 0 4px rgba(45, 79, 212, 0.15),
+        0 0 20px rgba(45, 79, 212, 0.35),
+        0 0 40px rgba(108, 71, 255, 0.2);
+    transform: scale(0.97);
+}
+
+[data-theme="light"] .ui-btn--secondary:active,
+[data-theme="light"] .btn-secondary:active,
+[data-theme="light"] [class*="btn-secondary"]:active {
+    box-shadow:
+        0 0 0 3px rgba(45, 79, 212, 0.12),
+        0 0 16px rgba(45, 79, 212, 0.2);
+    transform: scale(0.97);
+}
+
+[data-theme="light"] .ui-btn--danger:active,
+[data-theme="light"] .btn-danger:active,
+[data-theme="light"] [class*="btn-danger"]:active {
+    box-shadow:
+        0 0 0 4px rgba(239, 68, 68, 0.15),
+        0 0 20px rgba(239, 68, 68, 0.3);
+    transform: scale(0.97);
+}
+
+[data-theme="light"] .ui-btn--success:active,
+[data-theme="light"] .btn-success:active,
+[data-theme="light"] [class*="btn-success"]:active {
+    box-shadow:
+        0 0 0 4px rgba(14, 168, 107, 0.15),
+        0 0 20px rgba(14, 168, 107, 0.3);
+    transform: scale(0.97);
+}
+
+[data-theme="light"] .btn-icon:active,
+[data-theme="light"] [class*="icon-btn"]:active {
+    box-shadow:
+        0 0 0 3px rgba(45, 79, 212, 0.15),
+        0 0 12px rgba(45, 79, 212, 0.25);
+    color: #2d4fd4;
+}
+
+/* ── Glow on press — dark mode ────────────────────────────── */
+[data-theme="dark"] .ui-btn--primary:active,
+[data-theme="dark"] .btn-primary:active,
+[data-theme="dark"] button.primary:active,
+[data-theme="dark"] [class*="btn-primary"]:active {
+    box-shadow:
+        0 0 0 4px rgba(79, 114, 245, 0.2),
+        0 0 24px rgba(79, 114, 245, 0.5),
+        0 0 48px rgba(139, 111, 255, 0.3);
+    transform: scale(0.97);
+}
+
+[data-theme="dark"] .ui-btn--secondary:active,
+[data-theme="dark"] .btn-secondary:active,
+[data-theme="dark"] [class*="btn-secondary"]:active {
+    box-shadow:
+        0 0 0 3px rgba(79, 114, 245, 0.2),
+        0 0 20px rgba(79, 114, 245, 0.35);
+    transform: scale(0.97);
+}
+
+[data-theme="dark"] .ui-btn--danger:active,
+[data-theme="dark"] .btn-danger:active,
+[data-theme="dark"] [class*="btn-danger"]:active {
+    box-shadow:
+        0 0 0 4px rgba(248, 113, 113, 0.2),
+        0 0 24px rgba(248, 113, 113, 0.45);
+    transform: scale(0.97);
+}
+
+[data-theme="dark"] .ui-btn--success:active,
+[data-theme="dark"] .btn-success:active,
+[data-theme="dark"] [class*="btn-success"]:active {
+    box-shadow:
+        0 0 0 4px rgba(16, 185, 129, 0.2),
+        0 0 24px rgba(16, 185, 129, 0.45);
+    transform: scale(0.97);
+}
+
+[data-theme="dark"] .btn-icon:active,
+[data-theme="dark"] [class*="icon-btn"]:active {
+    box-shadow:
+        0 0 0 3px rgba(79, 114, 245, 0.2),
+        0 0 16px rgba(79, 114, 245, 0.4);
+    color: #4f72f5;
+}
+
+/* ── Active nav items glow ────────────────────────────────── */
+[data-theme="light"] .cd-bottom-nav .active,
+[data-theme="light"] [class*="bottom-nav"] .active {
+    color: #2d4fd4;
+    filter: drop-shadow(0 0 4px rgba(45, 79, 212, 0.4));
+}
+
+[data-theme="dark"] .cd-bottom-nav .active,
+[data-theme="dark"] [class*="bottom-nav"] .active {
+    color: #4f72f5;
+    filter: drop-shadow(0 0 6px rgba(79, 114, 245, 0.6));
+}
+
+/* ── Active subnav tab glow ───────────────────────────────── */
+[data-theme="light"] .cd-subnav-link.active,
+[data-theme="light"] [class*="subnav"] .active,
+[data-theme="light"] [class*="tab"].active {
+    box-shadow:
+        0 0 10px rgba(45, 79, 212, 0.25),
+        0 0 20px rgba(108, 71, 255, 0.15);
+}
+
+[data-theme="dark"] .cd-subnav-link.active,
+[data-theme="dark"] [class*="subnav"] .active,
+[data-theme="dark"] [class*="tab"].active {
+    box-shadow:
+        0 0 12px rgba(79, 114, 245, 0.4),
+        0 0 24px rgba(139, 111, 255, 0.2);
+}
+
+/* ── Mobile: stronger glow for touch feedback ─────────────── */
+@media (max-width: 768px) {
+    [data-theme="light"] .ui-btn--primary:active,
+    [data-theme="light"] .btn-primary:active,
+    [data-theme="light"] [class*="btn-primary"]:active {
+        box-shadow:
+            0 0 0 6px rgba(45, 79, 212, 0.2),
+            0 0 24px rgba(45, 79, 212, 0.4),
+            0 0 48px rgba(108, 71, 255, 0.25);
+    }
+
+    [data-theme="dark"] .ui-btn--primary:active,
+    [data-theme="dark"] .btn-primary:active,
+    [data-theme="dark"] [class*="btn-primary"]:active {
+        box-shadow:
+            0 0 0 6px rgba(79, 114, 245, 0.25),
+            0 0 30px rgba(79, 114, 245, 0.6),
+            0 0 60px rgba(139, 111, 255, 0.35);
+    }
+
+    button:active, .btn:active {
+        outline: none;
+    }
+}
+
+/* ── Pulse animation on keyboard focus ────────────────────── */
+@keyframes btn-glow-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(79, 114, 245, 0.4); }
+    70%  { box-shadow: 0 0 0 8px rgba(79, 114, 245, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(79, 114, 245, 0); }
+}
+
+@keyframes btn-glow-pulse-light {
+    0%   { box-shadow: 0 0 0 0 rgba(45, 79, 212, 0.35); }
+    70%  { box-shadow: 0 0 0 8px rgba(45, 79, 212, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(45, 79, 212, 0); }
+}
+
+[data-theme="dark"] .ui-btn--primary:focus-visible,
+[data-theme="dark"] .btn-primary:focus-visible {
+    animation: btn-glow-pulse 1s ease-out;
+    outline: none;
+}
+
+[data-theme="light"] .ui-btn--primary:focus-visible,
+[data-theme="light"] .btn-primary:focus-visible {
+    animation: btn-glow-pulse-light 1s ease-out;
+    outline: none;
+}
