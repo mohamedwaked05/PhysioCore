@@ -2,9 +2,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import NavBar from './NavBar';
-import MobileMenu from './MobileMenu';
 import Chatbot from './Chatbot';
-import useMobileMenu from '../hooks/useMobileMenu';
 import '../styles/client.css';
 import '../styles/guest.css';
 
@@ -109,16 +107,11 @@ function EcgLogo() {
     );
 }
 
-const GUEST_LINKS = [
-    { to: '/',       label: 'Home',          icon: <HomeIcon />        },
-    { to: '/clinics', label: 'Find a Clinic', icon: <FindClinicIcon /> },
-];
 
 export default function GuestLayout({ children }) {
     const { user }   = useAuth();
     const navigate   = useNavigate();
     const location   = useLocation();
-    const { isOpen: menuOpen, toggle: menuToggle, close: menuClose } = useMobileMenu();
 
     /* ── Authenticated client ───────────────────────────── */
     if (user?.role === 'client') {
@@ -192,29 +185,8 @@ export default function GuestLayout({ children }) {
                         <FindClinicIcon />
                         Find Clinics
                     </NavLink>
-
-                    {/* Mobile burger */}
-                    <button
-                        className={`burger-btn${menuOpen ? ' open' : ''}`}
-                        onClick={menuToggle}
-                        aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-                        aria-expanded={menuOpen}
-                    >
-                        <span className="burger-bar" />
-                        <span className="burger-bar" />
-                        <span className="burger-bar" />
-                    </button>
                 </div>
             </nav>
-
-            {/* Mobile menu (guest mode) */}
-            <MobileMenu
-                isOpen={menuOpen}
-                onClose={menuClose}
-                links={GUEST_LINKS}
-                homeRoute="/"
-                profileRoute={null}
-            />
 
             <main className="guest-main">{children}</main>
             <Chatbot />
