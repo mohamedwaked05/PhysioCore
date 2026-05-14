@@ -6,12 +6,21 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 import GuestLayout from '../../components/GuestLayout';
-import Avatar from '../../components/ui/Avatar';
-import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import '../../styles/ui.css';
 import '../../styles/client.css';
 import '../../styles/guest.css';
+
+const getInitials = (name) => {
+    if (!name) return 'PC';
+    return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+};
+
+const getSpecialtyTags = (clinic) => {
+    const text = clinic.specialty_text || clinic.services || '';
+    if (!text) return [];
+    return text.split(/[,،;]+/).map(s => s.trim()).filter(Boolean);
+};
 
 function EmptyState({ hasFilters, onClear }) {
     return (
@@ -49,30 +58,26 @@ function EmptyState({ hasFilters, onClear }) {
 
 function ClinicCardSkeleton() {
     return (
-        <div className="clinic-card" style={{ gap: '0.75rem' }}>
-            <div className="clinic-card-header">
-                <Skeleton circle width="64px" height="64px" />
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    <Skeleton height="14px" width="60%" />
-                    <Skeleton height="12px" width="40%" radius="999px" />
+        <div className="clinic-card">
+            <div className="clinic-card-banner" style={{ background: 'var(--surface-dim)' }}>
+                <div style={{
+                    position: 'absolute', bottom: -24, left: '1.25rem',
+                    width: 48, height: 48, borderRadius: 12,
+                    background: 'var(--surface)', border: '2px solid var(--bg)',
+                }} />
+            </div>
+            <div className="clinic-card-body">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '0.75rem', paddingTop: '0.5rem' }}>
+                    <Skeleton height="15px" width="55%" />
+                    <Skeleton height="11px" width="38%" />
                 </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                <Skeleton height="12px" />
-                <Skeleton height="12px" width="90%" />
-                <Skeleton height="12px" width="75%" />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                <Skeleton height="11px" width="55%" />
-                <Skeleton height="11px" width="45%" />
-            </div>
-            <div style={{ display: 'flex', gap: '0.4rem' }}>
-                <Skeleton height="22px" width="70px" radius="999px" />
-                <Skeleton height="22px" width="80px" radius="999px" />
-                <Skeleton height="22px" width="65px" radius="999px" />
-            </div>
-            <div style={{ paddingTop: '0.9rem' }}>
-                <Skeleton height="34px" radius="8px" />
+                <Skeleton height="11px" style={{ marginBottom: '0.25rem' }} />
+                <Skeleton height="11px" width="80%" style={{ marginBottom: '0.85rem' }} />
+                <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.85rem' }}>
+                    <Skeleton height="20px" width="75px" radius="999px" />
+                    <Skeleton height="20px" width="90px" radius="999px" />
+                </div>
+                <Skeleton height="36px" radius="10px" />
             </div>
         </div>
     );
@@ -109,13 +114,11 @@ export default function ClinicListingPage() {
     const [priceFilter, setPriceFilter]     = useState('');
 
     useEffect(() => {
-        // Public API — works for guests and authenticated users alike
         getPublicClinics()
             .then(res => setClinics(res.data))
             .catch(() => {})
             .finally(() => setLoading(false));
 
-        // Active access requests only available to authenticated clients
         if (user?.role === 'client') {
             getAccessRequests()
                 .then(res => {
@@ -201,7 +204,7 @@ export default function ClinicListingPage() {
                         <Skeleton height="22px" width="160px" radius="6px" style={{ marginBottom: '0.4rem' }} />
                         <Skeleton height="13px" width="220px" radius="6px" />
                     </div>
-                    <div className="clinic-grid">
+                    <div className="clinics-grid">
                         {Array.from({ length: 6 }).map((_, i) => <ClinicCardSkeleton key={i} />)}
                     </div>
                 </div>
@@ -266,95 +269,137 @@ export default function ClinicListingPage() {
                 {filtered.length === 0 ? (
                     <EmptyState hasFilters={hasFilters} onClear={clearFilters} />
                 ) : (
-                    <div className="clinic-grid">
+                    <div className="clinics-grid">
                         {filtered.map((clinic, i) => {
                             const hasActive    = activeRequests.has(clinic.id);
                             const isRequesting = requesting === clinic.id;
                             const name         = clinic.commercial_name || clinic.legal_name;
                             const priceLabel   = formatPrice(clinic.min_price, clinic.max_price);
+                            const tags         = getSpecialtyTags(clinic);
 
                             return (
                                 <div
                                     key={clinic.id}
-                                    className="clinic-card clinic-card-clickable"
+                                    className="clinic-card"
                                     style={{ '--i': i }}
                                     onClick={() => navigate(`/clinics/${clinic.id}`)}
                                     role="button"
                                     tabIndex={0}
                                     onKeyDown={e => e.key === 'Enter' && navigate(`/clinics/${clinic.id}`)}
                                 >
-                                    <div className="clinic-card-header">
-                                        <Avatar src={clinic.profile_photo_url} name={name} size="md" />
-                                        <div className="clinic-card-header-info">
-                                            <span className="clinic-card-name">{name}</span>
-                                            {clinic.specialty_text && (
-                                                <span className="clinic-card-specialty">{clinic.specialty_text}</span>
+                                    {/* Banner */}
+                                    <div className="clinic-card-banner">
+                                        <div className="clinic-card-verified">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                            </svg>
+                                            <span>Verified</span>
+                                        </div>
+                                        <div className="clinic-card-logo">
+                                            {clinic.profile_photo_url ? (
+                                                <img src={clinic.profile_photo_url} alt={name} />
+                                            ) : (
+                                                <span>{getInitials(name)}</span>
                                             )}
                                         </div>
                                     </div>
 
-                                    <p className="clinic-card-desc">
-                                        {clinic.description ?? 'No description provided.'}
-                                    </p>
-
-                                    <div className="clinic-card-meta">
-                                        {clinic.address && (
-                                            <span className="clinic-card-meta-item">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                                                    <circle cx="12" cy="10" r="3"/>
-                                                </svg>
-                                                {clinic.address}
-                                            </span>
-                                        )}
-                                        {clinic.working_hours && (
-                                            <span className="clinic-card-meta-item">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                    <circle cx="12" cy="12" r="10"/>
-                                                    <polyline points="12 6 12 12 16 14"/>
-                                                </svg>
-                                                {clinic.working_hours}
-                                            </span>
-                                        )}
-                                        {clinic.estimated_response_time && (
-                                            <span className="clinic-card-meta-item clinic-card-meta-response">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                                                </svg>
-                                                Responds {clinic.estimated_response_time}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {priceLabel && (
-                                        <div className="clinic-card-price">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                <line x1="12" y1="1" x2="12" y2="23"/>
-                                                <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-                                            </svg>
-                                            {priceLabel}
+                                    {/* Body */}
+                                    <div className="clinic-card-body">
+                                        <div className="clinic-card-top">
+                                            <div>
+                                                <h3 className="clinic-card-name">{name}</h3>
+                                                <div className="clinic-card-location">
+                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                                                        <circle cx="12" cy="10" r="3"/>
+                                                    </svg>
+                                                    <span>{clinic.address || 'Lebanon'}</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                    )}
 
-                                    {clinic.services && (
-                                        <div className="clinic-card-tags">
-                                            {clinic.services.split(',').slice(0, 3).map((s, j) => (
-                                                <span key={j} className="clinic-card-tag">{s.trim()}</span>
-                                            ))}
+                                        <p className="clinic-card-description">
+                                            {clinic.specialty_text
+                                                ? clinic.specialty_text.slice(0, 100) + (clinic.specialty_text.length > 100 ? '…' : '')
+                                                : clinic.description
+                                                    ? clinic.description.slice(0, 100) + (clinic.description.length > 100 ? '…' : '')
+                                                    : 'Verified physiotherapy clinic offering personalized rehabilitation plans.'}
+                                        </p>
+
+                                        {tags.length > 0 && (
+                                            <div className="clinic-card-tags">
+                                                {tags.slice(0, 3).map((tag, j) => (
+                                                    <span key={j} className={`clinic-tag ${j < 2 ? 'clinic-tag-primary' : 'clinic-tag-secondary'}`}>
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="clinic-card-stats">
+                                            {clinic.working_hours && (
+                                                <div className="clinic-stat">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                        <circle cx="12" cy="12" r="10"/>
+                                                        <polyline points="12 6 12 12 16 14"/>
+                                                    </svg>
+                                                    <span>Mon – Sat</span>
+                                                </div>
+                                            )}
+                                            {priceLabel && (
+                                                <div className="clinic-stat">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                        <line x1="12" y1="1" x2="12" y2="23"/>
+                                                        <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                                                    </svg>
+                                                    <span>{priceLabel}</span>
+                                                </div>
+                                            )}
+                                            {clinic.estimated_response_time && (
+                                                <div className="clinic-stat clinic-stat-green">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                                    </svg>
+                                                    <span>Responds {clinic.estimated_response_time}</span>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
 
-                                    <div className="clinic-card-footer">
-                                        <Button
-                                            variant={hasActive ? 'secondary' : 'primary'}
-                                            size="sm"
-                                            onClick={e => handleRequest(clinic.id, e)}
-                                            disabled={hasActive}
-                                            loading={isRequesting}
-                                            style={{ width: '100%' }}
-                                        >
-                                            {hasActive ? 'Request Sent' : 'Request Access'}
-                                        </Button>
+                                        <div className="clinic-card-actions">
+                                            <button
+                                                className={`clinic-card-btn-primary${hasActive ? ' clinic-card-btn-sent' : ''}`}
+                                                onClick={e => handleRequest(clinic.id, e)}
+                                                disabled={hasActive || isRequesting}
+                                            >
+                                                {isRequesting ? '…' : hasActive ? (
+                                                    <>
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                                            <polyline points="20 6 9 17 4 12"/>
+                                                        </svg>
+                                                        Request Sent
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14z"/>
+                                                        </svg>
+                                                        Request Access
+                                                    </>
+                                                )}
+                                            </button>
+                                            <button
+                                                className="clinic-card-btn-icon"
+                                                onClick={e => { e.stopPropagation(); navigate(`/clinics/${clinic.id}`); }}
+                                                title="View profile"
+                                                aria-label="View clinic profile"
+                                            >
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                    <circle cx="12" cy="12" r="3"/>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             );

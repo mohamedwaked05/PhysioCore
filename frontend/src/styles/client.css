@@ -667,201 +667,10 @@
 }
 
 /* ─── Clinic Grid ─────────────────────────────────────────── */
-.clinic-grid {
+.clinics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.25rem;
-}
-
-.clinic-card {
-  background: var(--surface);
-  border-radius: 16px;
-  padding: 1.4rem;
-  padding-top: 1.6rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  transition: box-shadow 0.2s, transform 0.2s;
-  position: relative;
-  overflow: hidden;
-}
-
-.clinic-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  border-radius: 16px 16px 0 0;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
-}
-
-.clinic-card:nth-child(3n+2)::before {
-  background: linear-gradient(90deg, #0e7490 0%, #06b6d4 100%);
-}
-
-.clinic-card:nth-child(3n+3)::before {
-  background: linear-gradient(90deg, #2d4fd4 0%, #0ea5e9 100%);
-}
-
-.clinic-card:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.11);
-  transform: translateY(-2px);
-}
-
-.clinic-card-name {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  color: var(--text);
-}
-
-.clinic-card-specialty {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.6rem;
-  background: var(--surface-dim);
-  color: var(--primary);
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  width: fit-content;
-}
-
-.clinic-card-desc {
-  font-size: 0.83rem;
-  color: var(--text-muted);
-  line-height: 1.55;
-  flex: 1;
-}
-
-.clinic-card-header {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  margin-bottom: 0.25rem;
-}
-
-.clinic-card-header-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
-}
-
-.clinic-card-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.clinic-card-meta-item {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.clinic-card-address {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.clinic-card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 0.25rem;
-}
-
-.clinic-card-tag {
-  background: var(--surface-dim);
-  color: var(--primary);
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-}
-
-.clinic-card-meta-response {
-  color: #15803d;
-}
-
-.clinic-card-price {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--primary);
-  background: #f0f0f8;
-  padding: 0.25rem 0.65rem;
-  border-radius: 999px;
-  width: fit-content;
-}
-
-.clinic-card-footer {
-  margin-top: 0.5rem;
-  padding-top: 0.9rem;
-  border: none !important;
-}
-
-.clinic-request-btn {
-  width: 100%;
-  padding: 0.6rem;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: background 0.15s;
-}
-
-.clinic-request-btn:hover:not(:disabled) {
-  filter: brightness(1.12);
-}
-
-.clinic-request-btn:disabled {
-  background: #c5c0bb;
-  cursor: not-allowed;
-}
-
-.clinic-request-btn.requested {
-  background: #f0fdf4;
-  color: #15803d;
-  border: 0.5px solid #bbf7d0;
-  cursor: default;
-}
-
-/* ─── Clinic Card Name Link ───────────────────────────────── */
-.clinic-card-clickable {
-  cursor: pointer;
-}
-
-.clinic-card-name-link {
-  color: var(--text);
-  text-decoration: none;
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  transition: color 0.15s;
-}
-
-.clinic-card-name-link:hover {
-  color: var(--primary);
 }
 
 /* ─── Clinic Details Page ─────────────────────────────────── */
@@ -1487,10 +1296,6 @@
     radial-gradient(ellipse at 85% 85%, rgba(45, 79, 212, 0.04) 0%, transparent 55%);
 }
 
-[data-theme="dark"] .clinic-card:hover {
-  box-shadow: 0 8px 32px rgba(6, 182, 212, 0.1), 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
 [data-theme="dark"] .ui-skeleton {
   background: linear-gradient(90deg, #1e2135 25%, #252840 50%, #1e2135 75%);
   background-size: 200% 100%;
@@ -1498,17 +1303,13 @@
 }
 
 /* Tag / badge light backgrounds */
-[data-theme="dark"] .clinic-card-tag,
 [data-theme="dark"] .cd-hero-tag,
-[data-theme="dark"] .clinic-card-specialty,
-[data-theme="dark"] .clinic-card-price,
 [data-theme="dark"] .cd-budget-level,
 [data-theme="dark"] .cd-step-num {
   background: rgba(6, 182, 212, 0.12);
   color: #22d3ee;
 }
 
-[data-theme="dark"] .clinic-card-tag:hover,
 [data-theme="dark"] .cd-hero-tag:hover {
   background: var(--primary);
   color: #fff;
@@ -1531,21 +1332,9 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.clinic-grid .clinic-card {
+.clinics-grid .clinic-card {
   animation: cardEntrance 0.4s cubic-bezier(0.23, 1, 0.32, 1) both;
   animation-delay: calc(var(--i, 0) * 0.055s);
-}
-
-/* ─── Service Tag Hover ───────────────────────────────────── */
-.clinic-card-tag {
-  transition: background 0.15s, color 0.15s, transform 0.15s;
-  cursor: default;
-}
-
-.clinic-card-tag:hover {
-  background: var(--primary);
-  color: #fff;
-  transform: scale(1.06);
 }
 
 .cd-hero-tag {
