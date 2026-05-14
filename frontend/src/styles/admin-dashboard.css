@@ -102,7 +102,6 @@
 
 .adm-stat-card {
     background: var(--surface);
-    border: 0.5px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 1.25rem 1.4rem;
     box-shadow: var(--shadow-sm);
@@ -214,7 +213,6 @@
 /* ── Table ────────────────────────────────────────────────── */
 .adm-table-wrap {
     background: var(--surface);
-    border: 0.5px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     overflow: hidden;
@@ -322,7 +320,6 @@
 
 .adm-modal {
     background: var(--surface);
-    border: 0.5px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     padding: 1.75rem;
@@ -386,7 +383,6 @@
 
 .adm-card {
     background: var(--surface);
-    border: 0.5px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     overflow: hidden;

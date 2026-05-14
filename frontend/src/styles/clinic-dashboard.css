@@ -131,7 +131,6 @@
     gap: 1rem;
     padding: 1.25rem 1.35rem;
     background: var(--surface);
-    border: 0.5px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     text-decoration: none;
@@ -715,7 +714,6 @@
 
 .cld-chart-card {
     background: var(--surface);
-    border: 0.5px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     padding: 1.1rem 1.25rem;
@@ -1257,7 +1255,6 @@
 
 .qr-modal {
     background: var(--surface);
-    border: 0.5px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     width: 100%;
@@ -1529,7 +1526,6 @@
 .ppp-card {
     position: relative;
     background: var(--surface);
-    border: 0.5px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     width: 100%;

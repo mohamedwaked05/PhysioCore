@@ -69,7 +69,7 @@ export default function MessagesPage() {
                     display: 'flex', flexDirection: 'column', alignItems: 'center',
                     justifyContent: 'center', gap: '0.75rem', padding: '3rem',
                     background: 'var(--surface)', borderRadius: 'var(--radius-lg)',
-                    border: '0.5px solid var(--border)', color: 'var(--text-muted)',
+                    boxShadow: 'var(--shadow-sm)', color: 'var(--text-muted)',
                     textAlign: 'center',
                 }}>
                     <ChatIcon />
@@ -99,7 +99,7 @@ export default function MessagesPage() {
                     <div className="messages-sidebar" style={{
                         width: 200, flexShrink: 0,
                         background: 'var(--surface)', borderRadius: 'var(--radius-lg)',
-                        border: '0.5px solid var(--border)', overflow: 'hidden',
+                        boxShadow: 'var(--shadow-sm)', overflow: 'hidden',
                     }}>
                         {clinics.map(c => (
                             <button
@@ -129,7 +129,7 @@ export default function MessagesPage() {
                 <div className="messages-chat-wrapper" style={{
                     flex: 1,
                     background: 'var(--surface)', borderRadius: 'var(--radius-lg)',
-                    border: '0.5px solid var(--border)', overflow: 'hidden',
+                    boxShadow: 'var(--shadow-sm)', overflow: 'hidden',
                 }}>
                     {selected && (
                         <>

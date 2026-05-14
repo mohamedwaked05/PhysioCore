@@ -101,7 +101,7 @@ function ClinicDetailPanel({ clinicId, onClose, onApproved, onRejected }) {
             onClick={e => e.target === e.currentTarget && onClose()}
         >
             <div style={{
-                background: 'var(--surface)', border: '0.5px solid var(--border)',
+                background: 'var(--surface)',
                 borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-lg)',
                 width: '100%', maxWidth: 620, maxHeight: '90vh',
                 display: 'flex', flexDirection: 'column', overflow: 'hidden',

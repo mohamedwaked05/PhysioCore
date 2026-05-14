@@ -74,7 +74,7 @@ export default function UsersPage() {
         {deleteTarget && (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
                 onClick={() => { setDeleteTarget(null); setDeleteConfirm(''); }}>
-                <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '1.75rem', width: '100%', maxWidth: 420, border: '0.5px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}
+                <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '1.75rem', width: '100%', maxWidth: 420, boxShadow: 'var(--shadow-lg)' }}
                     onClick={e => e.stopPropagation()}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '1rem' }}>
                         <div style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', background: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

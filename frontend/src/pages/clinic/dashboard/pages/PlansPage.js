@@ -70,10 +70,10 @@ function PlanWeekCard({ plan, onEdit, onDelete }) {
 
     return (
         <div style={{
-            border: '0.5px solid var(--border)',
             borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
             background: 'var(--surface)',
+            boxShadow: 'var(--shadow-sm)',
         }}>
             {/* Week header */}
             <div style={{ padding: '0.85rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

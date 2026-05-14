@@ -490,13 +490,12 @@
 
 .landing-dark .lp-card {
     background: #111628;
-    border: 1px solid #1e2540;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.15);
 }
 
 .landing-light .lp-card {
     background: #ffffff;
-    border: 1px solid #dde3f0;
-    box-shadow: 0 1px 3px rgba(15, 22, 41, 0.06), 0 4px 12px rgba(15, 22, 41, 0.04);
+    box-shadow: 0 2px 12px rgba(15,22,41,0.08), 0 1px 3px rgba(15,22,41,0.04);
 }
 
 /* Card label (shared) */
@@ -987,7 +986,6 @@
     gap: 1.25rem;
     padding: 1rem 1.25rem;
     background: var(--surface);
-    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     width: fit-content;
@@ -1040,7 +1038,6 @@
     gap: 0.45rem;
     padding: 0.45rem 0.85rem;
     background: var(--surface);
-    border: 1px solid var(--border);
     border-radius: var(--radius-pill);
     font-size: 0.78rem;
     font-weight: 600;
@@ -1090,7 +1087,6 @@
 .lp-hero-card {
     background: var(--surface);
     border-radius: 20px;
-    border: 1px solid var(--border);
     padding: 1.5rem;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.06);
     display: flex;
@@ -1206,7 +1202,6 @@
 
 .lp-step-card {
     background: var(--bg);
-    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 2rem 1.5rem;
     position: relative;
@@ -1304,7 +1299,6 @@
 /* ── Clinic preview card ──────────────────────────────────── */
 .lp-clinic-card {
     background: var(--surface);
-    border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     display: flex;

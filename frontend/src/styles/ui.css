@@ -109,10 +109,9 @@
 .ui-card {
     background: var(--surface);
     border-radius: 16px;
-    border: 1px solid var(--border);
     padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 2px 12px rgba(15,22,41,0.08), 0 1px 3px rgba(15,22,41,0.05);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .ui-card--flush {
@@ -122,23 +121,21 @@
 .ui-card--hover:hover {
     box-shadow: var(--shadow-md);
     transform: translateY(-2px);
-    border-color: var(--border-strong);
 }
 
 /* Generic card selectors */
 .card, [class*="-card"]:not([class*="btn"]):not([class*="role"]):not([class*="lp-role"]),
 [class*="card-"]:not([class*="btn"]):not([class*="lp-hero"]) {
     background: var(--surface);
-    border: 1px solid var(--border);
     border-radius: 16px;
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    box-shadow: 0 2px 12px rgba(15,22,41,0.08), 0 1px 3px rgba(15,22,41,0.05);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 /* Dark mode cards get subtle gradient */
 [data-theme="dark"] .ui-card {
     background: linear-gradient(145deg, var(--surface) 0%, var(--surface-2) 100%);
-    border-color: var(--border);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.15);
 }
 
 /* --- Section Header --------------------------------------- */
@@ -564,7 +561,7 @@ button, .btn, .ui-btn {
     padding: 1.5rem;
     background: var(--surface);
     border-radius: 16px;
-    border: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(15,22,41,0.08), 0 1px 3px rgba(15,22,41,0.05);
     margin-bottom: 1.25rem;
 }
 
@@ -1320,6 +1317,57 @@ button, .btn, [class*="btn-"], [class*="-btn"] {
     0%   { box-shadow: 0 0 0 0 rgba(79, 114, 245, 0.4); }
     70%  { box-shadow: 0 0 0 8px rgba(79, 114, 245, 0); }
     100% { box-shadow: 0 0 0 0 rgba(79, 114, 245, 0); }
+}
+
+/* ── Remove card borders globally ─────────────────────────── */
+[data-theme="light"] .ui-card,
+[data-theme="light"] [class*="cd-card"],
+[data-theme="light"] [class*="cd-metric"],
+[data-theme="light"] [class*="cd-quick"],
+[data-theme="light"] [class*="cd-day-list"],
+[data-theme="light"] [class*="cd-weekly"],
+[data-theme="light"] [class*="cd-today-h"],
+[data-theme="light"] [class*="-panel"]:not([class*="btn"]),
+[data-theme="light"] [class*="stat-card"],
+[data-theme="light"] [class*="chart-card"],
+[data-theme="light"] [class*="plan-card"],
+[data-theme="light"] [class*="clinic-card"],
+[data-theme="light"] [class*="client-card"],
+[data-theme="light"] [class*="adm-card"],
+[data-theme="light"] [class*="adm-stat"],
+[data-theme="light"] [class*="adm-table-wrap"],
+[data-theme="light"] [class*="adm-modal"],
+[data-theme="light"] [class*="ppp-card"],
+[data-theme="light"] [class*="qr-modal"],
+[data-theme="light"] .ui-profile-header {
+    border: none !important;
+    box-shadow: 0 2px 12px rgba(15,22,41,0.08),
+                0 1px 3px rgba(15,22,41,0.04) !important;
+}
+
+[data-theme="dark"] .ui-card,
+[data-theme="dark"] [class*="cd-card"],
+[data-theme="dark"] [class*="cd-metric"],
+[data-theme="dark"] [class*="cd-quick"],
+[data-theme="dark"] [class*="cd-day-list"],
+[data-theme="dark"] [class*="cd-weekly"],
+[data-theme="dark"] [class*="cd-today-h"],
+[data-theme="dark"] [class*="-panel"]:not([class*="btn"]),
+[data-theme="dark"] [class*="stat-card"],
+[data-theme="dark"] [class*="chart-card"],
+[data-theme="dark"] [class*="plan-card"],
+[data-theme="dark"] [class*="clinic-card"],
+[data-theme="dark"] [class*="client-card"],
+[data-theme="dark"] [class*="adm-card"],
+[data-theme="dark"] [class*="adm-stat"],
+[data-theme="dark"] [class*="adm-table-wrap"],
+[data-theme="dark"] [class*="adm-modal"],
+[data-theme="dark"] [class*="ppp-card"],
+[data-theme="dark"] [class*="qr-modal"],
+[data-theme="dark"] .ui-profile-header {
+    border: none !important;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.25),
+                0 1px 4px rgba(0,0,0,0.15) !important;
 }
 
 /* ── Remove all separator/divider lines globally ───────────── */

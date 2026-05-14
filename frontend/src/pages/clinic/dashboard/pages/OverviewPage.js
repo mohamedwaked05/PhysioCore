@@ -251,7 +251,7 @@ export default function OverviewPage() {
                         { label: 'Stable Pain',    value: aiSummary.trend_counts?.stable    ?? 0, color: '#d97706' },
                         { label: 'Worsening Pain', value: aiSummary.trend_counts?.worsening ?? 0, color: '#dc2626' },
                     ].map(item => (
-                        <div key={item.label} style={{ padding: '0.9rem 1rem', background: 'var(--surface)', border: '0.5px solid var(--border-light)', borderRadius: 'var(--radius-md)' }}>
+                        <div key={item.label} style={{ padding: '0.9rem 1rem', background: 'var(--surface)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)' }}>
                             <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1.25rem', color: item.color, margin: 0 }}>{item.value}</p>
                             <p style={{ fontSize: '0.73rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{item.label}</p>
                         </div>
