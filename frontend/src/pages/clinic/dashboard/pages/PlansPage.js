@@ -76,7 +76,7 @@ function PlanWeekCard({ plan, onEdit, onDelete }) {
             background: 'var(--surface)',
         }}>
             {/* Week header */}
-            <div style={{ padding: '0.85rem 1rem', borderBottom: '0.5px solid var(--border-light)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ padding: '0.85rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, flexWrap: 'wrap' }}>
                     {/* Identity: "Week N · Apr 19 – Apr 25" */}
                     <span style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>
@@ -220,7 +220,6 @@ function ClientPlanRow({ entry, onPlanSaved, onPlanDeleted }) {
                     padding: '0.9rem 1.25rem',
                     cursor: 'pointer',
                     transition: 'background var(--transition)',
-                    borderBottom: '0.5px solid var(--border-light)',
                 }}
                 onClick={() => setOpen(o => !o)}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-dim)'}
@@ -243,7 +242,7 @@ function ClientPlanRow({ entry, onPlanSaved, onPlanDeleted }) {
 
             {/* Expanded plan grid */}
             {open && (
-                <div style={{ padding: '0.85rem 1.25rem 1rem', borderBottom: '0.5px solid var(--border-light)', background: 'var(--surface-dim)' }}>
+                <div style={{ padding: '0.85rem 1.25rem 1rem', background: 'var(--surface-dim)' }}>
                     {plans.length === 0 ? (
                         <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>No plans yet.</p>
                     ) : (

@@ -13,7 +13,7 @@ function formatDate(iso) {
 function InfoRow({ label, value }) {
     if (!value) return null;
     return (
-        <div style={{ display: 'flex', gap: '0.75rem', padding: '0.55rem 0', borderBottom: '0.5px solid var(--border-light)' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', padding: '0.55rem 0' }}>
             <span style={{ width: 150, flexShrink: 0, fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em', paddingTop: '0.05rem' }}>
                 {label}
             </span>
@@ -27,7 +27,7 @@ function InfoRow({ label, value }) {
 function FileLink({ label, url }) {
     if (!url) return null;
     return (
-        <div style={{ display: 'flex', gap: '0.75rem', padding: '0.55rem 0', borderBottom: '0.5px solid var(--border-light)', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.75rem', padding: '0.55rem 0', alignItems: 'center' }}>
             <span style={{ width: 150, flexShrink: 0, fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 {label}
             </span>
@@ -109,7 +109,7 @@ function ClinicDetailPanel({ clinicId, onClose, onApproved, onRejected }) {
                 {/* Header */}
                 <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '1.1rem 1.5rem', borderBottom: '0.5px solid var(--border-light)',
+                    padding: '1.1rem 1.5rem',
                     flexShrink: 0,
                 }}>
                     <div>
@@ -188,7 +188,7 @@ function ClinicDetailPanel({ clinicId, onClose, onApproved, onRejected }) {
                 {/* Footer — actions */}
                 {!loading && clinic && isPending && (
                     <div style={{
-                        padding: '1rem 1.5rem', borderTop: '0.5px solid var(--border-light)',
+                        padding: '1rem 1.5rem',
                         flexShrink: 0, background: 'var(--surface)',
                     }}>
                         {!rejectMode ? (

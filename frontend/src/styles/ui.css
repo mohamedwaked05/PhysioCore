@@ -536,9 +536,10 @@ button, .btn, .ui-btn {
 
 /* --- Divider ---------------------------------------------- */
 .ui-divider {
-    height: 1px;
-    background: #E8E6E3;
-    margin: 1.25rem 0;
+    display: none !important;
+    height: 0 !important;
+    border: none !important;
+    margin: 0 !important;
 }
 
 /* --- Alert banners ---------------------------------------- */
@@ -1143,9 +1144,10 @@ select:not(.ui-select):not(.lp-select):not(.cd-ex-rest-select):not(.wh-time-sele
 
 /* ── Divider with CSS variables ───────────────────────────── */
 .ui-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 1.25rem 0;
+    display: none !important;
+    height: 0 !important;
+    border: none !important;
+    margin: 0 !important;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1318,6 +1320,29 @@ button, .btn, [class*="btn-"], [class*="-btn"] {
     0%   { box-shadow: 0 0 0 0 rgba(79, 114, 245, 0.4); }
     70%  { box-shadow: 0 0 0 8px rgba(79, 114, 245, 0); }
     100% { box-shadow: 0 0 0 0 rgba(79, 114, 245, 0); }
+}
+
+/* ── Remove all separator/divider lines globally ───────────── */
+hr,
+.ui-divider,
+[class*="divider"],
+[class*="separator"] {
+    display: none !important;
+    height: 0 !important;
+    border: none !important;
+    margin: 0 !important;
+}
+
+[class*="notif-item"],
+[class*="notification-item"] {
+    border-bottom: none !important;
+}
+
+[class*="conversation-item"],
+[class*="inquiry-item"],
+[class*="message-row"],
+[class*="patient-row"] {
+    border-bottom: none !important;
 }
 
 @keyframes btn-glow-pulse-light {

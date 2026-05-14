@@ -252,9 +252,9 @@
 }
 
 .mm-divider {
-    height: 1px;
-    background: rgba(255,255,255,0.06);
-    margin: 0.4rem 0.3rem;
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
 }
 
 .mm-section-label {
@@ -560,7 +560,6 @@
     font-weight: 600;
 }
 
-[data-theme="light"] .mm-divider { background: #dde3f0; }
 
 [data-theme="light"] .mm-footer {
     border-top-color: #dde3f0;

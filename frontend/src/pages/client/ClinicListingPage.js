@@ -71,7 +71,7 @@ function ClinicCardSkeleton() {
                 <Skeleton height="22px" width="80px" radius="999px" />
                 <Skeleton height="22px" width="65px" radius="999px" />
             </div>
-            <div style={{ paddingTop: '0.9rem', borderTop: '0.5px solid #f0ede8' }}>
+            <div style={{ paddingTop: '0.9rem' }}>
                 <Skeleton height="34px" radius="8px" />
             </div>
         </div>

@@ -582,7 +582,6 @@
     background: transparent;
     border: none;
     border-left: 3px solid transparent;
-    border-bottom: 0.5px solid var(--border-light);
     cursor: pointer;
     transition: background var(--transition);
 }

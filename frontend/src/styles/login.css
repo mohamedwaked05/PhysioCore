@@ -257,7 +257,6 @@
   display: flex;
   gap: 0;
   padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 2rem;
 }
 
@@ -265,9 +264,7 @@
   flex: 1;
   text-align: center;
   padding: 0 0.5rem;
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
 }
-.lp-stat:last-child { border-right: none; }
 
 .lp-stat-value {
   display: block;
@@ -649,23 +646,11 @@
 
 /* ─── Divider ─────────────────────────────────────────────── */
 .lp-divider {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  display: none !important;
 }
 .lp-divider::before,
 .lp-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-.lp-divider span {
-  font-size: 0.77rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  transition: color 0.4s;
+  display: none !important;
 }
 
 /* ─── Google button ───────────────────────────────────────── */

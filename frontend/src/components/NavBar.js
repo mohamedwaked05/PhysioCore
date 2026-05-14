@@ -508,7 +508,7 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
                                 {/* Header */}
                                 <div style={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                    padding: '0.75rem 1rem', borderBottom: '0.5px solid var(--border-light)',
+                                    padding: '0.75rem 1rem',
                                 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                                         <span style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>
@@ -539,12 +539,12 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
                                         </div>
                                     ) : (
                                         groups.map((group, i) => (
-                                            <div key={group.key} style={{ borderBottom: i < groups.length - 1 ? '0.5px solid var(--border-light)' : 'none' }}>
+                                            <div key={group.key}>
                                                 <GroupRow group={group} role={user?.role} onGroupClick={handleGroupClick} />
 
                                                 {/* Show individual items when group is small enough */}
                                                 {group.items.length <= GROUP_THRESHOLD && group.items.length > 1 && (
-                                                    <div style={{ paddingLeft: '1rem', borderTop: '0.5px solid var(--border-light)' }}>
+                                                    <div style={{ paddingLeft: '1rem' }}>
                                                         {group.items.map((item, j) => (
                                                             <button key={item.id}
                                                                 onClick={() => { markSeen(item.id); setNotifOpen(false); navigate(resolveRoute(item.type, item.data, user?.role)); }}
@@ -552,7 +552,7 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
                                                                     width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem',
                                                                     padding: '0.45rem 1rem 0.45rem 0',
                                                                     background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
-                                                                    borderBottom: j < group.items.length - 1 ? '0.5px solid var(--border-light)' : 'none',
+                                                                    borderBottom: 'none',
                                                                     opacity: item.status === 'seen' ? 0.6 : 1,
                                                                 }}
                                                                 onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-dim)'}

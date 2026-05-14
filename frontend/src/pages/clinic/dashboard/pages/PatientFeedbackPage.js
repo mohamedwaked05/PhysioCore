@@ -165,7 +165,7 @@ export default function PatientFeedbackPage() {
                             </div>
                         )}
                         {aiData.safety_history?.length > 0 && (
-                            <div style={{ borderTop: aiData.latest ? '0.5px solid var(--border-light)' : 'none', paddingTop: aiData.latest ? '0.75rem' : 0 }}>
+                            <div style={{ paddingTop: aiData.latest ? '0.75rem' : 0 }}>
                                 <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#dc2626', marginBottom: '0.4rem' }}>
                                     ⚠️ {aiData.safety_history.length} Safety Alert{aiData.safety_history.length !== 1 ? 's' : ''} (last 10)
                                 </p>

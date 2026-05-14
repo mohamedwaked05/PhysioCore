@@ -110,7 +110,7 @@ export default function MessagesPage() {
                                     padding: '0.75rem 1rem',
                                     background: selected?.id === c.id ? 'var(--surface-dim)' : 'transparent',
                                     borderLeft: selected?.id === c.id ? '3px solid var(--primary)' : '3px solid transparent',
-                                    border: 'none', borderBottom: '0.5px solid var(--border-light)',
+                                    border: 'none',
                                     cursor: 'pointer', transition: 'background var(--transition)',
                                 }}
                             >
@@ -135,7 +135,6 @@ export default function MessagesPage() {
                         <>
                             <div className="messages-chat-header" style={{
                                 padding: '0.85rem 1.1rem',
-                                borderBottom: '0.5px solid var(--border)',
                             }}>
                                 <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>
                                     {clinicName(selected)}

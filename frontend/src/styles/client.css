@@ -257,9 +257,9 @@
 }
 
 .nav-settings-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.07);
-  margin: 0.3rem 0.2rem;
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
 }
 
 .client-nav-right {
@@ -433,11 +433,9 @@
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 0;
-  border-bottom: 0.5px solid var(--border-light);
 }
 
 .client-summary-row:last-child {
-  border-bottom: none;
   padding-bottom: 0;
 }
 
@@ -814,7 +812,6 @@
 .clinic-card-footer {
   margin-top: 0.5rem;
   padding-top: 0.9rem;
-  border-top: 0.5px solid var(--border-light);
 }
 
 .clinic-request-btn {
@@ -1286,7 +1283,6 @@
   color: var(--text-muted);
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 0.5px solid #E8E3DB;
 }
 
 .profile-field {
@@ -1341,7 +1337,6 @@
   gap: 0.75rem;
   margin-top: 1.5rem;
   padding-top: 1.25rem;
-  border-top: 0.5px solid #E8E3DB;
 }
 
 .profile-save-btn {
@@ -1793,9 +1788,6 @@
 [data-theme="light"] .nav-settings-item:hover {
   background: rgba(6, 182, 212, 0.06);
   color: #0f1629;
-}
-[data-theme="light"] .nav-settings-divider {
-  background: #dde3f0;
 }
 [data-theme="light"] .nav-settings-pill {
   background: rgba(15, 22, 41, 0.06);
