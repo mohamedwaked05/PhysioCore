@@ -214,7 +214,6 @@
     display: flex;
     flex-direction: column;
     padding: 0.5rem;
-    border-bottom: 1px solid;
     animation: lpMenuIn 0.18s ease;
     flex-shrink: 0;
 }

@@ -812,6 +812,7 @@
 .clinic-card-footer {
   margin-top: 0.5rem;
   padding-top: 0.9rem;
+  border: none !important;
 }
 
 .clinic-request-btn {
