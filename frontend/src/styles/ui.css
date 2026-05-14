@@ -1271,19 +1271,21 @@ button, .btn, [class*="btn-"], [class*="-btn"] {
 
 /* ── Active subnav tab glow ───────────────────────────────── */
 [data-theme="light"] .cd-subnav-link.active,
+[data-theme="light"] .cld-subnav-link.active,
 [data-theme="light"] [class*="subnav"] .active,
 [data-theme="light"] [class*="tab"].active {
     box-shadow:
-        0 0 10px rgba(45, 79, 212, 0.25),
-        0 0 20px rgba(6, 182, 212, 0.15);
+        0 0 10px rgba(6, 182, 212, 0.25),
+        0 0 20px rgba(6, 182, 212, 0.12);
 }
 
 [data-theme="dark"] .cd-subnav-link.active,
+[data-theme="dark"] .cld-subnav-link.active,
 [data-theme="dark"] [class*="subnav"] .active,
 [data-theme="dark"] [class*="tab"].active {
     box-shadow:
-        0 0 12px rgba(79, 114, 245, 0.4),
-        0 0 24px rgba(34, 211, 238, 0.2);
+        0 0 14px rgba(6, 182, 212, 0.35),
+        0 0 28px rgba(6, 182, 212, 0.18);
 }
 
 /* ── Mobile: stronger glow for touch feedback ─────────────── */

@@ -85,8 +85,8 @@
 }
 
 .cd-subnav-link.active {
-    color: var(--primary);
-    background: var(--bg);
+    color: var(--accent);
+    background: var(--accent-light);
     font-weight: 600;
     box-shadow: var(--shadow-sm);
 }

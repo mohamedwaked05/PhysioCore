@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -90,9 +91,10 @@ function HamburgerIcon() {
 
 /* ── Landing Page ────────────────────────────────────────────── */
 export default function LandingPage() {
-    const navigate      = useNavigate();
-    const { user }      = useAuth();
-    const { theme, toggle } = useTheme();
+    const navigate           = useNavigate();
+    const { user }           = useAuth();
+    const { theme, toggle }  = useTheme();
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     if (user?.role === 'clinic') return <Navigate to="/clinic/dashboard" replace />;
     if (user?.role === 'client') return <Navigate to="/client/dashboard" replace />;
@@ -122,11 +124,42 @@ export default function LandingPage() {
                     <button className="lp-nav-cta lp-desktop-only" onClick={() => navigate('/register')}>
                         Get started
                     </button>
-                    <button className="lp-nav-burger lp-mobile-only" aria-label="Open menu">
-                        <HamburgerIcon />
+                    <button
+                        className="lp-nav-burger lp-mobile-only"
+                        aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                        onClick={() => setMobileOpen(o => !o)}
+                    >
+                        {mobileOpen ? (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        ) : (
+                            <HamburgerIcon />
+                        )}
                     </button>
                 </div>
             </nav>
+
+            {/* ── Mobile menu dropdown ────────────────────────── */}
+            {mobileOpen && (
+                <div className={`lp-mobile-menu${isDark ? ' lp-mobile-menu--dark' : ' lp-mobile-menu--light'}`}>
+                    <button className="lp-mobile-menu-item" onClick={() => { navigate('/clinics'); setMobileOpen(false); }}>
+                        <SearchIcon /> Find a Clinic
+                    </button>
+                    <button className="lp-mobile-menu-item" onClick={() => { navigate('/login'); setMobileOpen(false); }}>
+                        Sign in
+                    </button>
+                    <button className="lp-mobile-menu-item lp-mobile-menu-cta" onClick={() => { navigate('/register'); setMobileOpen(false); }}>
+                        Get started
+                    </button>
+                    <div className="lp-mobile-menu-divider" />
+                    <button className="lp-mobile-menu-item lp-mobile-menu-theme" onClick={toggle}>
+                        {isDark ? <SunIcon /> : <MoonIcon />}
+                        {isDark ? 'Light mode' : 'Dark mode'}
+                    </button>
+                </div>
+            )}
 
             {/* ── Main split ──────────────────────────────────── */}
             <main className="lp-main">
