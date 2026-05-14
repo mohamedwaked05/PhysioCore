@@ -394,7 +394,12 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
 
     const { items, unreadCount, markSeen, markAllSeen } = useNotifications(user);
 
-    const groups = useMemo(() => buildGroups(items), [items]);
+    const filteredItems = useMemo(() => {
+        if (user?.role !== 'admin') return items;
+        return items.filter(n => n.type !== 'safety_flag' && n.data?.context !== 'safety_alert');
+    }, [items, user?.role]);
+
+    const groups = useMemo(() => buildGroups(filteredItems), [filteredItems]);
 
     const fullName = `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim();
 

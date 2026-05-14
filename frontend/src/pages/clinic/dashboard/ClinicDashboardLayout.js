@@ -110,9 +110,9 @@ export default function ClinicDashboardLayout() {
         { to: '.',         end: true,  label: 'Overview',     shortLabel: 'Overview',  icon: <OverviewIcon />,  iconLg: <OverviewIcon  size={20} />, badge: null },
         { to: 'requests',  end: false, label: 'Requests',     shortLabel: 'Requests',  icon: <RequestsIcon />,  iconLg: <RequestsIcon  size={20} />, badge: counts?.requests_count     || null },
         { to: 'flags',     end: false, label: 'Safety Flags', shortLabel: 'Flags',     icon: <FlagsIcon />,     iconLg: <FlagsIcon     size={20} />, badge: counts?.safety_flags_count || null },
-        { to: 'patients',  end: false, label: 'Patients',     shortLabel: 'Patients',  icon: <PatientsIcon />,  iconLg: <PatientsIcon  size={20} />, badge: counts?.patients_count     || null },
+        { to: 'patients',  end: false, label: 'Patients',     shortLabel: 'Patients',  icon: <PatientsIcon />,  iconLg: <PatientsIcon  size={20} />, badge: null },
         { to: 'plans',     end: false, label: 'Plans',        shortLabel: 'Plans',     icon: <PlansIcon />,     iconLg: <PlansIcon     size={20} />, badge: null },
-        { to: 'inquiries', end: false, label: 'Inquiries',    shortLabel: 'Inquiries', icon: <InquiriesIcon />, iconLg: <InquiriesIcon size={20} />, badge: counts?.inquiries_count    || null },
+        { to: 'inquiries', end: false, label: 'Inquiries',    shortLabel: 'Inquiries', icon: <InquiriesIcon />, iconLg: <InquiriesIcon size={20} />, badge: null },
     ];
 
     return (

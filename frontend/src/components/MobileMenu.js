@@ -58,17 +58,8 @@ function SignOutIcon() {
     );
 }
 
-function ProfileIcon() {
-    return (
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="7" r="4"/>
-            <path d="M4 21v-1a8 8 0 0116 0v1"/>
-        </svg>
-    );
-}
-
 /* ── MobileMenu ──────────────────────────────────────────────── */
-export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileRoute }) {
+export default function MobileMenu({ isOpen, onClose, links, homeRoute }) {
     const { user, logout } = useAuth();
     const { theme, toggle } = useTheme();
     const photoUrl = useProfilePhoto(user?.role);
@@ -163,12 +154,6 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute, profileR
                         </span>
                     </button>
 
-                    {!isGuest && profileRoute && (
-                        <Link to={profileRoute} className="mm-footer-btn" onClick={onClose}>
-                            <span className="mm-footer-icon"><ProfileIcon /></span>
-                            <span>Profile</span>
-                        </Link>
-                    )}
                 </div>
             </div>
 
