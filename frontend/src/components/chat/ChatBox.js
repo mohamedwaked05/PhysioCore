@@ -143,6 +143,45 @@ function MessageList({ messages, currentUserId, loading, newCount, listRef }) {
     );
 }
 
+/* ── Image compression (mirrors Chatbot.js, outputs File for FormData) ── */
+function compressImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onerror = reject;
+            img.onload = () => {
+                try {
+                    const MAX_SIZE = 1200;
+                    let { width, height } = img;
+                    if (width > MAX_SIZE || height > MAX_SIZE) {
+                        const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
+                        width  = Math.floor(width  * ratio);
+                        height = Math.floor(height * ratio);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width  = width;
+                    canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(
+                        (blob) => {
+                            if (!blob) { reject(new Error('Canvas toBlob failed')); return; }
+                            resolve(new File([blob], 'photo.jpg', { type: 'image/jpeg' }));
+                        },
+                        'image/jpeg',
+                        0.82
+                    );
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
 /* ── MessageInput ─────────────────────────────────────────── */
 function MessageInput({ onSend, sending, listRef }) {
     const { addToast }   = useToast();
@@ -185,10 +224,23 @@ function MessageInput({ onSend, sending, listRef }) {
         setImagePreview({ localUrl, uploading: true, uploadedUrl: null });
 
         try {
-            const res = await uploadChatImage(file);
+            const compressed = await compressImage(file);
+            const res = await uploadChatImage(compressed);
             setImagePreview({ localUrl, uploading: false, uploadedUrl: res.data.url });
-        } catch {
-            addToast('Image upload failed. Please try again.', 'error');
+        } catch (err) {
+            const serverMsg = err.response?.data?.errors?.image?.[0]
+                           || err.response?.data?.message
+                           || null;
+            const displayMsg = serverMsg
+                ? `Upload failed: ${serverMsg}`
+                : 'Image upload failed. Please try a smaller image.';
+            console.error('Image upload error:', {
+                status: err.response?.status,
+                data:   err.response?.data,
+                fileSize: file?.size,
+                fileType: file?.type,
+            });
+            addToast(displayMsg, 'error');
             setImagePreview(null);
             URL.revokeObjectURL(localUrl);
         }

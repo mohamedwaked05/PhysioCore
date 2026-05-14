@@ -121,8 +121,10 @@ class MessageController extends Controller
      */
     public function uploadImage(Request $request)
     {
+        ini_set('memory_limit', '512M');
+
         $request->validate([
-            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:10240'],
+            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:15360'],
         ]);
 
         $file     = $request->file('image');
