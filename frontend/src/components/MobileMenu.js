@@ -130,6 +130,18 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute }) {
                         </NavLink>
                     ))}
 
+                    {/* Night Mode toggle — inside scroll area so it's always reachable */}
+                    <div className="mm-divider" />
+                    <button className="mm-footer-btn" onClick={() => toggle()}>
+                        <span className="mm-footer-icon">
+                            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+                        </span>
+                        <span>Night Mode</span>
+                        <span className={`mm-theme-pill${theme === 'dark' ? ' on' : ''}`}>
+                            {theme === 'dark' ? 'ON' : 'OFF'}
+                        </span>
+                    </button>
+
                     {/* Guest links */}
                     {isGuest && (
                         <>
@@ -141,20 +153,6 @@ export default function MobileMenu({ isOpen, onClose, links, homeRoute }) {
                         </>
                     )}
                 </nav>
-
-                {/* Footer: theme toggle + profile */}
-                <div className="mm-footer">
-                    <button className="mm-footer-btn" onClick={() => toggle()}>
-                        <span className="mm-footer-icon">
-                            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-                        </span>
-                        <span>Night Mode</span>
-                        <span className={`mm-theme-pill${theme === 'dark' ? ' on' : ''}`}>
-                            {theme === 'dark' ? 'ON' : 'OFF'}
-                        </span>
-                    </button>
-
-                </div>
             </div>
 
             {/* Sign out confirmation dialog */}

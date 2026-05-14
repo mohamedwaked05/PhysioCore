@@ -498,7 +498,7 @@ export default function NavBar({ homeRoute, links, profileRoute, qrClinicId = nu
 
                         {/* Dropdown */}
                         {notifOpen && (
-                            <div style={{
+                            <div className="notif-dropdown" style={{
                                 position: 'absolute', top: 'calc(100% + 8px)', right: 0,
                                 width: 340, background: 'var(--surface)',
                                 border: '0.5px solid var(--border)',
