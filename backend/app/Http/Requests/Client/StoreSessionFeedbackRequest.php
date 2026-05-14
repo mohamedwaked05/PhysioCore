@@ -22,7 +22,7 @@ class StoreSessionFeedbackRequest extends FormRequest
             'exercises_completed'  => ['required', 'integer', 'min:0'],
             'exercises_total'      => ['required', 'integer', 'min:0'],
             'exercise_ids'         => ['nullable', 'array'],
-            'exercise_ids.*'       => ['integer', 'exists:rehab_plan_exercises,id'],
+            'exercise_ids.*'       => ['integer', 'min:1'],
         ];
     }
 }

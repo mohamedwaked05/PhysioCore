@@ -58,6 +58,7 @@ export default function TodayPage() {
     const [escalating,      setEscalating]      = useState(false);
     const criticalSentRef = useRef(false); // prevents duplicate critical escalations per session
     const isInitialLoad   = useRef(true);  // prevents [clinicId] effect from double-firing on mount
+    const submitGuardRef  = useRef(false); // synchronous guard — prevents duplicate rapid-tap submissions
 
     const completedCount = completed.size;
     const totalCount     = exercises.length;
@@ -243,29 +244,31 @@ export default function TodayPage() {
         }
     };
 
-    // Submit feedback + mark day complete
+    // Submit feedback then mark day complete — sequential so a failed
+    // feedback submission never leaves the day marked complete with no data.
     const handleSubmit = async () => {
+        if (submitGuardRef.current) return; // block rapid double-taps before re-render
         if (!clinicId) { addToast('Please select a clinic.', 'warning'); return; }
         if (!painLevel) { addToast('Please rate your pain level before submitting.', 'warning'); return; }
         if (!effortLevel) { addToast('Please rate your effort level before submitting.', 'warning'); return; }
 
+        submitGuardRef.current = true;
         setSubmitting(true);
         try {
-            const [feedbackRes] = await Promise.all([
-                submitSessionFeedback({
-                    clinic_id:           parseInt(clinicId),
-                    rating:              rating || null,
-                    pain_level:          painLevel || null,
-                    effort_level:        effortLevel || null,
-                    feedback_text:       feedback.trim() || null,
-                    exercises_completed: completedCount,
-                    exercises_total:     totalCount,
-                    exercise_ids:        [...completed],
-                }),
-                ...(plan ? [markDayComplete(plan.id, TODAY_DAY)] : []),
-            ]);
+            const feedbackRes = await submitSessionFeedback({
+                clinic_id:           parseInt(clinicId),
+                rating:              rating || null,
+                pain_level:          painLevel || null,
+                effort_level:        effortLevel || null,
+                feedback_text:       feedback.trim() || null,
+                exercises_completed: completedCount,
+                exercises_total:     totalCount,
+                exercise_ids:        [...completed],
+            });
 
-            // Capture AI safety result from session feedback response
+            // Only mark day complete after feedback is saved successfully
+            if (plan) await markDayComplete(plan.id, TODAY_DAY);
+
             if (feedbackRes?.data?.ai?.safety_flag) {
                 setSafetyResult(feedbackRes.data.ai);
             }
@@ -276,6 +279,7 @@ export default function TodayPage() {
         } catch (err) {
             addToast(err.response?.data?.message ?? 'Failed to submit. Please try again.', 'error');
         } finally {
+            submitGuardRef.current = false;
             setSubmitting(false);
         }
     };

@@ -30,23 +30,23 @@ class SessionFeedbackController extends Controller
             return response()->json(['message' => 'You are not a patient of this clinic.'], 403);
         }
 
-        // ── Exercise ownership validation ─────────────────────
+        // ── Resolve valid exercise IDs ────────────────────────
+        // Filter submitted IDs against the current plan so stale IDs (from a
+        // plan the clinic just edited) are silently dropped instead of blocking
+        // the whole feedback submission.
+        $exerciseIds = [];
         if (!empty($request->exercise_ids)) {
             $plan = RehabPlan::where('client_profile_id', $profile->id)
                 ->where('clinic_id', $clinicId)
                 ->latest()
                 ->first();
 
-            if (!$plan) {
-                return response()->json(['message' => 'No rehab plan found for this clinic.'], 422);
-            }
-
-            $validIds     = $plan->exercises()->pluck('id')->all();
-            $submittedIds = array_map('intval', $request->exercise_ids);
-            $invalidIds   = array_diff($submittedIds, $validIds);
-
-            if (!empty($invalidIds)) {
-                return response()->json(['message' => 'One or more exercise IDs do not belong to your plan.'], 403);
+            if ($plan) {
+                $validIds    = $plan->exercises()->pluck('id')->toArray();
+                $exerciseIds = array_values(array_intersect(
+                    array_map('intval', $request->exercise_ids),
+                    $validIds
+                ));
             }
         }
 
@@ -83,9 +83,9 @@ class SessionFeedbackController extends Controller
         }
 
         // ── Save exercise logs ────────────────────────────────
-        if (!empty($request->exercise_ids)) {
+        if (!empty($exerciseIds)) {
             $completedAt = Carbon::now('UTC');
-            foreach ($request->exercise_ids as $exerciseId) {
+            foreach ($exerciseIds as $exerciseId) {
                 ExerciseLog::updateOrCreate(
                     [
                         'rehab_plan_exercise_id' => (int) $exerciseId,
