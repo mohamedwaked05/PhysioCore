@@ -173,7 +173,7 @@ export default function LandingPage() {
                     </button>
                 </div>
 
-                {/* Chat preview card — clicks open the real floating chatbot */}
+                {/* Chat card — clicks open the real floating chatbot */}
                 <div
                     className="lp-new-chat-wrap"
                     role="button"
@@ -182,24 +182,19 @@ export default function LandingPage() {
                     onKeyDown={e => e.key === 'Enter' && window.dispatchEvent(new CustomEvent('openChatbot'))}
                     aria-label="Open AI Injury Assessment chat"
                 >
-                    <div className="lp-new-chat-label">
+                    <div className="lp-new-chat-header">
+                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', flexShrink: 0, display: 'inline-block' }} />
                         <BrainIcon />
                         AI Injury Assessment
                     </div>
 
                     <div className="lp-new-chat-msgs">
-                        <div className="lp-new-chat-bubble lp-new-chat-bubble--ai">
-                            Hi! I'm PhysioCore's sports injury AI. Describe what happened — I'll give you a fast assessment.
-                        </div>
-                        <div className="lp-new-chat-bubble lp-new-chat-bubble--user">
-                            I've had shoulder pain for 3 days after a fall.
-                        </div>
-                        <div className="lp-new-chat-bubble lp-new-chat-bubble--ai">
-                            That sounds like it could be a rotator cuff strain. Let me find verified clinics near you…
+                        <div style={{ margin: 'auto', color: 'var(--text-muted)', fontSize: 13, padding: '1rem', textAlign: 'center' }}>
+                            Describe your injury and I'll help find the right clinic.
                         </div>
                     </div>
 
-                    <div className="lp-new-chat-input">
+                    <div className="lp-new-chat-input-row">
                         <span className="lp-new-chat-input-field">Describe your injury…</span>
                         <div className="lp-new-chat-send" aria-hidden>
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
