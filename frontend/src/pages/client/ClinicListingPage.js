@@ -58,26 +58,20 @@ function EmptyState({ hasFilters, onClear }) {
 
 function ClinicCardSkeleton() {
     return (
-        <div className="clinic-card">
-            <div className="clinic-card-banner" style={{ background: '#1e1e30' }}>
-                <div style={{
-                    position: 'absolute', bottom: -28, left: '1.25rem',
-                    width: 56, height: 56, borderRadius: 14,
-                    background: 'rgba(255,255,255,0.08)',
-                }} />
-            </div>
+        <div className="clinic-card clinic-card-skeleton">
+            <div className="clinic-skeleton-banner" />
             <div className="clinic-card-body">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '0.75rem' }}>
-                    <Skeleton height="16px" width="55%" style={{ background: 'rgba(255,255,255,0.1)' }} />
-                    <Skeleton height="11px" width="38%" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                    <Skeleton height="16px" width="55%" />
+                    <Skeleton height="11px" width="38%" />
                 </div>
-                <Skeleton height="11px" style={{ marginBottom: '0.25rem', background: 'rgba(255,255,255,0.07)' }} />
-                <Skeleton height="11px" width="80%" style={{ marginBottom: '0.85rem', background: 'rgba(255,255,255,0.07)' }} />
+                <Skeleton height="11px" style={{ marginBottom: '0.25rem' }} />
+                <Skeleton height="11px" width="80%" style={{ marginBottom: '0.85rem' }} />
                 <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.85rem' }}>
-                    <Skeleton height="20px" width="75px" radius="999px" style={{ background: 'rgba(255,255,255,0.07)' }} />
-                    <Skeleton height="20px" width="90px" radius="999px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                    <Skeleton height="20px" width="75px" radius="999px" />
+                    <Skeleton height="20px" width="90px" radius="999px" />
                 </div>
-                <Skeleton height="38px" radius="10px" style={{ background: 'rgba(13,148,136,0.25)' }} />
+                <Skeleton height="38px" radius="10px" />
             </div>
         </div>
     );

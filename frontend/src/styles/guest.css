@@ -2054,3 +2054,54 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Clinic card skeleton ────────────────────────────────── */
+.clinic-skeleton-banner {
+    height: 110px;
+    background: var(--border);
+    flex-shrink: 0;
+    position: relative;
+}
+
+/* Logo placeholder overlapping the banner */
+.clinic-skeleton-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -28px;
+    left: 1.25rem;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: var(--border);
+    z-index: 1;
+}
+
+/* Dark mode skeleton */
+[data-theme="dark"] .clinic-card-skeleton {
+    background: #13131f;
+}
+
+[data-theme="dark"] .clinic-card-skeleton .ui-skeleton {
+    background: linear-gradient(90deg, #1e2135 25%, #252840 50%, #1e2135 75%);
+    background-size: 200% 100%;
+}
+
+[data-theme="dark"] .clinic-skeleton-banner {
+    background: #1a1c2e;
+}
+
+[data-theme="dark"] .clinic-skeleton-banner::after {
+    background: #252840;
+}
+
+@media (max-width: 768px) {
+    .clinic-skeleton-banner {
+        height: 90px;
+    }
+
+    .clinic-skeleton-banner::after {
+        width: 48px;
+        height: 48px;
+        bottom: -24px;
+    }
+}
