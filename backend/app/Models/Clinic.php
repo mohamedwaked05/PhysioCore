@@ -20,6 +20,7 @@ class Clinic extends Model
         'license_file_url',
         'cert_file_url',
         'profile_photo_url',
+        'cover_photo_url',
         'certifications',
         'experience',
         'payment_methods',

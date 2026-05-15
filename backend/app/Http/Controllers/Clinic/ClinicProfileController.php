@@ -18,8 +18,7 @@ class ClinicProfileController extends Controller
         $user   = $request->user();
         $userId = $user->id;
         $clinic = Cache::remember("clinic_profile_{$userId}", 60, fn() => $user->clinic);
-        $data   = $clinic ? $clinic->toArray() : [];
-        $data['cover_photo_url'] = $user->cover_photo_url;
+        $data = $clinic ? $clinic->toArray() : [];
         return response()->json($data);
     }
 
@@ -48,7 +47,11 @@ class ClinicProfileController extends Controller
             $data['profile_photo_url'] = $this->fileToBase64($request->file('profile_photo'));
         }
 
-        unset($data['license_file'], $data['cert_file'], $data['profile_photo']);
+        if ($request->hasFile('cover_photo')) {
+            $data['cover_photo_url'] = $this->fileToBase64($request->file('cover_photo'));
+        }
+
+        unset($data['license_file'], $data['cert_file'], $data['profile_photo'], $data['cover_photo']);
         $clinic->update($data);
 
         Cache::forget("clinic_profile_{$request->user()->id}");
@@ -75,7 +78,7 @@ class ClinicProfileController extends Controller
         }
 
         if ($request->hasFile('cover_photo')) {
-            $user->update(['cover_photo_url' => $this->fileToBase64($request->file('cover_photo'))]);
+            $data['cover_photo_url'] = $this->fileToBase64($request->file('cover_photo'));
         }
 
         unset($data['license_file'], $data['cert_file'], $data['profile_photo'], $data['cover_photo']);
@@ -83,9 +86,7 @@ class ClinicProfileController extends Controller
 
         Cache::forget("clinic_profile_{$user->id}");
 
-        $fresh = $clinic->fresh()->toArray();
-        $fresh['cover_photo_url'] = $user->fresh()->cover_photo_url;
-        return response()->json($fresh);
+        return response()->json($clinic->fresh()->toArray());
     }
 
     /** Store non-image files (PDF licenses) on the filesystem as before. */
