@@ -59,25 +59,25 @@ function EmptyState({ hasFilters, onClear }) {
 function ClinicCardSkeleton() {
     return (
         <div className="clinic-card">
-            <div className="clinic-card-banner" style={{ background: 'var(--surface-dim)' }}>
+            <div className="clinic-card-banner" style={{ background: '#1e1e30' }}>
                 <div style={{
-                    position: 'absolute', bottom: -24, left: '1.25rem',
-                    width: 48, height: 48, borderRadius: 12,
-                    background: 'var(--surface)', border: '2px solid var(--bg)',
+                    position: 'absolute', bottom: -28, left: '1.25rem',
+                    width: 56, height: 56, borderRadius: 14,
+                    background: 'rgba(255,255,255,0.08)',
                 }} />
             </div>
             <div className="clinic-card-body">
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '0.75rem', paddingTop: '0.5rem' }}>
-                    <Skeleton height="15px" width="55%" />
-                    <Skeleton height="11px" width="38%" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '0.75rem' }}>
+                    <Skeleton height="16px" width="55%" style={{ background: 'rgba(255,255,255,0.1)' }} />
+                    <Skeleton height="11px" width="38%" style={{ background: 'rgba(255,255,255,0.07)' }} />
                 </div>
-                <Skeleton height="11px" style={{ marginBottom: '0.25rem' }} />
-                <Skeleton height="11px" width="80%" style={{ marginBottom: '0.85rem' }} />
+                <Skeleton height="11px" style={{ marginBottom: '0.25rem', background: 'rgba(255,255,255,0.07)' }} />
+                <Skeleton height="11px" width="80%" style={{ marginBottom: '0.85rem', background: 'rgba(255,255,255,0.07)' }} />
                 <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.85rem' }}>
-                    <Skeleton height="20px" width="75px" radius="999px" />
-                    <Skeleton height="20px" width="90px" radius="999px" />
+                    <Skeleton height="20px" width="75px" radius="999px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+                    <Skeleton height="20px" width="90px" radius="999px" style={{ background: 'rgba(255,255,255,0.07)' }} />
                 </div>
-                <Skeleton height="36px" radius="10px" />
+                <Skeleton height="38px" radius="10px" style={{ background: 'rgba(13,148,136,0.25)' }} />
             </div>
         </div>
     );
@@ -287,8 +287,11 @@ export default function ClinicListingPage() {
                                     tabIndex={0}
                                     onKeyDown={e => e.key === 'Enter' && navigate(`/clinics/${clinic.id}`)}
                                 >
-                                    {/* Banner */}
-                                    <div className="clinic-card-banner">
+                                    {/* Banner — uses profile_photo_url as cover if available */}
+                                    <div
+                                        className={`clinic-card-banner${clinic.profile_photo_url ? ' clinic-card-banner--photo' : ''}`}
+                                        style={clinic.profile_photo_url ? { backgroundImage: `url(${clinic.profile_photo_url})` } : {}}
+                                    >
                                         <div className="clinic-card-verified">
                                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -296,35 +299,26 @@ export default function ClinicListingPage() {
                                             <span>Verified</span>
                                         </div>
                                         <div className="clinic-card-logo">
-                                            {clinic.profile_photo_url ? (
-                                                <img src={clinic.profile_photo_url} alt={name} />
-                                            ) : (
-                                                <span>{getInitials(name)}</span>
-                                            )}
+                                            <span>{getInitials(name)}</span>
                                         </div>
                                     </div>
 
                                     {/* Body */}
                                     <div className="clinic-card-body">
                                         <div className="clinic-card-top">
-                                            <div>
-                                                <h3 className="clinic-card-name">{name}</h3>
-                                                <div className="clinic-card-location">
-                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                                                        <circle cx="12" cy="10" r="3"/>
-                                                    </svg>
-                                                    <span>{clinic.address || 'Lebanon'}</span>
-                                                </div>
+                                            <h3 className="clinic-card-name">{name}</h3>
+                                            <div className="clinic-card-location">
+                                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                                                    <circle cx="12" cy="10" r="3"/>
+                                                </svg>
+                                                <span>{clinic.address || 'Lebanon'}</span>
                                             </div>
                                         </div>
 
                                         <p className="clinic-card-description">
-                                            {clinic.specialty_text
-                                                ? clinic.specialty_text.slice(0, 100) + (clinic.specialty_text.length > 100 ? '…' : '')
-                                                : clinic.description
-                                                    ? clinic.description.slice(0, 100) + (clinic.description.length > 100 ? '…' : '')
-                                                    : 'Verified physiotherapy clinic offering personalized rehabilitation plans.'}
+                                            {clinic.specialty_text || clinic.description
+                                                || 'Verified physiotherapy clinic offering personalized rehabilitation plans.'}
                                         </p>
 
                                         {tags.length > 0 && (
@@ -359,7 +353,7 @@ export default function ClinicListingPage() {
                                             {clinic.estimated_response_time && (
                                                 <div className="clinic-stat clinic-stat-green">
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
                                                     </svg>
                                                     <span>Responds {clinic.estimated_response_time}</span>
                                                 </div>
@@ -382,7 +376,8 @@ export default function ClinicListingPage() {
                                                 ) : (
                                                     <>
                                                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14z"/>
+                                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                            <circle cx="12" cy="12" r="3"/>
                                                         </svg>
                                                         Request Access
                                                     </>
@@ -395,8 +390,7 @@ export default function ClinicListingPage() {
                                                 aria-label="View clinic profile"
                                             >
                                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                    <circle cx="12" cy="12" r="3"/>
+                                                    <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
                                                 </svg>
                                             </button>
                                         </div>
