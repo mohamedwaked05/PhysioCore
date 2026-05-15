@@ -49,18 +49,6 @@ function SearchIcon() {
     );
 }
 
-function BrainIcon() {
-    return (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15.5 13a3.5 3.5 0 00-3.5 3.5v1a3.5 3.5 0 007 0v-1.8"/>
-            <path d="M8.5 13a3.5 3.5 0 013.5 3.5v1a3.5 3.5 0 01-7 0v-1.8"/>
-            <path d="M17.5 16a3.5 3.5 0 000-7h-.5"/>
-            <path d="M19 9.3v-2.8a3.5 3.5 0 00-7 0"/>
-            <path d="M6.5 16a3.5 3.5 0 010-7h.5"/>
-            <path d="M5 9.3v-2.8a3.5 3.5 0 017 0v10"/>
-        </svg>
-    );
-}
 
 
 function HamburgerIcon() {
