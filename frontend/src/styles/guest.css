@@ -2111,7 +2111,7 @@
 
 .lp-new-hero {
   text-align: center;
-  padding: 2rem 2rem 0;
+  padding: 1.25rem 4rem 0;
 }
 
 .lp-new-hero-inner {
@@ -2129,7 +2129,7 @@
   font-size: 11px;
   padding: 3px 12px;
   border-radius: 20px;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2137,49 +2137,52 @@
 }
 
 .lp-new-h1 {
-  font-size: clamp(36px, 4vw, 52px);
+  font-size: clamp(32px, 4vw, 48px);
   font-weight: 800;
   color: var(--text);
   line-height: 1.1;
   letter-spacing: -0.025em;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   font-family: 'Syne', sans-serif;
 }
 
 .lp-new-h1 em { color: var(--primary); font-style: normal; }
 
 .lp-new-sub {
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text-muted);
   line-height: 1.65;
-  max-width: 420px;
-  margin: 0 auto 2rem;
+  max-width: 500px;
+  margin: 0 auto 1.25rem;
   font-family: 'Inter', sans-serif;
 }
 
 .lp-new-btns {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 2.5rem;
+  gap: 10px;
+  margin-bottom: 1.5rem;
 }
 
 .lp-new-btns .lp-btn-primary,
 .lp-new-btns .lp-btn-secondary {
-  padding: 11px 28px;
-  font-size: 15px;
+  padding: 10px 28px;
+  font-size: 14px;
   border-radius: 10px;
 }
 
-/* Chat card */
+/* Chat card — flex column so input is always pinned at bottom */
 .lp-new-chat-wrap {
   background: var(--surface);
   border: 0.5px solid var(--border);
   border-radius: 12px 12px 0 0;
-  max-width: 560px;
+  max-width: 680px;
   margin: 0 auto;
   overflow: hidden;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
 }
 
 .lp-new-chat-label {
@@ -2187,28 +2190,32 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  padding: 0.7rem 1rem;
+  padding: 0.55rem 1.25rem;
   border-bottom: 0.5px solid var(--border);
   display: flex;
   align-items: center;
   gap: 6px;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 /* Chat bubble preview */
 .lp-new-chat-msgs {
-  padding: 0.85rem 1rem;
+  padding: 0.65rem 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 200px;
 }
 
 .lp-new-chat-bubble {
   max-width: 82%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.45rem 0.7rem;
   border-radius: 10px;
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.5;
   font-family: 'Inter', sans-serif;
 }
@@ -2228,19 +2235,20 @@
   align-self: flex-end;
 }
 
-/* Chat input row */
+/* Chat input row — fixed at bottom */
 .lp-new-chat-input {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0.6rem 1rem;
+  padding: 0.5rem 1.25rem;
   border-top: 0.5px solid var(--border);
   background: var(--surface-dim);
+  flex-shrink: 0;
 }
 
 .lp-new-chat-input-field {
   flex: 1;
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-muted);
   font-family: 'Inter', sans-serif;
   pointer-events: none;
@@ -2248,8 +2256,8 @@
 }
 
 .lp-new-chat-send {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 6px;
   background: #0891b2;
   display: flex;
@@ -2265,16 +2273,16 @@
 .lp-new-stats {
   display: flex;
   justify-content: center;
-  gap: 3rem;
+  gap: 4rem;
   background: var(--surface);
   border-top: 0.5px solid var(--border);
-  padding: 1rem 2rem;
+  padding: 0.65rem 2rem;
 }
 
 .lp-new-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 
 .lp-new-stat-n {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text);
   font-family: 'Syne', sans-serif;
@@ -2282,7 +2290,7 @@
 }
 
 .lp-new-stat-l {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
   margin-top: 1px;
   font-family: 'Inter', sans-serif;
@@ -2310,7 +2318,7 @@
 /* Hide floating Assess Injury FAB on landing page so it doesn't overlap chat card */
 .lp-new-shell .cb-toggle { display: none !important; }
 
-/* Fix Sign in secondary button on mobile */
+/* Fix Sign in secondary button */
 .lp-new-btns .lp-btn-secondary {
   border: 1.5px solid var(--border);
   border-radius: 10px;
@@ -2324,8 +2332,8 @@
   .lp-new-sub { max-width: 100%; }
   .lp-new-btns { flex-direction: column; align-items: center; }
   .lp-new-btns > * { width: 100%; justify-content: center; }
-  .lp-new-chat-wrap { max-width: 100%; border-radius: 10px 10px 0 0; padding-bottom: 1rem; max-height: 460px; overflow: hidden; }
-  .lp-new-chat-msgs { max-height: 240px; overflow-y: auto; }
+  .lp-new-chat-wrap { max-width: 100%; border-radius: 10px 10px 0 0; max-height: 400px; }
+  .lp-new-chat-msgs { max-height: 200px; }
   .lp-new-stats { gap: 1.25rem; }
   .lp-new-stat-n { font-size: 17px; }
   .lp-new-stat-l { font-size: 10px; }
