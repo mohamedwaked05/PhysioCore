@@ -2105,3 +2105,44 @@
         bottom: -24px;
     }
 }
+
+/* ── Landing page new ── */
+.lp-new-shell { background: var(--bg); }
+.lp-new-hero { text-align: center; padding: 3.5rem 1.5rem 0; }
+.lp-new-pill { display: inline-flex; align-items: center; gap: 5px; background: rgba(62,71,114,0.08); border: 0.5px solid rgba(62,71,114,0.2); color: var(--primary); font-size: 11px; padding: 3px 12px; border-radius: 20px; margin-bottom: 1.25rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-family: 'Inter', sans-serif; }
+.lp-new-h1 { font-size: 32px; font-weight: 700; color: var(--text); line-height: 1.15; letter-spacing: -0.025em; margin-bottom: 0.6rem; font-family: 'Syne', sans-serif; }
+.lp-new-h1 em { color: var(--primary); font-style: normal; }
+.lp-new-sub { font-size: 13px; color: var(--text-muted); line-height: 1.65; max-width: 340px; margin: 0 auto 1.75rem; font-family: 'Inter', sans-serif; }
+.lp-new-btns { display: flex; justify-content: center; gap: 8px; margin-bottom: 2rem; }
+.lp-new-chat-wrap { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px 12px 0 0; max-width: 420px; margin: 0 auto; padding: 1rem; }
+.lp-new-chat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.6rem; padding-bottom: 0.5rem; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 5px; font-family: 'Inter', sans-serif; font-weight: 700; }
+.lp-new-stats { display: flex; justify-content: center; gap: 2rem; background: var(--surface); border-top: 0.5px solid var(--border); padding: 0.75rem 1.5rem; }
+.lp-new-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.lp-new-stat-n { font-size: 16px; font-weight: 700; color: var(--text); font-family: 'Syne', sans-serif; line-height: 1; }
+.lp-new-stat-l { font-size: 10px; color: var(--text-muted); margin-top: 1px; font-family: 'Inter', sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+
+[data-theme="dark"] .lp-new-shell { background: #0b0f1c; }
+[data-theme="dark"] .lp-new-hero { background: #0b0f1c; }
+[data-theme="dark"] .lp-new-pill { background: rgba(13,148,136,0.12); border-color: rgba(13,148,136,0.25); color: #2dd4bf; }
+[data-theme="dark"] .lp-new-h1 { color: #fff; }
+[data-theme="dark"] .lp-new-h1 em { color: var(--primary); }
+[data-theme="dark"] .lp-new-sub { color: rgba(255,255,255,0.4); }
+[data-theme="dark"] .lp-new-chat-wrap { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.07); }
+[data-theme="dark"] .lp-new-chat-label { color: rgba(255,255,255,0.3); border-bottom-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .lp-new-stats { background: #0b0f1c; border-top-color: rgba(255,255,255,0.06); }
+[data-theme="dark"] .lp-new-stat-n { color: #fff; }
+[data-theme="dark"] .lp-new-stat-l { color: rgba(255,255,255,0.3); }
+
+@media (max-width: 640px) {
+  .lp-new-hero { padding: 2.5rem 1rem 0; }
+  .lp-new-h1 { font-size: clamp(24px, 6vw, 32px); }
+  .lp-new-sub { max-width: 100%; }
+  .lp-new-btns { flex-direction: column; align-items: center; }
+  .lp-new-btns > * { width: 100%; justify-content: center; }
+  .lp-new-chat-wrap { max-width: 100%; border-radius: 10px 10px 0 0; }
+  .lp-new-stats { gap: 1.25rem; font-size: 0.95em; }
+}
+@media (max-width: 380px) {
+  .lp-new-h1 { font-size: 22px; }
+  .lp-new-btns > * { font-size: 13px; padding: 8px 16px; }
+}

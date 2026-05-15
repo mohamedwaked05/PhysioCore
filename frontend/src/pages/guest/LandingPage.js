@@ -51,22 +51,13 @@ function SearchIcon() {
 
 function BrainIcon() {
     return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15.5 13a3.5 3.5 0 00-3.5 3.5v1a3.5 3.5 0 007 0v-1.8"/>
             <path d="M8.5 13a3.5 3.5 0 013.5 3.5v1a3.5 3.5 0 01-7 0v-1.8"/>
             <path d="M17.5 16a3.5 3.5 0 000-7h-.5"/>
             <path d="M19 9.3v-2.8a3.5 3.5 0 00-7 0"/>
             <path d="M6.5 16a3.5 3.5 0 010-7h.5"/>
             <path d="M5 9.3v-2.8a3.5 3.5 0 017 0v10"/>
-        </svg>
-    );
-}
-
-function ArrowRightIcon() {
-    return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
         </svg>
     );
 }
@@ -89,6 +80,15 @@ function HamburgerIcon() {
     );
 }
 
+function ArrowRightIcon() {
+    return (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+        </svg>
+    );
+}
+
 /* ── Landing Page ────────────────────────────────────────────── */
 export default function LandingPage() {
     const navigate           = useNavigate();
@@ -103,7 +103,7 @@ export default function LandingPage() {
     const isDark = theme === 'dark';
 
     return (
-        <div className={`landing-page ${isDark ? 'landing-dark' : 'landing-light'}`}>
+        <div className={`landing-page lp-new-shell ${isDark ? 'landing-dark' : 'landing-light'}`}>
 
             {/* ── Navbar ─────────────────────────────────────── */}
             <nav className="lp-nav">
@@ -143,7 +143,7 @@ export default function LandingPage() {
 
             {/* ── Mobile menu dropdown ────────────────────────── */}
             {mobileOpen && (
-                <div className={`lp-mobile-menu${isDark ? ' lp-mobile-menu--dark' : ' lp-mobile-menu--light'}`}>
+                <div className="lp-mobile-menu">
                     <button className="lp-mobile-menu-item" onClick={() => { navigate('/clinics'); setMobileOpen(false); }}>
                         <SearchIcon /> Find a Clinic
                     </button>
@@ -161,73 +161,52 @@ export default function LandingPage() {
                 </div>
             )}
 
-            {/* ── Main split ──────────────────────────────────── */}
-            <main className="lp-main">
+            {/* ── Hero ────────────────────────────────────────── */}
+            <div className="lp-new-hero">
 
-                {/* LEFT column */}
-                <div className="lp-left">
-
-                    <div className="lp-badge">
-                        <span className="lp-badge-dot" />
-                        REHABILITATION PLATFORM
-                    </div>
-
-                    <h1 className="lp-headline">
-                        The smarter way<br />
-                        to <span className="lp-headline-accent">recover.</span>
-                    </h1>
-
-                    <p className="lp-subtext">
-                        AI-powered rehab management connecting
-                        patients with verified physiotherapy clinics.
-                    </p>
-
-                    <div className="lp-buttons">
-                        <button className="lp-btn-primary" onClick={() => navigate('/clinics')}>
-                            <SearchIcon />
-                            Find a clinic
-                        </button>
-                        <button className="lp-btn-secondary" onClick={() => navigate('/login')}>
-                            Sign in
-                        </button>
-                    </div>
-
-                    <div className="lp-stats">
-                        <div className="lp-stat">
-                            <span className="lp-stat-num">500+</span>
-                            <span className="lp-stat-label">Verified Clinics</span>
-                        </div>
-                        <div className="lp-stat-div" />
-                        <div className="lp-stat">
-                            <span className="lp-stat-num">12k+</span>
-                            <span className="lp-stat-label">Active Patients</span>
-                        </div>
-                        <div className="lp-stat-div" />
-                        <div className="lp-stat">
-                            <span className="lp-stat-num">4.9★</span>
-                            <span className="lp-stat-label">Avg Rating</span>
-                        </div>
-                    </div>
+                <div className="lp-new-pill">
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', flexShrink: 0 }} />
+                    Rehabilitation Platform
                 </div>
 
-                {/* RIGHT column — cards */}
-                <div className="lp-right">
+                <h1 className="lp-new-h1">
+                    The smarter way to <em>recover.</em>
+                </h1>
 
-                    {/* Card 1 — Pain trend */}
-                    <div className="lp-card lp-card-trend">
+                <p className="lp-new-sub">
+                    AI-powered rehab management connecting patients with verified physiotherapy clinics.
+                </p>
+
+                <div className="lp-new-btns">
+                    <button className="lp-btn-primary" onClick={() => navigate('/clinics')}>
+                        <SearchIcon />
+                        Find a clinic
+                    </button>
+                    <button className="lp-btn-secondary" onClick={() => navigate('/login')}>
+                        Sign in
+                    </button>
+                </div>
+
+                {/* Chat preview card */}
+                <div className="lp-new-chat-wrap">
+                    <div className="lp-new-chat-label">
+                        <BrainIcon />
+                        AI Injury Assessment
+                    </div>
+
+                    {/* Pain trend card */}
+                    <div className="lp-card lp-card-trend" style={{ marginBottom: '8px' }}>
                         <div className="lp-card-label">PAIN TREND THIS WEEK</div>
                         <div className="lp-card-value">↓ 32% improvement</div>
                         <div className="lp-card-sub">Consistent progress since week 1</div>
                     </div>
 
-                    {/* Card 2 — Today's session (hidden on mobile) */}
-                    <div className="lp-card lp-card-session lp-card-mobile-hide">
+                    {/* Today's session card */}
+                    <div className="lp-card lp-card-session" style={{ marginBottom: '8px' }}>
                         <div className="lp-card-label">TODAY'S SESSION</div>
                         <div className="lp-exercises">
                             <div className="lp-exercise">
-                                <div className="lp-ex-dot lp-ex-dot--done">
-                                    <CheckIcon />
-                                </div>
+                                <div className="lp-ex-dot lp-ex-dot--done"><CheckIcon /></div>
                                 <span className="lp-ex-text lp-ex-text--done">Pendulum swing</span>
                             </div>
                             <div className="lp-exercise">
@@ -241,7 +220,7 @@ export default function LandingPage() {
                         </div>
                     </div>
 
-                    {/* Card 3 — AI Assessment */}
+                    {/* AI assessment card */}
                     <div
                         className="lp-card lp-card-ai"
                         role="button"
@@ -250,20 +229,32 @@ export default function LandingPage() {
                         onKeyDown={e => e.key === 'Enter' && window.dispatchEvent(new CustomEvent('openChatbot'))}
                     >
                         <div className="lp-ai-left">
-                            <div className="lp-ai-icon">
-                                <BrainIcon />
-                            </div>
+                            <div className="lp-ai-icon"><BrainIcon /></div>
                             <div className="lp-ai-text-block">
                                 <div className="lp-ai-sublabel">AI Injury Assessment</div>
                                 <div className="lp-ai-main">Describe your injury →</div>
                             </div>
                         </div>
-                        <div className="lp-ai-arrow">
-                            <ArrowRightIcon />
-                        </div>
+                        <div className="lp-ai-arrow"><ArrowRightIcon /></div>
                     </div>
                 </div>
-            </main>
+            </div>
+
+            {/* ── Stats bar ───────────────────────────────────── */}
+            <div className="lp-new-stats">
+                <div className="lp-new-stat">
+                    <span className="lp-new-stat-n">500+</span>
+                    <span className="lp-new-stat-l">Verified Clinics</span>
+                </div>
+                <div className="lp-new-stat">
+                    <span className="lp-new-stat-n">12k+</span>
+                    <span className="lp-new-stat-l">Active Patients</span>
+                </div>
+                <div className="lp-new-stat">
+                    <span className="lp-new-stat-n">4.9★</span>
+                    <span className="lp-new-stat-l">Avg Rating</span>
+                </div>
+            </div>
 
             <Chatbot />
         </div>
