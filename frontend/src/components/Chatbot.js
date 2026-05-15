@@ -115,7 +115,7 @@ function compressImage(file) {
     });
 }
 
-export default function Chatbot() {
+export default function Chatbot({ embedded = false }) {
     const [open, setOpen]               = useState(false);
     const [messages, setMessages]       = useState([WELCOME]);
     const [input, setInput]             = useState('');
@@ -255,6 +255,81 @@ export default function Chatbot() {
     };
 
     const canSend = (!!input.trim() || !!selectedImage) && !loading;
+
+    /* ── Embedded inline mode (landing page) ───────────────── */
+    if (embedded) {
+        return (
+            <div className="cb-embedded">
+                <div className="cb-messages" ref={listRef}>
+                    {messages.map((msg, i) => (
+                        <div key={i} className={`cb-msg cb-msg--${msg.role === 'user' ? 'user' : 'bot'}`}>
+                            <div className="cb-msg-bubble">
+                                {msg.image && <img src={msg.image} alt="Injury" className="cb-msg-image" />}
+                                {msg.content && msg.content !== IMAGE_PLACEHOLDER && <span>{msg.content}</span>}
+                            </div>
+                            {msg.clinics?.length > 0 && (
+                                <div className="cb-clinics-wrap">
+                                    <p className="cb-clinics-label">Clinics that treat this</p>
+                                    {msg.clinics.map((c, j) => (
+                                        <div key={j} className="cb-clinic-card"
+                                            onClick={() => navigate(`/clinics/${c.id}`)}
+                                            role="button" tabIndex={0}
+                                            onKeyDown={e => e.key === 'Enter' && navigate(`/clinics/${c.id}`)}>
+                                            <div className="cb-clinic-name">{c.name}</div>
+                                            {c.address   && <div className="cb-clinic-address">📍 {c.address}</div>}
+                                            {c.specialty && <div className="cb-clinic-specialty">{c.specialty}</div>}
+                                            <div className="cb-clinic-cta">View Clinic →</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="cb-msg-time">{fmt(msg.time)}</div>
+                        </div>
+                    ))}
+                    {loading && (
+                        <div className="cb-msg cb-msg--bot">
+                            <div className="cb-msg-bubble"><TypingDots /></div>
+                        </div>
+                    )}
+                    {assessmentDone && !loading && (
+                        <div className="cb-browse-wrap">
+                            <button className="cb-browse-btn" onClick={() => navigate('/clinics')}>
+                                Browse All Clinics →
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                <div className={`cb-input-area${selectedImage ? ' cb-input-area--preview' : ''}`}>
+                    {selectedImage && (
+                        <div className="cb-img-preview-row">
+                            <div className="cb-img-preview-thumb">
+                                <img src={selectedImage} alt="Preview" />
+                                <button className="cb-img-preview-remove" onClick={() => setSelectedImage(null)} aria-label="Remove image">
+                                    <CloseIcon />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                    <div className="cb-input-row">
+                        <button className="cb-camera" onClick={() => cameraInputRef.current?.click()}
+                            aria-label="Attach photo" title="Attach injury photo" type="button">
+                            <CameraIcon />
+                        </button>
+                        <input ref={cameraInputRef} type="file" accept="image/*"
+                            style={{ display: 'none' }} onChange={handleImageSelect} />
+                        <textarea ref={inputRef} className="cb-input" value={input} rows={1}
+                            placeholder={selectedImage ? 'Add a description…' : 'Describe your symptoms…'}
+                            onChange={e => { setInput(e.target.value); autoResize(e.target); }}
+                            onKeyDown={handleKey} onFocus={handleInputFocus} aria-label="Message input" />
+                        <button className="cb-send" onClick={send} disabled={!canSend} aria-label="Send message">
+                            <SendIcon />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>

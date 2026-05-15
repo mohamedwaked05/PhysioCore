@@ -2196,125 +2196,56 @@
   border-radius: 10px;
 }
 
-/* Chat card — grows to fill remaining hero space */
-.lp-new-chat-wrap {
+/* Hint text above embedded chat */
+.lp-chat-hint {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 0.6rem;
+  font-family: 'Inter', sans-serif;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .lp-chat-hint { color: rgba(255,255,255,0.4); }
+
+/* Wrapper for the embedded chatbot — grows to fill remaining space */
+.lp-chat-embed {
   max-width: 580px;
   width: 100%;
   margin: 0 auto;
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-  border-radius: 14px 14px 0 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
   flex: 1;
   min-height: 0;
-  cursor: pointer;
-}
-
-/* Header row with green dot + icon + label */
-.lp-new-chat-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0.75rem 1rem;
-  border-bottom: 0.5px solid var(--border);
-  background: var(--surface);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  font-family: 'Inter', sans-serif;
-  flex-shrink: 0;
-}
-
-/* Messages area — fills card */
-.lp-new-chat-msgs {
-  flex: 1;
-  min-height: 80px;
-  max-height: 160px;
-  overflow-y: auto;
-  padding: 0.75rem 1rem;
+  overflow: hidden;
+  border-radius: 14px 14px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
 }
 
-/* Input row — pinned at bottom */
-.lp-new-chat-input-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0.65rem 1rem;
-  border-top: 0.5px solid var(--border);
-  background: var(--surface);
-  flex-shrink: 0;
-}
-
-.lp-new-chat-input-field {
+/* Embedded chatbot panel — overrides fixed positioning from chatbot.css */
+.cb-embedded {
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+  opacity: 1 !important;
+  pointer-events: all !important;
+  border-radius: 14px 14px 0 0;
+  border: 0.5px solid var(--border);
   flex: 1;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-size: 13px;
-  color: var(--text-muted);
-  font-family: 'Inter', sans-serif;
-  pointer-events: none;
-  user-select: none;
-}
-
-.lp-new-chat-send {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: var(--primary);
-  border: none;
+  min-height: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-[data-theme="dark"] .lp-new-chat-wrap { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.07); }
-[data-theme="dark"] .lp-new-chat-header { background: rgba(255,255,255,0.03); border-bottom-color: rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); }
-[data-theme="dark"] .lp-new-chat-input-row { background: rgba(255,255,255,0.03); border-top-color: rgba(255,255,255,0.06); }
-
-/* Stats bar — pinned at bottom, never grows */
-.lp-new-stats {
-  display: flex;
-  justify-content: center;
-  gap: 4rem;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--surface);
-  border-top: 0.5px solid var(--border);
-  padding: 0.6rem 2rem;
-  flex-shrink: 0;
-  max-width: 680px;
-  margin: 0 auto;
-  width: 100%;
+  box-shadow: none !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
-.lp-new-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-
-.lp-new-stat-n {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text);
-  font-family: 'Syne', sans-serif;
-  line-height: 1;
+[data-theme="dark"] .cb-embedded {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.07);
 }
 
-.lp-new-stat-l {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-top: 1px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
 
 /* Dark mode */
 [data-theme="dark"] .lp-new-shell { background: #0b0f1c; }
@@ -2323,10 +2254,6 @@
 [data-theme="dark"] .lp-new-h1   { color: #fff; }
 [data-theme="dark"] .lp-new-h1 em { color: var(--primary); }
 [data-theme="dark"] .lp-new-sub  { color: rgba(255,255,255,0.4); }
-[data-theme="dark"] .lp-new-chat-input-field { color: rgba(255,255,255,0.25); }
-[data-theme="dark"] .lp-new-stats { background: #0b0f1c; border-top-color: rgba(255,255,255,0.06); }
-[data-theme="dark"] .lp-new-stat-n { color: #fff; }
-[data-theme="dark"] .lp-new-stat-l { color: rgba(255,255,255,0.3); }
 
 /* Hide floating Assess Injury FAB on landing page so it doesn't overlap chat card */
 .lp-new-shell .cb-toggle { display: none !important; }
@@ -2341,16 +2268,12 @@
 
 @media (max-width: 640px) {
   .lp-new-hero { padding: 0.85rem 1rem 0; }
-  .lp-new-h1 { font-size: clamp(24px, 6vw, 32px); }
+  .lp-new-h1 { font-size: clamp(22px, 6vw, 30px); }
   .lp-new-sub { font-size: 12px; max-width: 100%; margin-bottom: 0.75rem; }
   .lp-new-btns { flex-direction: column; align-items: stretch; margin-bottom: 0.75rem; }
   .lp-new-btns > * { width: 100%; justify-content: center; padding: 10px; }
-  .lp-new-chat-wrap { max-width: 100%; border-radius: 10px 10px 0 0; }
-  /* Hide mock conversation bubbles on mobile — show only input bar */
-  .lp-new-chat-msgs { display: none; }
-  .lp-new-stats { gap: 1.5rem; padding: 0.5rem 1rem; max-width: 100%; }
-  .lp-new-stat-n { font-size: 16px; }
-  .lp-new-stat-l { font-size: 10px; }
+  .lp-chat-embed { max-width: 100%; border-radius: 10px 10px 0 0; }
+  .cb-embedded { border-radius: 10px 10px 0 0; }
 }
 @media (max-width: 380px) {
   .lp-new-h1 { font-size: 22px; }

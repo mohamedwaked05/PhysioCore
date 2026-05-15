@@ -173,58 +173,14 @@ export default function LandingPage() {
                     </button>
                 </div>
 
-                {/* Chat card — clicks open the real floating chatbot */}
-                <div
-                    className="lp-new-chat-wrap"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => window.dispatchEvent(new CustomEvent('openChatbot'))}
-                    onKeyDown={e => e.key === 'Enter' && window.dispatchEvent(new CustomEvent('openChatbot'))}
-                    aria-label="Open AI Injury Assessment chat"
-                >
-                    <div className="lp-new-chat-header">
-                        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', flexShrink: 0, display: 'inline-block' }} />
-                        <BrainIcon />
-                        AI Injury Assessment
-                    </div>
+                <p className="lp-chat-hint">Describe your injury and I'll help find the right clinic.</p>
 
-                    <div className="lp-new-chat-msgs">
-                        <div style={{ margin: 'auto', color: 'var(--text-muted)', fontSize: 13, padding: '1rem', textAlign: 'center' }}>
-                            Describe your injury and I'll help find the right clinic.
-                        </div>
-                    </div>
-
-                    <div className="lp-new-chat-input-row">
-                        <span className="lp-new-chat-input-field">Describe your injury…</span>
-                        <div className="lp-new-chat-send" aria-hidden>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                                <line x1="22" y1="2" x2="11" y2="13"/>
-                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-                            </svg>
-                        </div>
-                    </div>
+                <div className="lp-chat-embed">
+                    <Chatbot embedded />
                 </div>
 
               </div>
             </div>
-
-            {/* ── Stats bar ───────────────────────────────────── */}
-            <div className="lp-new-stats">
-                <div className="lp-new-stat">
-                    <span className="lp-new-stat-n">500+</span>
-                    <span className="lp-new-stat-l">Verified Clinics</span>
-                </div>
-                <div className="lp-new-stat">
-                    <span className="lp-new-stat-n">12k+</span>
-                    <span className="lp-new-stat-l">Active Patients</span>
-                </div>
-                <div className="lp-new-stat">
-                    <span className="lp-new-stat-n">4.9★</span>
-                    <span className="lp-new-stat-l">Avg Rating</span>
-                </div>
-            </div>
-
-            <Chatbot />
         </div>
     );
 }
