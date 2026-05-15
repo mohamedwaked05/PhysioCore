@@ -121,9 +121,9 @@
     transform: translateY(-2px);
 }
 
-/* Generic card selectors */
-.card, [class*="-card"]:not([class*="btn"]):not([class*="role"]):not([class*="lp-role"]),
-[class*="card-"]:not([class*="btn"]):not([class*="lp-hero"]) {
+/* Generic card selectors — clinic-* excluded; those are always dark (#13131f) */
+.card, [class*="-card"]:not([class*="btn"]):not([class*="role"]):not([class*="lp-role"]):not([class*="clinic-"]),
+[class*="card-"]:not([class*="btn"]):not([class*="lp-hero"]):not([class*="clinic-"]) {
     background: var(--surface);
     border-radius: 16px;
     transition: transform 0.2s ease;
