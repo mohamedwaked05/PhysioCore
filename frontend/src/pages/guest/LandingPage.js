@@ -62,13 +62,6 @@ function BrainIcon() {
     );
 }
 
-function CheckIcon() {
-    return (
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-        </svg>
-    );
-}
 
 function HamburgerIcon() {
     return (
@@ -80,14 +73,6 @@ function HamburgerIcon() {
     );
 }
 
-function ArrowRightIcon() {
-    return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
-        </svg>
-    );
-}
 
 /* ── Landing Page ────────────────────────────────────────────── */
 export default function LandingPage() {
@@ -163,6 +148,7 @@ export default function LandingPage() {
 
             {/* ── Hero ────────────────────────────────────────── */}
             <div className="lp-new-hero">
+              <div className="lp-new-hero-inner">
 
                 <div className="lp-new-pill">
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', flexShrink: 0 }} />
@@ -187,57 +173,44 @@ export default function LandingPage() {
                     </button>
                 </div>
 
-                {/* Chat preview card */}
-                <div className="lp-new-chat-wrap">
+                {/* Chat preview card — clicks open the real floating chatbot */}
+                <div
+                    className="lp-new-chat-wrap"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => window.dispatchEvent(new CustomEvent('openChatbot'))}
+                    onKeyDown={e => e.key === 'Enter' && window.dispatchEvent(new CustomEvent('openChatbot'))}
+                    aria-label="Open AI Injury Assessment chat"
+                >
                     <div className="lp-new-chat-label">
                         <BrainIcon />
                         AI Injury Assessment
                     </div>
 
-                    {/* Pain trend card */}
-                    <div className="lp-card lp-card-trend" style={{ marginBottom: '8px' }}>
-                        <div className="lp-card-label">PAIN TREND THIS WEEK</div>
-                        <div className="lp-card-value">↓ 32% improvement</div>
-                        <div className="lp-card-sub">Consistent progress since week 1</div>
-                    </div>
-
-                    {/* Today's session card */}
-                    <div className="lp-card lp-card-session" style={{ marginBottom: '8px' }}>
-                        <div className="lp-card-label">TODAY'S SESSION</div>
-                        <div className="lp-exercises">
-                            <div className="lp-exercise">
-                                <div className="lp-ex-dot lp-ex-dot--done"><CheckIcon /></div>
-                                <span className="lp-ex-text lp-ex-text--done">Pendulum swing</span>
-                            </div>
-                            <div className="lp-exercise">
-                                <div className="lp-ex-dot lp-ex-dot--active" />
-                                <span className="lp-ex-text lp-ex-text--active">Shoulder squeeze</span>
-                            </div>
-                            <div className="lp-exercise">
-                                <div className="lp-ex-dot lp-ex-dot--active" />
-                                <span className="lp-ex-text lp-ex-text--active">Knee extension</span>
-                            </div>
+                    <div className="lp-new-chat-msgs">
+                        <div className="lp-new-chat-bubble lp-new-chat-bubble--ai">
+                            Hi! I'm PhysioCore's sports injury AI. Describe what happened — I'll give you a fast assessment.
+                        </div>
+                        <div className="lp-new-chat-bubble lp-new-chat-bubble--user">
+                            I've had shoulder pain for 3 days after a fall.
+                        </div>
+                        <div className="lp-new-chat-bubble lp-new-chat-bubble--ai">
+                            That sounds like it could be a rotator cuff strain. Let me find verified clinics near you…
                         </div>
                     </div>
 
-                    {/* AI assessment card */}
-                    <div
-                        className="lp-card lp-card-ai"
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => window.dispatchEvent(new CustomEvent('openChatbot'))}
-                        onKeyDown={e => e.key === 'Enter' && window.dispatchEvent(new CustomEvent('openChatbot'))}
-                    >
-                        <div className="lp-ai-left">
-                            <div className="lp-ai-icon"><BrainIcon /></div>
-                            <div className="lp-ai-text-block">
-                                <div className="lp-ai-sublabel">AI Injury Assessment</div>
-                                <div className="lp-ai-main">Describe your injury →</div>
-                            </div>
+                    <div className="lp-new-chat-input">
+                        <span className="lp-new-chat-input-field">Describe your injury…</span>
+                        <div className="lp-new-chat-send" aria-hidden>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                            </svg>
                         </div>
-                        <div className="lp-ai-arrow"><ArrowRightIcon /></div>
                     </div>
                 </div>
+
+              </div>
             </div>
 
             {/* ── Stats bar ───────────────────────────────────── */}
