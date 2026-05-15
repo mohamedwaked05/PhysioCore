@@ -54,8 +54,7 @@
     height: 520px;
     border-radius: var(--radius-lg);
     background: var(--surface);
-    border: 1px solid var(--border);
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18);
+    border: none;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -201,7 +200,7 @@
 .cb-msg--bot .cb-msg-bubble {
     background: var(--bg);
     color: var(--text);
-    border: 1px solid var(--border);
+    border: none;
     border-bottom-left-radius: 5px;
 }
 
@@ -257,16 +256,14 @@
 .cb-clinic-card {
     background: var(--surface);
     border-radius: 10px;
-    box-shadow: 0 1px 6px rgba(15,22,41,0.08);
     padding: 0.7rem 0.875rem;
     cursor: pointer;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: border-color 0.15s;
     text-align: left;
 }
 
 .cb-clinic-card:hover {
     border-color: var(--accent);
-    box-shadow: 0 2px 12px rgba(6, 182, 212, 0.15);
 }
 
 .cb-clinic-name {
@@ -376,7 +373,7 @@
     height: 60px;
     object-fit: cover;
     border-radius: 8px;
-    border: 1px solid var(--border);
+    border: none;
     display: block;
 }
 

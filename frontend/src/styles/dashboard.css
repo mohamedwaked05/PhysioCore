@@ -689,7 +689,7 @@
     background: var(--surface-dim);
     padding: 0.15rem 0.5rem;
     border-radius: var(--radius-pill);
-    border: 0.5px solid var(--border);
+    border: none;
 }
 
 /* ── Weekly Detail Panel ─────────────────────────────────────── */
@@ -1145,7 +1145,7 @@
     padding: 0.75rem 1.1rem;
     background: rgba(22, 163, 74, 0.08);
     border-radius: var(--radius-md);
-    border: 0.5px solid rgba(22, 163, 74, 0.2);
+    border: none;
     flex-shrink: 0;
 }
 

@@ -52,9 +52,9 @@
     --danger-light:   #fee2e2;
 
     /* Shadows */
-    --shadow-sm:  0 1px 3px rgba(15,22,41,0.08), 0 1px 2px rgba(15,22,41,0.04);
-    --shadow-md:  0 4px 16px rgba(15,22,41,0.10), 0 1px 4px rgba(15,22,41,0.06);
-    --shadow-lg:  0 8px 32px rgba(15,22,41,0.12), 0 2px 8px rgba(15,22,41,0.06);
+    --shadow-sm:  none;
+    --shadow-md:  none;
+    --shadow-lg:  none;
     --shadow-glow: 0 4px 20px rgba(45,79,212,0.25);
 
     --transition: 0.15s ease;
@@ -110,8 +110,7 @@
     background: var(--surface);
     border-radius: 16px;
     padding: 1.5rem;
-    box-shadow: 0 2px 12px rgba(15,22,41,0.08), 0 1px 3px rgba(15,22,41,0.05);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
 .ui-card--flush {
@@ -127,14 +126,12 @@
 [class*="card-"]:not([class*="btn"]):not([class*="lp-hero"]) {
     background: var(--surface);
     border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(15,22,41,0.08), 0 1px 3px rgba(15,22,41,0.05);
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    transition: transform 0.2s ease;
 }
 
 /* Dark mode cards get subtle gradient */
 [data-theme="dark"] .ui-card {
     background: linear-gradient(145deg, var(--surface) 0%, var(--surface-2) 100%);
-    box-shadow: 0 2px 16px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.15);
 }
 
 /* --- Section Header --------------------------------------- */
@@ -560,7 +557,6 @@ button, .btn, .ui-btn {
     padding: 1.5rem;
     background: var(--surface);
     border-radius: 16px;
-    box-shadow: 0 2px 12px rgba(15,22,41,0.08), 0 1px 3px rgba(15,22,41,0.05);
     margin-bottom: 1.25rem;
 }
 
@@ -708,9 +704,9 @@ button, .btn, .ui-btn {
     --danger:         #f87171;
     --danger-light:   rgba(248,113,113,0.15);
 
-    --shadow-sm:  0 1px 3px rgba(0,0,0,0.3);
-    --shadow-md:  0 4px 16px rgba(0,0,0,0.4);
-    --shadow-lg:  0 8px 32px rgba(0,0,0,0.5);
+    --shadow-sm:  none;
+    --shadow-md:  none;
+    --shadow-lg:  none;
     --shadow-glow: 0 4px 20px rgba(79,114,245,0.3);
 }
 
@@ -1339,8 +1335,7 @@ button, .btn, [class*="btn-"], [class*="-btn"] {
 [data-theme="light"] [class*="qr-modal"],
 [data-theme="light"] .ui-profile-header {
     border: none !important;
-    box-shadow: 0 2px 12px rgba(15,22,41,0.08),
-                0 1px 3px rgba(15,22,41,0.04) !important;
+    box-shadow: none !important;
 }
 
 [data-theme="dark"] .ui-card,
@@ -1364,8 +1359,7 @@ button, .btn, [class*="btn-"], [class*="-btn"] {
 [data-theme="dark"] [class*="qr-modal"],
 [data-theme="dark"] .ui-profile-header {
     border: none !important;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.25),
-                0 1px 4px rgba(0,0,0,0.15) !important;
+    box-shadow: none !important;
 }
 
 /* ── Remove all separator/divider lines globally ───────────── */
