@@ -132,18 +132,15 @@
     padding: 1.25rem 1.35rem;
     background: var(--surface);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     text-decoration: none;
     color: inherit;
     cursor: pointer;
-    transition: box-shadow var(--transition), border-color var(--transition), transform var(--transition);
+    transition: transform var(--transition);
     position: relative;
     overflow: hidden;
 }
 
 .cld-stat-card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary);
     transform: translateY(-1px);
 }
 
@@ -715,7 +712,6 @@
 .cld-chart-card {
     background: var(--surface);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     padding: 1.1rem 1.25rem;
     overflow: hidden;
 }

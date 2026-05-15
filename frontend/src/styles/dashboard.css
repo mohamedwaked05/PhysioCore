@@ -124,17 +124,15 @@
 .cd-metric-card {
     background: var(--surface);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     padding: 1.25rem 1.4rem;
     display: flex;
     align-items: flex-start;
     gap: 1rem;
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
+    transition: transform 0.15s ease;
     cursor: default;
 }
 
 .cd-metric-card:hover {
-    box-shadow: var(--shadow-md);
     transform: translateY(-1px);
 }
 
@@ -566,19 +564,17 @@
 .cd-quick-card {
     background: var(--surface);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     padding: 1.25rem 1.4rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     text-decoration: none;
     color: var(--text);
-    transition: box-shadow 0.15s, transform 0.15s;
+    transition: transform 0.15s;
     cursor: pointer;
 }
 
 .cd-quick-card:hover {
-    box-shadow: var(--shadow-md);
     transform: translateY(-1px);
     color: var(--text);
 }
@@ -632,7 +628,6 @@
 .cd-day-list {
     background: var(--surface);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     overflow: hidden;
 }
 
@@ -701,7 +696,6 @@
 .cd-weekly-detail {
     background: var(--surface);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     padding: 1.5rem 1.6rem;
 }
 
@@ -763,7 +757,6 @@
 .cd-today-header {
     background: var(--surface);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     padding: 1.25rem 1.5rem;
     margin-bottom: 1.25rem;
     display: flex;
@@ -1182,7 +1175,6 @@
 .cd-wt {
     background: var(--surface);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
     padding: 1rem 1.25rem;
     display: flex;
     flex-direction: column;

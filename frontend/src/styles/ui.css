@@ -119,7 +119,6 @@
 }
 
 .ui-card--hover:hover {
-    box-shadow: var(--shadow-md);
     transform: translateY(-2px);
 }
 
@@ -733,10 +732,9 @@ button, .btn, .ui-btn {
     transition: transform 0.08s ease !important;
 }
 
-/* ── Dark mode card glow on hover ─────────────────────────── */
+/* ── Dark mode card hover ─────────────────────────────────── */
 [data-theme="dark"] .ui-card:hover {
-    box-shadow: 0 8px 32px rgba(79,114,245,0.12), 0 2px 8px rgba(0,0,0,0.4);
-    border-color: var(--border-strong);
+    box-shadow: none;
 }
 
 /* ══════════════════════════════════════════════════════════
