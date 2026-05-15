@@ -7,10 +7,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 import GuestLayout from '../../components/GuestLayout';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import SectionHeader from '../../components/ui/SectionHeader';
-import StatusBadge from '../../components/ui/StatusBadge';
 import Skeleton from '../../components/ui/Skeleton';
 import ChatBox from '../../components/chat/ChatBox';
 import '../../styles/ui.css';
@@ -18,290 +14,67 @@ import '../../styles/client.css';
 import '../../styles/guest.css';
 import '../../styles/chat.css';
 
-/* ── Skeleton ───────────────────────────────────────────────── */
-function ClinicDetailSkeleton() {
-    return (
-        <>
-            <Skeleton height="14px" width="120px" radius="6px" style={{ marginBottom: '1.25rem' }} />
-            <Card style={{ marginBottom: '1.25rem' }}>
-                <div className="cd-hero">
-                    <Skeleton width="200px" height="200px" radius="14px" style={{ flexShrink: 0 }} />
-                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        <Skeleton height="28px" width="55%" radius="6px" />
-                        <Skeleton height="13px" width="70%" />
-                        <Skeleton height="13px" width="40%" />
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <Skeleton height="22px" width="110px" radius="999px" />
-                            <Skeleton height="22px" width="80px" radius="999px" />
-                        </div>
-                        <Skeleton height="12px" />
-                        <Skeleton height="12px" width="85%" />
-                        <Skeleton height="12px" width="70%" />
-                        <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.25rem' }}>
-                            <Skeleton height="22px" width="90px" radius="999px" />
-                            <Skeleton height="22px" width="75px" radius="999px" />
-                        </div>
-                        <Skeleton height="42px" width="160px" radius="10px" style={{ marginTop: '0.25rem' }} />
-                    </div>
-                </div>
-            </Card>
-            <div className="cd-info-row" style={{ marginBottom: '1.25rem' }}>
-                <Card><Skeleton height="90px" /></Card>
-                <Card><Skeleton height="90px" /></Card>
-            </div>
-            {[80, 120, 80].map((h, i) => (
-                <Card key={i} style={{ marginBottom: '1.25rem' }}>
-                    <Skeleton height={`${h}px`} />
-                </Card>
-            ))}
-        </>
-    );
-}
-
 /* ── Helpers ────────────────────────────────────────────────── */
-function formatPrice(min, max) {
-    if (min != null && max != null) return `$${min} – $${max} / session`;
-    if (min != null)                return `From $${min} / session`;
-    if (max != null)                return `Up to $${max} / session`;
-    return null;
-}
-
-function getPriceLevel(min, max) {
-    const ref = min ?? max;
-    if (ref == null) return null;
-    if (ref < 50)    return 'Budget';
-    if (ref < 150)   return 'Medium';
-    if (ref < 300)   return 'Premium';
-    return 'Luxury';
-}
-
 function parseList(str) {
     if (!str) return [];
     return str.split(',').map(s => s.trim()).filter(Boolean);
 }
 
-function PhotoOrPlaceholder({ src, name }) {
-    const initials = (name || '?')
+function getInitials(name) {
+    return (name || '?')
         .trim()
         .split(/\s+/)
         .slice(0, 2)
         .map(w => w[0]?.toUpperCase() ?? '')
         .join('');
-
-    if (src) return <img src={src} alt={name} className="cd-hero-photo" />;
-    return (
-        <div className="cd-hero-photo cd-hero-photo-placeholder">{initials}</div>
-    );
 }
 
-/* ── Hero card ──────────────────────────────────────────────── */
-function HeroCard({ clinic, hasRequest, requesting, onRequest }) {
-    const name       = clinic.commercial_name || clinic.legal_name;
-    const services   = parseList(clinic.services);
-    const priceLevel = getPriceLevel(clinic.min_price, clinic.max_price);
+function getPriceLevel(min, max) {
+    const ref = min ?? max;
+    if (ref == null) return null;
+    if (ref < 50)    return { label: 'Budget',  color: '#16a34a', pct: '20%' };
+    if (ref < 150)   return { label: 'Medium',  color: '#d97706', pct: '50%' };
+    if (ref < 300)   return { label: 'Premium', color: '#ea580c', pct: '78%' };
+    return               { label: 'Luxury',  color: '#dc2626', pct: '100%' };
+}
 
+function formatPriceRange(min, max) {
+    if (min != null && max != null) return `$${min} – $${max}`;
+    if (min != null)                return `From $${min}`;
+    if (max != null)                return `Up to $${max}`;
+    return null;
+}
+
+/* ── Skeleton ───────────────────────────────────────────────── */
+function ClinicDetailSkeleton() {
     return (
-        <Card style={{ marginBottom: '1.25rem' }}>
-            <div className="cd-hero">
-                <div className="cd-hero-photo-wrap">
-                    <PhotoOrPlaceholder src={clinic.profile_photo_url} name={name} />
-                </div>
-
-                <div className="cd-hero-content">
-                    <h1 className="cd-hero-name">{name}</h1>
-
-                    <div className="cd-hero-meta">
-                        {clinic.address && (
-                            <span className="cd-hero-meta-item">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                                    <circle cx="12" cy="10" r="3"/>
-                                </svg>
-                                {clinic.address}
-                            </span>
-                        )}
-                        {clinic.clinic_mobile && (
-                            <span className="cd-hero-meta-item">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-                                </svg>
-                                {clinic.clinic_mobile}
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="cd-hero-badges">
-                        {clinic.estimated_response_time && (
-                            <StatusBadge status="info" label={`Responds ${clinic.estimated_response_time}`} />
-                        )}
-                        {priceLevel && <StatusBadge status="neutral" label={priceLevel} />}
-                        {clinic.working_hours && <StatusBadge status="neutral" label={clinic.working_hours} />}
-                    </div>
-
-                    {clinic.description && (
-                        <p className="cd-hero-desc">{clinic.description}</p>
-                    )}
-
-                    {services.length > 0 && (
-                        <div className="cd-hero-tags">
-                            {services.map((s, i) => (
-                                <span key={i} className="cd-hero-tag">{s}</span>
-                            ))}
-                        </div>
-                    )}
-
-                    <div className="cd-hero-action">
-                        <Button
-                            variant={hasRequest ? 'secondary' : 'primary'}
-                            size="lg"
-                            disabled={hasRequest}
-                            loading={requesting}
-                            onClick={onRequest}
-                        >
-                            {hasRequest ? 'Request Sent' : 'Request Access'}
-                        </Button>
-                    </div>
-                </div>
+        <div className="cd-page">
+            <div className="cd-back-row">
+                <Skeleton height="13px" width="110px" radius="6px" />
             </div>
-        </Card>
-    );
-}
-
-/* ── Info cards ─────────────────────────────────────────────── */
-function BudgetCard({ clinic }) {
-    const priceLabel = formatPrice(clinic.min_price, clinic.max_price);
-    const priceLevel = getPriceLevel(clinic.min_price, clinic.max_price);
-
-    return (
-        <Card>
-            <SectionHeader title="Budget" />
-            <div className="cd-budget-body">
-                <div className="cd-budget-amount">{priceLabel ?? 'Contact for pricing'}</div>
-                {priceLevel && (
-                    <div className="cd-budget-level">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                            <line x1="12" y1="1" x2="12" y2="23"/>
-                            <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-                        </svg>
-                        Price tier: <strong>{priceLevel}</strong>
+            <Skeleton height="200px" width="100%" radius="0" />
+            <div className="cd-stats-bar">
+                {[0, 1, 2].map(i => (
+                    <div key={i} className="cd-stat-cell">
+                        <Skeleton height="14px" width="80px" radius="4px" style={{ marginBottom: '5px' }} />
+                        <Skeleton height="11px" width="60px" radius="4px" />
                     </div>
-                )}
-                <div className="cd-budget-note">
-                    Session prices may vary based on treatment type and duration.
-                </div>
+                ))}
             </div>
-        </Card>
-    );
-}
-
-function PaymentCard({ clinic }) {
-    const methods = parseList(clinic.payment_methods);
-
-    return (
-        <Card>
-            <SectionHeader title="Payment Methods" />
-            {methods.length > 0 ? (
-                <ul className="cd-payment-list">
-                    {methods.map((m, i) => (
-                        <li key={i} className="cd-payment-item">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                                <rect x="1" y="4" width="22" height="16" rx="2"/>
-                                <line x1="1" y1="10" x2="23" y2="10"/>
-                            </svg>
-                            {m}
-                        </li>
+            <div className="cd-content">
+                <Skeleton height="13px" width="50px" radius="4px" style={{ marginBottom: '0.5rem' }} />
+                <Skeleton height="14px" width="100%" radius="4px" style={{ marginBottom: '4px' }} />
+                <Skeleton height="14px" width="85%" radius="4px" style={{ marginBottom: '4px' }} />
+                <Skeleton height="14px" width="70%" radius="4px" style={{ marginBottom: '1.25rem' }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    {[0, 1, 2, 3].map(i => (
+                        <Skeleton key={i} height="62px" radius="8px" />
                     ))}
-                </ul>
-            ) : (
-                <p className="cd-empty-note">Payment method information not provided.</p>
-            )}
-        </Card>
-    );
-}
-
-function HowPaymentWorksCard() {
-    return (
-        <Card style={{ marginBottom: '1.25rem' }}>
-            <SectionHeader title="How Payment Works" />
-            <p className="cd-prose">
-                Once your access request is approved, the clinic will contact you to schedule
-                your first session. Payment is handled directly between you and the clinic
-                according to their billing policy. Always confirm the billing process with
-                the clinic after your request is approved.
-            </p>
-        </Card>
-    );
-}
-
-/* ── Discuss card — powered by ChatBox ──────────────────────── */
-function DiscussCard({ clinic, onGuestAction }) {
-    return (
-        <Card style={{ marginBottom: '1.25rem' }}>
-            <SectionHeader title="Discuss Your Case" />
-            <p className="cd-prose" style={{ marginBottom: '1rem' }}>
-                Have questions before committing? Send the clinic a brief message to describe
-                your condition and what you're looking for.
-            </p>
-            <div style={{ position: 'relative', overflow: 'hidden' }}>
-                <ChatBox
-                    context="inquiry"
-                    referenceId={clinic.id}
-                    receiverId={clinic.user_id}
-                    onGuestAction={onGuestAction}
-                />
+                </div>
+                <Skeleton height="20px" width="140px" radius="4px" style={{ marginBottom: '8px' }} />
+                <Skeleton height="6px" radius="999px" style={{ marginBottom: '1.5rem' }} />
             </div>
-        </Card>
-    );
-}
-
-function WhyDiscussCard() {
-    const reasons = [
-        "Understand the clinic's area of specialization before committing.",
-        'Clarify the treatment approach and what to expect in sessions.',
-        'Ask about session pricing, insurance, and payment flexibility.',
-        'Make an informed decision that fits your schedule and needs.',
-    ];
-
-    return (
-        <Card style={{ marginBottom: '1.25rem' }}>
-            <SectionHeader title="Why Discuss First?" />
-            <ul className="cd-bullet-list">
-                {reasons.map((r, i) => (
-                    <li key={i} className="cd-bullet-item">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                            <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        {r}
-                    </li>
-                ))}
-            </ul>
-        </Card>
-    );
-}
-
-function GettingStartedCard() {
-    const steps = [
-        { title: 'Request Access',        desc: 'Submit an access request to the clinic from this page.' },
-        { title: 'Complete Your Profile', desc: 'Make sure your medical portfolio is up to date for review.' },
-        { title: 'Clinic Approves',       desc: 'The clinic reviews your request and accepts you as a patient.' },
-        { title: 'Start Your Rehab Plan', desc: 'Your physiotherapist creates a personalized rehabilitation plan.' },
-    ];
-
-    return (
-        <Card>
-            <SectionHeader title="Getting Started" />
-            <div className="cd-steps">
-                {steps.map((step, i) => (
-                    <div key={i} className="cd-step">
-                        <div className="cd-step-num">{i + 1}</div>
-                        <div className="cd-step-body">
-                            <div className="cd-step-title">{step.title}</div>
-                            <div className="cd-step-desc">{step.desc}</div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </Card>
+        </div>
     );
 }
 
@@ -318,8 +91,6 @@ export default function ClinicDetailsPage() {
     const [hasRequest, setHasRequest] = useState(false);
     const [requesting, setRequesting] = useState(false);
 
-    // Clinic fetch — only re-runs when id changes, never on auth state change
-    // so logging in via the modal doesn't flash a loading screen
     useEffect(() => {
         setLoading(true);
         getPublicClinic(id)
@@ -328,7 +99,6 @@ export default function ClinicDetailsPage() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    // Access request check — only for authenticated clients
     useEffect(() => {
         if (user?.role !== 'client' || !clinic) return;
         getAccessRequests()
@@ -342,7 +112,6 @@ export default function ClinicDetailsPage() {
             .catch(() => {});
     }, [user, clinic]);
 
-    // The actual API call — shared between guest-then-login flow and direct authenticated flow
     const doRequest = async () => {
         setRequesting(true);
         try {
@@ -357,19 +126,14 @@ export default function ClinicDetailsPage() {
     };
 
     const handleRequest = () => {
-        if (!user) {
-            openAuthModal(doRequest);
-            return;
-        }
+        if (!user) { openAuthModal(doRequest); return; }
         doRequest();
     };
 
     if (loading) {
         return (
             <GuestLayout>
-                <div className="client-content">
-                    <ClinicDetailSkeleton />
-                </div>
+                <ClinicDetailSkeleton />
             </GuestLayout>
         );
     }
@@ -377,47 +141,264 @@ export default function ClinicDetailsPage() {
     if (error || !clinic) {
         return (
             <GuestLayout>
-                <div className="client-content">
+                <div className="cd-page">
+                    <div className="cd-back-row">
+                        <Link to="/clinics" className="cd-back-link">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                <polyline points="15 18 9 12 15 6"/>
+                            </svg>
+                            Back to clinics
+                        </Link>
+                    </div>
+                    <div className="cd-content">
+                        <div className="client-empty">This clinic could not be found or is no longer available.</div>
+                    </div>
+                </div>
+            </GuestLayout>
+        );
+    }
+
+    const name          = clinic.commercial_name || clinic.legal_name;
+    const initials      = getInitials(name);
+    const services      = parseList(clinic.services);
+    const paymentMethods = parseList(clinic.payment_methods);
+    const priceInfo     = getPriceLevel(clinic.min_price, clinic.max_price);
+    const priceRange    = formatPriceRange(clinic.min_price, clinic.max_price);
+
+    const heroStyle = clinic.cover_photo_url
+        ? { backgroundImage: `url(${clinic.cover_photo_url})` }
+        : {};
+
+    return (
+        <GuestLayout>
+            <div className="cd-page">
+
+                {/* Back link */}
+                <div className="cd-back-row">
                     <Link to="/clinics" className="cd-back-link">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                             <polyline points="15 18 9 12 15 6"/>
                         </svg>
                         Back to clinics
                     </Link>
-                    <Card style={{ marginTop: '1.5rem' }}>
-                        <div className="client-empty">This clinic could not be found or is no longer available.</div>
-                    </Card>
-                </div>
-            </GuestLayout>
-        );
-    }
-
-    return (
-        <GuestLayout>
-            <div className="client-content">
-                <Link to="/clinics" className="cd-back-link">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <polyline points="15 18 9 12 15 6"/>
-                    </svg>
-                    Back to clinics
-                </Link>
-
-                <HeroCard
-                    clinic={clinic}
-                    hasRequest={hasRequest}
-                    requesting={requesting}
-                    onRequest={handleRequest}
-                />
-
-                <div className="cd-info-row">
-                    <BudgetCard clinic={clinic} />
-                    <PaymentCard clinic={clinic} />
                 </div>
 
-                <HowPaymentWorksCard />
-                <DiscussCard clinic={clinic} onGuestAction={() => openAuthModal()} />
-                <WhyDiscussCard />
-                <GettingStartedCard />
+                {/* ── Section 1: Full-bleed hero ─────────────────────── */}
+                <div
+                    className={`cd-banner${!clinic.cover_photo_url ? ' cd-banner--fallback' : ''}`}
+                    style={heroStyle}
+                >
+                    <div className="cd-banner-overlay" />
+
+                    {/* Verified badge */}
+                    <div className="cd-banner-verified">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <polyline points="9 12 11 14 15 10"/>
+                        </svg>
+                        Verified
+                    </div>
+
+                    {/* Identity — bottom-left */}
+                    <div className="cd-banner-identity">
+                        <div className="cd-banner-avatar">
+                            {clinic.profile_photo_url
+                                ? <img src={clinic.profile_photo_url} alt={name} />
+                                : <span>{initials}</span>}
+                        </div>
+                        <div className="cd-banner-meta">
+                            <div className="cd-banner-name">{name}</div>
+                            {clinic.address && (
+                                <div className="cd-banner-location">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                                        <circle cx="12" cy="10" r="3"/>
+                                    </svg>
+                                    {clinic.address}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Section 2: Stats bar ───────────────────────────── */}
+                <div className="cd-stats-bar">
+                    <div className="cd-stat-cell">
+                        <div className="cd-stat-value">
+                            {priceRange ?? '—'}
+                        </div>
+                        <div className="cd-stat-label">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                <line x1="12" y1="1" x2="12" y2="23"/>
+                                <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                            </svg>
+                            per session
+                        </div>
+                    </div>
+                    <div className="cd-stat-cell">
+                        <div className="cd-stat-value">{clinic.working_hours || '—'}</div>
+                        <div className="cd-stat-label">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            working hours
+                        </div>
+                    </div>
+                    <div className="cd-stat-cell">
+                        <div className="cd-stat-value cd-stat-teal">
+                            {clinic.estimated_response_time || '—'}
+                        </div>
+                        <div className="cd-stat-label">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                            </svg>
+                            response time
+                        </div>
+                    </div>
+                </div>
+
+                {/* ── Section 3: Content ─────────────────────────────── */}
+                <div className="cd-content">
+
+                    {/* 3a. About */}
+                    {(clinic.description || services.length > 0) && (
+                        <div className="cd-section">
+                            <div className="cd-section-label">About</div>
+                            {clinic.description && (
+                                <p className="cd-section-text">{clinic.description}</p>
+                            )}
+                            {services.length > 0 && (
+                                <div className="cd-tags">
+                                    {services.map((s, i) => (
+                                        <span key={i} className="cd-tag">{s}</span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* 3b. Info grid */}
+                    {(clinic.payment_methods || clinic.experience || clinic.certifications || priceInfo) && (
+                        <div className="cd-info-grid">
+                            {clinic.payment_methods && (
+                                <div className="cd-info-card">
+                                    <div className="cd-info-label">Payment methods</div>
+                                    <div className="cd-info-value">{clinic.payment_methods}</div>
+                                </div>
+                            )}
+                            {clinic.experience && (
+                                <div className="cd-info-card">
+                                    <div className="cd-info-label">Experience</div>
+                                    <div className="cd-info-value">{clinic.experience}</div>
+                                </div>
+                            )}
+                            {clinic.certifications && (
+                                <div className="cd-info-card">
+                                    <div className="cd-info-label">Certifications</div>
+                                    <div className="cd-info-value">{clinic.certifications}</div>
+                                </div>
+                            )}
+                            {priceInfo && (
+                                <div className="cd-info-card">
+                                    <div className="cd-info-label">Price tier</div>
+                                    <div className="cd-info-value">{priceInfo.label}</div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* 3c. Budget */}
+                    {priceRange && (
+                        <div className="cd-section">
+                            <div className="cd-budget-price">{priceRange} / session</div>
+                            <div className="cd-budget-track">
+                                <div
+                                    className="cd-budget-fill"
+                                    style={{
+                                        width: priceInfo?.pct ?? '20%',
+                                        background: priceInfo?.color ?? '#16a34a',
+                                    }}
+                                />
+                            </div>
+                            <p className="cd-budget-note">
+                                Session prices may vary based on treatment type and duration.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* 3d. Payment methods */}
+                    <div className="cd-section">
+                        <div className="cd-section-label">How payment works</div>
+                        <p className="cd-section-text">
+                            Once your access request is approved, the clinic will contact you to
+                            schedule your first session. Payment is handled directly between you
+                            and the clinic according to their billing policy. Always confirm the
+                            billing process with the clinic after your request is approved.
+                        </p>
+                        {paymentMethods.length > 0 && (
+                            <div className="cd-tags" style={{ marginTop: '0.65rem' }}>
+                                {paymentMethods.map((m, i) => (
+                                    <span key={i} className="cd-tag">{m}</span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ── Section 4: Chat ─────────────────────────────── */}
+                    <div className="cd-chat-section">
+                        <div className="cd-chat-header">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round">
+                                <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+                            </svg>
+                            Discuss your case
+                        </div>
+                        <div className="cd-chat-wrap">
+                            <ChatBox
+                                context="inquiry"
+                                referenceId={clinic.id}
+                                receiverId={clinic.user_id}
+                                onGuestAction={() => openAuthModal()}
+                            />
+                        </div>
+                    </div>
+
+                </div>
+
+                {/* ── Sticky action bar ──────────────────────────────── */}
+                <div className="cd-action-bar">
+                    <button
+                        className={`cd-request-btn${hasRequest ? ' cd-request-btn--sent' : ''}`}
+                        disabled={hasRequest || requesting}
+                        onClick={handleRequest}
+                    >
+                        {requesting ? (
+                            <span className="cd-request-spinner" />
+                        ) : hasRequest ? (
+                            <>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Request Sent
+                            </>
+                        ) : (
+                            'Request Access'
+                        )}
+                    </button>
+                    <button className="cd-icon-btn" aria-label="Bookmark">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+                        </svg>
+                    </button>
+                    <button className="cd-icon-btn" aria-label="Share">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                    </button>
+                </div>
+
             </div>
         </GuestLayout>
     );
