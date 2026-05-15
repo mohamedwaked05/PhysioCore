@@ -287,10 +287,10 @@ export default function ClinicListingPage() {
                                     tabIndex={0}
                                     onKeyDown={e => e.key === 'Enter' && navigate(`/clinics/${clinic.id}`)}
                                 >
-                                    {/* Banner — uses profile_photo_url as cover if available */}
+                                    {/* Banner — uses cover_photo_url (from users table) as cover bg */}
                                     <div
-                                        className={`clinic-card-banner${clinic.profile_photo_url ? ' clinic-card-banner--photo' : ''}`}
-                                        style={clinic.profile_photo_url ? { backgroundImage: `url(${clinic.profile_photo_url})` } : {}}
+                                        className={`clinic-card-banner${clinic.cover_photo_url ? ' clinic-card-banner--photo' : ''}`}
+                                        style={clinic.cover_photo_url ? { backgroundImage: `url(${clinic.cover_photo_url})` } : {}}
                                     >
                                         <div className="clinic-card-verified">
                                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -298,8 +298,13 @@ export default function ClinicListingPage() {
                                             </svg>
                                             <span>Verified</span>
                                         </div>
+                                        {/* Logo — profile_photo_url (clinic avatar); falls back to initials */}
                                         <div className="clinic-card-logo">
-                                            <span>{getInitials(name)}</span>
+                                            {clinic.profile_photo_url ? (
+                                                <img src={clinic.profile_photo_url} alt={name} />
+                                            ) : (
+                                                <span>{getInitials(name)}</span>
+                                            )}
                                         </div>
                                     </div>
 

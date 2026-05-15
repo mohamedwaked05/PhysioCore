@@ -1717,12 +1717,11 @@
 }
 
 /* ══════════════════════════════════════════════════════════
-   BROWSE CLINICS — Dark Card Design
-   Always dark regardless of app theme
+   BROWSE CLINICS — Theme-aware card (light/dark)
    ══════════════════════════════════════════════════════════ */
 
 .clinic-card {
-    background: #13131f;
+    background: var(--surface);
     border-radius: 16px;
     overflow: hidden;
     transition: transform 0.2s ease;
@@ -1745,16 +1744,16 @@
     flex-shrink: 0;
 }
 
-/* Dark overlay for real cover photos */
+/* Gradient overlay when a real cover photo is used */
 .clinic-card-banner--photo::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.52) 100%);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.45) 100%);
     pointer-events: none;
 }
 
-/* Verified badge */
+/* Verified badge — always teal, always on the dark banner */
 .clinic-card-verified {
     position: absolute;
     top: 10px;
@@ -1774,7 +1773,7 @@
     z-index: 1;
 }
 
-/* Logo overlapping banner — always shows initials */
+/* Clinic logo overlapping banner */
 .clinic-card-logo {
     position: absolute;
     bottom: -28px;
@@ -1782,18 +1781,23 @@
     width: 56px;
     height: 56px;
     border-radius: 14px;
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(10px);
+    background: var(--surface);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
     font-weight: 800;
-    color: #fff;
+    color: var(--primary);
     font-family: 'Syne', sans-serif;
     flex-shrink: 0;
     overflow: hidden;
     z-index: 1;
+}
+
+.clinic-card-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* ── Body ───────────────────────────────────────────────── */
@@ -1813,14 +1817,14 @@
     font-family: 'Syne', sans-serif;
     font-size: 16px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--text);
     margin: 0 0 4px;
     line-height: 1.25;
 }
 
 .clinic-card-location {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -1830,7 +1834,7 @@
 /* Description */
 .clinic-card-description {
     font-size: 12.5px;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--text-muted);
     line-height: 1.55;
     margin: 0 0 10px;
     font-family: 'Inter', sans-serif;
@@ -1857,13 +1861,13 @@
 }
 
 .clinic-tag-primary {
-    background: rgba(107, 127, 224, 0.2);
-    color: #a5b4fc;
+    background: rgba(62, 71, 114, 0.1);
+    color: var(--primary);
 }
 
 .clinic-tag-secondary {
-    background: rgba(255, 255, 255, 0.07);
-    color: rgba(255, 255, 255, 0.5);
+    background: var(--surface-dim);
+    color: var(--text-muted);
 }
 
 /* Stats row */
@@ -1882,23 +1886,23 @@
     align-items: center;
     gap: 4px;
     font-size: 11.5px;
-    color: rgba(255, 255, 255, 0.38);
+    color: var(--text-muted);
     font-family: 'Inter', sans-serif;
 }
 
 .clinic-stat svg {
     flex-shrink: 0;
-    opacity: 0.55;
+    opacity: 0.7;
 }
 
 .clinic-stat-green {
-    color: #34d399;
+    color: #0ea86b;
     font-weight: 600;
 }
 
 .clinic-stat-green svg {
     opacity: 1;
-    color: #34d399;
+    color: #0ea86b;
 }
 
 /* Action buttons */
@@ -1939,8 +1943,8 @@
 }
 
 .clinic-card-btn-sent {
-    background: rgba(52, 211, 153, 0.14);
-    color: #34d399;
+    background: #f0fdf4;
+    color: #15803d;
 }
 
 .clinic-card-btn-icon {
@@ -1948,17 +1952,81 @@
     height: 38px;
     flex-shrink: 0;
     border-radius: 10px;
-    border: none;
-    background: rgba(255, 255, 255, 0.07);
+    border: 0.5px solid var(--border);
+    background: var(--surface-dim);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background 0.18s ease, color 0.18s ease;
-    color: rgba(255, 255, 255, 0.42);
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+    color: var(--text-muted);
 }
 
 .clinic-card-btn-icon:hover {
+    background: rgba(62, 71, 114, 0.1);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* ── Dark mode overrides ─────────────────────────────────── */
+[data-theme="dark"] .clinic-card {
+    background: #13131f;
+}
+
+[data-theme="dark"] .clinic-card-logo {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    color: #fff;
+}
+
+[data-theme="dark"] .clinic-card-name {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .clinic-card-location,
+[data-theme="dark"] .clinic-card-description {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+[data-theme="dark"] .clinic-tag-primary {
+    background: rgba(107, 127, 224, 0.2);
+    color: #a5b4fc;
+}
+
+[data-theme="dark"] .clinic-tag-secondary {
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="dark"] .clinic-stat {
+    color: rgba(255, 255, 255, 0.38);
+}
+
+[data-theme="dark"] .clinic-stat svg {
+    opacity: 0.55;
+}
+
+[data-theme="dark"] .clinic-stat-green {
+    color: #34d399;
+}
+
+[data-theme="dark"] .clinic-stat-green svg {
+    opacity: 1;
+    color: #34d399;
+}
+
+[data-theme="dark"] .clinic-card-btn-sent {
+    background: rgba(52, 211, 153, 0.14);
+    color: #34d399;
+}
+
+[data-theme="dark"] .clinic-card-btn-icon {
+    background: rgba(255, 255, 255, 0.07);
+    border: none;
+    color: rgba(255, 255, 255, 0.42);
+}
+
+[data-theme="dark"] .clinic-card-btn-icon:hover {
     background: rgba(107, 127, 224, 0.2);
     color: #a5b4fc;
 }
