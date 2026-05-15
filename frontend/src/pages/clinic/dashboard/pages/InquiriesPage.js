@@ -101,7 +101,7 @@ export default function InquiriesPage() {
                     display: 'flex', flexDirection: 'column', alignItems: 'center',
                     justifyContent: 'center', gap: '0.75rem', padding: '3rem',
                     background: 'var(--surface)', borderRadius: 'var(--radius-lg)',
-                    border: '0.5px solid var(--border)', color: 'var(--text-muted)',
+                    boxShadow: 'var(--shadow-sm)', color: 'var(--text-muted)',
                     textAlign: 'center',
                 }}>
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">

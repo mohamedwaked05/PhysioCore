@@ -256,8 +256,8 @@
 
 .cb-clinic-card {
     background: var(--surface);
-    border: 1px solid var(--border);
     border-radius: 10px;
+    box-shadow: 0 1px 6px rgba(15,22,41,0.08);
     padding: 0.7rem 0.875rem;
     cursor: pointer;
     transition: border-color 0.15s, box-shadow 0.15s;

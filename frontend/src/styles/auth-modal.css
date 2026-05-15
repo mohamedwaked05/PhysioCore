@@ -31,7 +31,6 @@
 .auth-modal-card {
     background: var(--surface);
     border-radius: 20px;
-    border: 1px solid var(--border);
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22), 0 4px 16px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 420px;

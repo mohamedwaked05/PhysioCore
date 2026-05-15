@@ -330,7 +330,6 @@
   border-radius: 24px;
   padding: 2.5rem;
   box-shadow: var(--shadow);
-  border: 1px solid var(--border);
   animation: lpSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 0.1s;
   opacity: 0;
