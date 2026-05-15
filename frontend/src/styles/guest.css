@@ -2111,7 +2111,7 @@
 
 .lp-new-hero {
   text-align: center;
-  padding: 4rem 2rem 0;
+  padding: 2rem 2rem 0;
 }
 
 .lp-new-hero-inner {
@@ -2307,13 +2307,25 @@
 [data-theme="dark"] .lp-new-stat-n { color: #fff; }
 [data-theme="dark"] .lp-new-stat-l { color: rgba(255,255,255,0.3); }
 
+/* Hide floating Assess Injury FAB on landing page so it doesn't overlap chat card */
+.lp-new-shell .cb-toggle { display: none !important; }
+
+/* Fix Sign in secondary button on mobile */
+.lp-new-btns .lp-btn-secondary {
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  background: var(--surface);
+}
+
 @media (max-width: 640px) {
   .lp-new-hero { padding: 2.5rem 1rem 0; }
   .lp-new-h1 { font-size: clamp(24px, 6vw, 32px); }
   .lp-new-sub { max-width: 100%; }
   .lp-new-btns { flex-direction: column; align-items: center; }
   .lp-new-btns > * { width: 100%; justify-content: center; }
-  .lp-new-chat-wrap { max-width: 100%; border-radius: 10px 10px 0 0; }
+  .lp-new-chat-wrap { max-width: 100%; border-radius: 10px 10px 0 0; padding-bottom: 1rem; max-height: 460px; overflow: hidden; }
+  .lp-new-chat-msgs { max-height: 240px; overflow-y: auto; }
   .lp-new-stats { gap: 1.25rem; }
   .lp-new-stat-n { font-size: 17px; }
   .lp-new-stat-l { font-size: 10px; }
