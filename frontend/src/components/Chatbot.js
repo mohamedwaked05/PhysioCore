@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { assessInjury } from '../api/public';
 import '../styles/chatbot.css';
 
@@ -116,6 +116,7 @@ function compressImage(file) {
 }
 
 export default function Chatbot({ embedded = false }) {
+    const location = useLocation();
     const [open, setOpen]               = useState(false);
     const [messages, setMessages]       = useState([WELCOME]);
     const [input, setInput]             = useState('');
@@ -331,9 +332,12 @@ export default function Chatbot({ embedded = false }) {
         );
     }
 
+    const isClinicDetail = /^\/clinics\/[^/]+/.test(location.pathname);
+
     return (
         <>
-            {/* Floating toggle */}
+            {/* Floating toggle — hidden on clinic detail page */}
+            {!isClinicDetail && (
             <button
                 className={`cb-toggle${open ? ' cb-toggle--hidden' : ''}`}
                 onClick={handleOpen}
@@ -342,6 +346,7 @@ export default function Chatbot({ embedded = false }) {
                 <span className="cb-toggle-icon"><ChatBubbleIcon /></span>
                 Assess Injury
             </button>
+            )}
 
             {/* Chat panel */}
             <div

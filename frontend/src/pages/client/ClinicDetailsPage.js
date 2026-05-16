@@ -32,10 +32,10 @@ function getInitials(name) {
 function getPriceLevel(min, max) {
     const ref = min ?? max;
     if (ref == null) return null;
-    if (ref < 50)    return { label: 'Budget',  color: '#16a34a', pct: '20%' };
-    if (ref < 150)   return { label: 'Medium',  color: '#d97706', pct: '50%' };
-    if (ref < 300)   return { label: 'Premium', color: '#ea580c', pct: '78%' };
-    return               { label: 'Luxury',  color: '#dc2626', pct: '100%' };
+    if (ref < 50)    return { label: 'Budget' };
+    if (ref < 150)   return { label: 'Medium' };
+    if (ref < 300)   return { label: 'Premium' };
+    return               { label: 'Luxury' };
 }
 
 function formatPriceRange(min, max) {
@@ -52,7 +52,7 @@ function ClinicDetailSkeleton() {
             <div className="cd-back-row">
                 <Skeleton height="13px" width="110px" radius="6px" />
             </div>
-            <Skeleton height="200px" width="100%" radius="0" />
+            <Skeleton height="150px" width="100%" radius="0" />
             <div className="cd-stats-bar">
                 {[0, 1, 2].map(i => (
                     <div key={i} className="cd-stat-cell">
@@ -61,18 +61,17 @@ function ClinicDetailSkeleton() {
                     </div>
                 ))}
             </div>
-            <div className="cd-content">
-                <Skeleton height="13px" width="50px" radius="4px" style={{ marginBottom: '0.5rem' }} />
-                <Skeleton height="14px" width="100%" radius="4px" style={{ marginBottom: '4px' }} />
-                <Skeleton height="14px" width="85%" radius="4px" style={{ marginBottom: '4px' }} />
-                <Skeleton height="14px" width="70%" radius="4px" style={{ marginBottom: '1.25rem' }} />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
-                    {[0, 1, 2, 3].map(i => (
-                        <Skeleton key={i} height="62px" radius="8px" />
-                    ))}
+            <div className="cd-scrollable">
+                <div className="cd-content">
+                    <Skeleton height="13px" width="50px" radius="4px" style={{ marginBottom: '0.5rem' }} />
+                    <Skeleton height="14px" width="100%" radius="4px" style={{ marginBottom: '4px' }} />
+                    <Skeleton height="14px" width="75%" radius="4px" style={{ marginBottom: '1rem' }} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '1rem' }}>
+                        <Skeleton height="54px" radius="8px" />
+                        <Skeleton height="54px" radius="8px" />
+                    </div>
+                    <Skeleton height="44px" radius="8px" />
                 </div>
-                <Skeleton height="20px" width="140px" radius="4px" style={{ marginBottom: '8px' }} />
-                <Skeleton height="6px" radius="999px" style={{ marginBottom: '1.5rem' }} />
             </div>
         </div>
     );
@@ -150,20 +149,21 @@ export default function ClinicDetailsPage() {
                             Back to clinics
                         </Link>
                     </div>
-                    <div className="cd-content">
-                        <div className="client-empty">This clinic could not be found or is no longer available.</div>
+                    <div className="cd-scrollable">
+                        <div className="cd-content">
+                            <div className="client-empty">This clinic could not be found or is no longer available.</div>
+                        </div>
                     </div>
                 </div>
             </GuestLayout>
         );
     }
 
-    const name          = clinic.commercial_name || clinic.legal_name;
-    const initials      = getInitials(name);
-    const services      = parseList(clinic.services);
-    const paymentMethods = parseList(clinic.payment_methods);
-    const priceInfo     = getPriceLevel(clinic.min_price, clinic.max_price);
-    const priceRange    = formatPriceRange(clinic.min_price, clinic.max_price);
+    const name       = clinic.commercial_name || clinic.legal_name;
+    const initials   = getInitials(name);
+    const services   = parseList(clinic.services);
+    const priceInfo  = getPriceLevel(clinic.min_price, clinic.max_price);
+    const priceRange = formatPriceRange(clinic.min_price, clinic.max_price);
 
     const heroStyle = clinic.cover_photo_url
         ? { backgroundImage: `url(${clinic.cover_photo_url})` }
@@ -183,14 +183,13 @@ export default function ClinicDetailsPage() {
                     </Link>
                 </div>
 
-                {/* ── Section 1: Full-bleed hero ─────────────────────── */}
+                {/* ── Hero banner ─────────────────────────────────── */}
                 <div
                     className={`cd-banner${!clinic.cover_photo_url ? ' cd-banner--fallback' : ''}`}
                     style={heroStyle}
                 >
                     <div className="cd-banner-overlay" />
 
-                    {/* Verified badge */}
                     <div className="cd-banner-verified">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -199,7 +198,6 @@ export default function ClinicDetailsPage() {
                         Verified
                     </div>
 
-                    {/* Identity — bottom-left */}
                     <div className="cd-banner-identity">
                         <div className="cd-banner-avatar">
                             {clinic.profile_photo_url
@@ -221,12 +219,10 @@ export default function ClinicDetailsPage() {
                     </div>
                 </div>
 
-                {/* ── Section 2: Stats bar ───────────────────────────── */}
+                {/* ── Stats bar ───────────────────────────────────── */}
                 <div className="cd-stats-bar">
                     <div className="cd-stat-cell">
-                        <div className="cd-stat-value">
-                            {priceRange ?? '—'}
-                        </div>
+                        <div className="cd-stat-value">{priceRange ?? '—'}</div>
                         <div className="cd-stat-label">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                                 <line x1="12" y1="1" x2="12" y2="23"/>
@@ -246,9 +242,7 @@ export default function ClinicDetailsPage() {
                         </div>
                     </div>
                     <div className="cd-stat-cell">
-                        <div className="cd-stat-value cd-stat-teal">
-                            {clinic.estimated_response_time || '—'}
-                        </div>
+                        <div className="cd-stat-value cd-stat-teal">{clinic.estimated_response_time || '—'}</div>
                         <div className="cd-stat-label">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
@@ -258,114 +252,90 @@ export default function ClinicDetailsPage() {
                     </div>
                 </div>
 
-                {/* ── Section 3: Content ─────────────────────────────── */}
-                <div className="cd-content">
+                {/* ── Scrollable content ──────────────────────────── */}
+                <div className="cd-scrollable">
+                    <div className="cd-content">
 
-                    {/* 3a. About */}
-                    {(clinic.description || services.length > 0) && (
-                        <div className="cd-section">
-                            <div className="cd-section-label">About</div>
-                            {clinic.description && (
-                                <p className="cd-section-text">{clinic.description}</p>
-                            )}
-                            {services.length > 0 && (
-                                <div className="cd-tags">
-                                    {services.map((s, i) => (
-                                        <span key={i} className="cd-tag">{s}</span>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* 3b. Info grid */}
-                    {(clinic.payment_methods || clinic.experience || clinic.certifications || priceInfo) && (
-                        <div className="cd-info-grid">
-                            {clinic.payment_methods && (
-                                <div className="cd-info-card">
-                                    <div className="cd-info-label">Payment methods</div>
-                                    <div className="cd-info-value">{clinic.payment_methods}</div>
-                                </div>
-                            )}
-                            {clinic.experience && (
-                                <div className="cd-info-card">
-                                    <div className="cd-info-label">Experience</div>
-                                    <div className="cd-info-value">{clinic.experience}</div>
-                                </div>
-                            )}
-                            {clinic.certifications && (
-                                <div className="cd-info-card">
-                                    <div className="cd-info-label">Certifications</div>
-                                    <div className="cd-info-value">{clinic.certifications}</div>
-                                </div>
-                            )}
-                            {priceInfo && (
-                                <div className="cd-info-card">
-                                    <div className="cd-info-label">Price tier</div>
-                                    <div className="cd-info-value">{priceInfo.label}</div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* 3c. Budget */}
-                    {priceRange && (
-                        <div className="cd-section">
-                            <div className="cd-budget-price">{priceRange} / session</div>
-                            <div className="cd-budget-track">
-                                <div
-                                    className="cd-budget-fill"
-                                    style={{
-                                        width: priceInfo?.pct ?? '20%',
-                                        background: priceInfo?.color ?? '#16a34a',
-                                    }}
-                                />
-                            </div>
-                            <p className="cd-budget-note">
-                                Session prices may vary based on treatment type and duration.
-                            </p>
-                        </div>
-                    )}
-
-                    {/* 3d. Payment methods */}
-                    <div className="cd-section">
-                        <div className="cd-section-label">How payment works</div>
-                        <p className="cd-section-text">
-                            Once your access request is approved, the clinic will contact you to
-                            schedule your first session. Payment is handled directly between you
-                            and the clinic according to their billing policy. Always confirm the
-                            billing process with the clinic after your request is approved.
-                        </p>
-                        {paymentMethods.length > 0 && (
-                            <div className="cd-tags" style={{ marginTop: '0.65rem' }}>
-                                {paymentMethods.map((m, i) => (
-                                    <span key={i} className="cd-tag">{m}</span>
-                                ))}
+                        {/* About */}
+                        {(clinic.description || services.length > 0) && (
+                            <div className="cd-section">
+                                <div className="cd-section-label">About</div>
+                                {clinic.description && (
+                                    <p className="cd-section-text">{clinic.description}</p>
+                                )}
+                                {services.length > 0 && (
+                                    <div className="cd-tags">
+                                        {services.map((s, i) => (
+                                            <span key={i} className="cd-tag">{s}</span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
-                    </div>
 
-                    {/* ── Section 4: Chat ─────────────────────────────── */}
-                    <div className="cd-chat-section">
-                        <div className="cd-chat-header">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round">
-                                <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
-                            </svg>
-                            Discuss your case
-                        </div>
-                        <div className="cd-chat-wrap">
-                            <ChatBox
-                                context="inquiry"
-                                referenceId={clinic.id}
-                                receiverId={clinic.user_id}
-                                onGuestAction={() => openAuthModal()}
-                            />
-                        </div>
-                    </div>
+                        {/* Info grid */}
+                        {(clinic.payment_methods || priceInfo) && (
+                            <div className="cd-info-grid">
+                                {clinic.payment_methods && (
+                                    <div className="cd-info-cell">
+                                        <div className="cd-info-label">Payment methods</div>
+                                        <div className="cd-info-value">{clinic.payment_methods}</div>
+                                    </div>
+                                )}
+                                {priceInfo && (
+                                    <div className="cd-info-cell">
+                                        <div className="cd-info-label">Price tier</div>
+                                        <div className="cd-info-value">{priceInfo.label}</div>
+                                    </div>
+                                )}
+                                {clinic.experience && (
+                                    <div className="cd-info-cell">
+                                        <div className="cd-info-label">Experience</div>
+                                        <div className="cd-info-value">{clinic.experience}</div>
+                                    </div>
+                                )}
+                                {clinic.certifications && (
+                                    <div className="cd-info-cell">
+                                        <div className="cd-info-label">Certifications</div>
+                                        <div className="cd-info-value">{clinic.certifications}</div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
+                        {/* Chat section */}
+                        <div className="cd-chat-section">
+                            <div className="cd-chat-header">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round">
+                                    <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+                                </svg>
+                                Discuss your case
+                            </div>
+
+                            {user ? (
+                                <div className="cd-chat-wrap">
+                                    <ChatBox
+                                        context="inquiry"
+                                        referenceId={clinic.id}
+                                        receiverId={clinic.user_id}
+                                        onGuestAction={() => openAuthModal()}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="cd-chat-signin">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                                    </svg>
+                                    <span>Discuss your case with the clinic</span>
+                                    <button onClick={() => openAuthModal()}>Sign in</button>
+                                </div>
+                            )}
+                        </div>
+
+                    </div>
                 </div>
 
-                {/* ── Sticky action bar ──────────────────────────────── */}
+                {/* ── Sticky action bar ──────────────────────────── */}
                 <div className="cd-action-bar">
                     <button
                         className={`cd-request-btn${hasRequest ? ' cd-request-btn--sent' : ''}`}
@@ -384,18 +354,6 @@ export default function ClinicDetailsPage() {
                         ) : (
                             'Request Access'
                         )}
-                    </button>
-                    <button className="cd-icon-btn" aria-label="Bookmark">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
-                        </svg>
-                    </button>
-                    <button className="cd-icon-btn" aria-label="Share">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                        </svg>
                     </button>
                 </div>
 
