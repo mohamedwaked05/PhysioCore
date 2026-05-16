@@ -32,34 +32,6 @@ function TrendUpIcon() {
     );
 }
 
-function TodayArrowIcon() {
-    return (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
-        </svg>
-    );
-}
-
-function CalendarIcon() {
-    return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8"  y1="2" x2="8"  y2="6"/>
-            <line x1="3"  y1="10" x2="21" y2="10"/>
-        </svg>
-    );
-}
-
-function DumbellIcon() {
-    return (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M6.5 6.5h11M6.5 17.5h11M3 9.5v5M21 9.5v5M6.5 6.5v11M17.5 6.5v11"/>
-        </svg>
-    );
-}
-
 /* ── SVG Weekly Bar Chart ─────────────────────────────────────── */
 function WeeklyChart({ days }) {
     if (!days || days.length === 0) {
@@ -311,47 +283,79 @@ export default function StatusPage() {
                             {/* Card 1 — Adherence donut */}
                             <div className="cd-insight-card">
                                 <div className="cd-insight-card-title">Adherence</div>
-                                <svg viewBox="0 0 80 80" width="80" height="80" style={{ margin: '0.5rem auto', display: 'block' }}>
-                                    <circle cx="40" cy="40" r="30" fill="none" stroke="var(--border)" strokeWidth="8"/>
-                                    <circle cx="40" cy="40" r="30" fill="none"
+                                <svg viewBox="0 0 100 100" width="100" height="100" style={{ margin: '0.5rem auto', display: 'block' }}>
+                                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--border)" strokeWidth="10"/>
+                                    <circle cx="50" cy="50" r="38" fill="none"
                                         stroke={adherence >= 80 ? '#22c55e' : adherence >= 50 ? '#f59e0b' : '#ef4444'}
-                                        strokeWidth="8"
-                                        strokeDasharray={`${(adherence / 100) * 188.5} 188.5`}
+                                        strokeWidth="10"
+                                        strokeDasharray={`${(adherence / 100) * 238.76} 238.76`}
                                         strokeLinecap="round"
-                                        transform="rotate(-90 40 40)"
+                                        transform="rotate(-90 50 50)"
                                         style={{ transition: 'stroke-dasharray 0.8s ease' }}
                                     />
-                                    <text x="40" y="45" textAnchor="middle" fontSize="16" fontWeight="700" fill="var(--text)">{adherence}%</text>
+                                    <text x="50" y="56" textAnchor="middle" fontSize="18" fontWeight="700" fill="var(--text)">{adherence}%</text>
                                 </svg>
                                 <div className="cd-insight-card-sub">{adherence >= 80 ? 'Great' : adherence >= 50 ? 'Moderate' : 'Low'}</div>
                             </div>
 
-                            {/* Card 2 — Pain Trend line chart */}
+                            {/* Card 2 — Pain Trend full chart */}
                             <div className="cd-insight-card">
                                 <div className="cd-insight-card-title">Pain Trend</div>
-                                <svg viewBox="0 0 120 70" width="120" height="70" style={{ margin: '0.5rem auto', display: 'block' }}>
-                                    <line x1="15" y1="5" x2="15" y2="60" stroke="var(--border)" strokeWidth="1"/>
-                                    <line x1="15" y1="60" x2="115" y2="60" stroke="var(--border)" strokeWidth="1"/>
+                                <svg viewBox="0 0 200 110" width="100%" height="110" style={{ margin: '0.5rem 0', display: 'block' }}>
+                                    {[0, 2.5, 5, 7.5, 10].map((val, i) => {
+                                        const y = 15 + (1 - val / 10) * 75;
+                                        return (
+                                            <g key={i}>
+                                                <line x1="28" y1={y} x2="195" y2={y} stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3 3"/>
+                                                <text x="24" y={y + 3} textAnchor="end" fontSize="7" fill="var(--text-muted)">{val}</text>
+                                            </g>
+                                        );
+                                    })}
+                                    <line x1="28" y1="10" x2="28" y2="90" stroke="var(--border)" strokeWidth="1"/>
+                                    <line x1="28" y1="90" x2="195" y2="90" stroke="var(--border)" strokeWidth="1"/>
+                                    {painPoints.length >= 2 && painPoints.map((v, i) => (
+                                        <text key={i} x={28 + (i / (painPoints.length - 1)) * 167} y="100" textAnchor="middle" fontSize="7" fill="var(--text-muted)">W{i + 1}</text>
+                                    ))}
                                     {painPoints.length >= 2 && (
-                                        <>
-                                            <polyline
-                                                points={painPoints.map((v, i) => `${15 + (i / (painPoints.length - 1)) * 100},${60 - (v / 10) * 55}`).join(' ')}
-                                                fill="none"
-                                                stroke={painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b'}
-                                                strokeWidth="2.5"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                            {painPoints.map((v, i) => (
-                                                <circle key={i}
-                                                    cx={15 + (i / (painPoints.length - 1)) * 100}
-                                                    cy={60 - (v / 10) * 55}
-                                                    r="3"
-                                                    fill={painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b'}
-                                                />
-                                            ))}
-                                        </>
+                                        <polygon
+                                            points={[
+                                                ...painPoints.map((v, i) => `${28 + (i / (painPoints.length - 1)) * 167},${15 + (1 - v / 10) * 75}`),
+                                                `${28 + ((painPoints.length - 1) / (painPoints.length - 1)) * 167},90`,
+                                                '28,90',
+                                            ].join(' ')}
+                                            fill={painDirection === 'down' ? 'rgba(34,197,94,0.08)' : painDirection === 'up' ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)'}
+                                        />
                                     )}
+                                    {painPoints.length >= 2 && (
+                                        <polyline
+                                            points={painPoints.map((v, i) => `${28 + (i / (painPoints.length - 1)) * 167},${15 + (1 - v / 10) * 75}`).join(' ')}
+                                            fill="none"
+                                            stroke={painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b'}
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    )}
+                                    {painPoints.length >= 2 && painPoints.map((v, i) => (
+                                        <circle key={i}
+                                            cx={28 + (i / (painPoints.length - 1)) * 167}
+                                            cy={15 + (1 - v / 10) * 75}
+                                            r="3.5"
+                                            fill={painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b'}
+                                            stroke="var(--surface)"
+                                            strokeWidth="1.5"
+                                        />
+                                    ))}
+                                    {painPoints.length >= 2 && painPoints.map((v, i) => (
+                                        <text key={i}
+                                            x={28 + (i / (painPoints.length - 1)) * 167}
+                                            y={15 + (1 - v / 10) * 75 - 6}
+                                            textAnchor="middle"
+                                            fontSize="7"
+                                            fontWeight="600"
+                                            fill={painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b'}
+                                        >{v}</text>
+                                    ))}
                                 </svg>
                                 <div className="cd-insight-card-sub" style={{ color: painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b' }}>
                                     {painDirection === 'down' ? '↓ Improving' : painDirection === 'up' ? '↑ Worsening' : '→ Stable'}
@@ -361,16 +365,19 @@ export default function StatusPage() {
                             {/* Card 3 — Recovery Status vertical bar */}
                             <div className="cd-insight-card">
                                 <div className="cd-insight-card-title">Recovery</div>
-                                <svg viewBox="0 0 60 80" width="60" height="80" style={{ margin: '0.5rem auto', display: 'block' }}>
-                                    <rect x="20" y="5" width="20" height="65" rx="6" fill="var(--border)"/>
+                                <svg viewBox="0 0 70 100" width="70" height="100" style={{ margin: '0.5rem auto', display: 'block' }}>
+                                    <rect x="25" y="8" width="20" height="78" rx="8" fill="var(--border)"/>
                                     <rect
-                                        x="20"
-                                        y={5 + 65 * (1 - (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.3 : 0.6))}
+                                        x="25"
+                                        y={8 + 78 * (1 - (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.25 : 0.6))}
                                         width="20"
-                                        height={65 * (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.3 : 0.6)}
-                                        rx="6"
+                                        height={78 * (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.25 : 0.6)}
+                                        rx="8"
                                         fill={recoveryStatus === 'good' ? '#22c55e' : recoveryStatus === 'poor' ? '#ef4444' : '#f59e0b'}
                                     />
+                                    <text x="35" y="52" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fff">
+                                        {recoveryStatus === 'good' ? '100%' : recoveryStatus === 'poor' ? '25%' : '60%'}
+                                    </text>
                                 </svg>
                                 <div className="cd-insight-card-sub" style={{ color: recoveryStatus === 'good' ? '#22c55e' : recoveryStatus === 'poor' ? '#ef4444' : '#f59e0b' }}>
                                     {recoveryStatus ? recoveryStatus.charAt(0).toUpperCase() + recoveryStatus.slice(1) : '—'}
@@ -447,30 +454,6 @@ export default function StatusPage() {
                 </div>
             </div>
 
-            {/* ── Quick Actions ─── */}
-            <div className="cd-section">
-                <div className="cd-card-header" style={{ marginBottom: '0.75rem' }}>
-                    <span className="cd-card-title">Quick Actions</span>
-                </div>
-                <div className="cd-quick-actions">
-                    <Link to="/client/dashboard/today" className="cd-quick-card">
-                        <div className="cd-quick-card-icon"><DumbellIcon /></div>
-                        <div className="cd-quick-card-body">
-                            <div className="cd-quick-card-title">Today's Workout</div>
-                            <div className="cd-quick-card-sub">View today's exercises</div>
-                        </div>
-                        <span className="cd-quick-card-arrow"><TodayArrowIcon /></span>
-                    </Link>
-                    <Link to="/client/dashboard/weekly" className="cd-quick-card">
-                        <div className="cd-quick-card-icon"><CalendarIcon /></div>
-                        <div className="cd-quick-card-body">
-                            <div className="cd-quick-card-title">Weekly Plan</div>
-                            <div className="cd-quick-card-sub">View full schedule</div>
-                        </div>
-                        <span className="cd-quick-card-arrow"><TodayArrowIcon /></span>
-                    </Link>
-                </div>
-            </div>
         </div>
     );
 }

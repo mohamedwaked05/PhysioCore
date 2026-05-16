@@ -555,78 +555,6 @@
 }
 
 /* ── Quick Action Cards ──────────────────────────────────────── */
-.cd-quick-actions {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-.cd-quick-card {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    border-radius: 0;
-    padding: 0.85rem 0;
-    border-bottom: 0.5px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    text-decoration: none;
-    color: var(--text);
-    transition: opacity 0.15s;
-    cursor: pointer;
-}
-
-.cd-quick-card:last-child {
-    border-bottom: none;
-}
-
-.cd-quick-card:hover {
-    opacity: 0.75;
-    color: var(--text);
-}
-
-.cd-quick-card-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: var(--radius-md);
-    background: rgba(62, 71, 114, 0.09);
-    color: var(--primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.cd-quick-card-body {
-    flex: 1;
-}
-
-.cd-quick-card-title {
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 0.15rem;
-}
-
-.cd-quick-card-sub {
-    font-size: 0.76rem;
-    color: var(--text-muted);
-}
-
-.cd-quick-card-arrow {
-    color: var(--text-muted);
-    transition: transform 0.15s, color 0.15s;
-}
-
-.cd-quick-card:hover .cd-quick-card-arrow {
-    transform: translateX(3px);
-    color: var(--primary);
-}
-
 /* ── Weekly Plan Layout ───────────────────────────────────────── */
 .cd-weekly-layout {
     display: grid;
@@ -853,11 +781,6 @@
 [data-theme="dark"] .cd-exercise-difficulty--moderate { background: rgba(252, 211, 77, 0.1);  }
 [data-theme="dark"] .cd-exercise-difficulty--hard     { background: rgba(248, 113, 113, 0.1); }
 
-[data-theme="dark"] .cd-quick-card-icon {
-    background: rgba(123, 143, 232, 0.12);
-}
-
-
 [data-theme="dark"] .cd-day-list-item--active {
     background: rgba(123, 143, 232, 0.08);
 }
@@ -893,19 +816,21 @@
 /* ── AI Insight Charts ───────────────────────────────────────── */
 .cd-insight-charts-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1rem;
+    grid-template-columns: 1fr 1.8fr 1fr;
+    gap: 1.25rem;
     margin-top: 0.75rem;
 }
 
 .cd-insight-card {
     background: var(--surface-dim);
     border-radius: var(--radius-lg);
-    padding: 1rem 0.75rem;
+    padding: 1.25rem 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
+    min-height: 180px;
+    justify-content: space-between;
 }
 
 [data-theme="dark"] .cd-insight-card {
@@ -1061,7 +986,8 @@
     }
 
     .cd-insight-card {
-        padding: 0.75rem 0.5rem;
+        padding: 0.75rem 0.4rem;
+        min-height: 140px;
     }
 }
 
