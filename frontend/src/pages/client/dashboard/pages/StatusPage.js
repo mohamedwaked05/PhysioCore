@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import MetricCard from '../components/MetricCard';
 import ProgressBar from '../components/ProgressBar';
 import MilestoneItem from '../components/MilestoneItem';
