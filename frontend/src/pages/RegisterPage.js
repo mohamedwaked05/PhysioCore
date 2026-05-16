@@ -435,7 +435,8 @@ export default function RegisterPage() {
     };
 
     const handleGoogle = () => {
-        window.location.href = 'http://127.0.0.1:8000/api/auth/google';
+        const base = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
+        window.location.href = `${base}/auth/google`;
     };
 
     const themeToggle = (
