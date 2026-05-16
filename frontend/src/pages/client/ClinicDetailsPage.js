@@ -52,25 +52,27 @@ function ClinicDetailSkeleton() {
             <div className="cd-back-row">
                 <Skeleton height="13px" width="110px" radius="6px" />
             </div>
-            <Skeleton height="150px" width="100%" radius="0" />
-            <div className="cd-stats-bar">
-                {[0, 1, 2].map(i => (
-                    <div key={i} className="cd-stat-cell">
-                        <Skeleton height="14px" width="80px" radius="4px" style={{ marginBottom: '5px' }} />
-                        <Skeleton height="11px" width="60px" radius="4px" />
+            <div className="cd-card-wrap">
+                <Skeleton height="120px" width="100%" radius="0" />
+                <div className="cd-stats-bar">
+                    {[0, 1, 2].map(i => (
+                        <div key={i} className="cd-stat-cell">
+                            <Skeleton height="14px" width="80px" radius="4px" style={{ marginBottom: '5px' }} />
+                            <Skeleton height="11px" width="60px" radius="4px" />
+                        </div>
+                    ))}
+                </div>
+                <div className="cd-scrollable">
+                    <div className="cd-content">
+                        <Skeleton height="13px" width="50px" radius="4px" style={{ marginBottom: '0.5rem' }} />
+                        <Skeleton height="14px" width="100%" radius="4px" style={{ marginBottom: '4px' }} />
+                        <Skeleton height="14px" width="75%" radius="4px" style={{ marginBottom: '1rem' }} />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '1rem' }}>
+                            <Skeleton height="54px" radius="8px" />
+                            <Skeleton height="54px" radius="8px" />
+                        </div>
+                        <Skeleton height="44px" radius="8px" />
                     </div>
-                ))}
-            </div>
-            <div className="cd-scrollable">
-                <div className="cd-content">
-                    <Skeleton height="13px" width="50px" radius="4px" style={{ marginBottom: '0.5rem' }} />
-                    <Skeleton height="14px" width="100%" radius="4px" style={{ marginBottom: '4px' }} />
-                    <Skeleton height="14px" width="75%" radius="4px" style={{ marginBottom: '1rem' }} />
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '1rem' }}>
-                        <Skeleton height="54px" radius="8px" />
-                        <Skeleton height="54px" radius="8px" />
-                    </div>
-                    <Skeleton height="44px" radius="8px" />
                 </div>
             </div>
         </div>
@@ -173,7 +175,7 @@ export default function ClinicDetailsPage() {
         <GuestLayout>
             <div className="cd-page">
 
-                {/* Back link */}
+                {/* Back link — full width outside card */}
                 <div className="cd-back-row">
                     <Link to="/clinics" className="cd-back-link">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -182,6 +184,9 @@ export default function ClinicDetailsPage() {
                         Back to clinics
                     </Link>
                 </div>
+
+                {/* ── Card wrap (centered 860px) ──────────────────── */}
+                <div className="cd-card-wrap">
 
                 {/* ── Hero banner ─────────────────────────────────── */}
                 <div
@@ -335,7 +340,7 @@ export default function ClinicDetailsPage() {
                     </div>
                 </div>
 
-                {/* ── Sticky action bar ──────────────────────────── */}
+                {/* ── Action bar — bottom of card ────────────────── */}
                 <div className="cd-action-bar">
                     <button
                         className={`cd-request-btn${hasRequest ? ' cd-request-btn--sent' : ''}`}
@@ -356,6 +361,8 @@ export default function ClinicDetailsPage() {
                         )}
                     </button>
                 </div>
+
+                </div>{/* end cd-card-wrap */}
 
             </div>
         </GuestLayout>

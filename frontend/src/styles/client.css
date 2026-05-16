@@ -679,7 +679,19 @@
 .cd-page {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 76px);
+  overflow: hidden;
+}
+
+/* Centered card wrapper (860px max, centers banner + content) */
+.cd-card-wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -687,7 +699,7 @@
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 0;
+  padding: 0.75rem 1.25rem;
 }
 
 .cd-back-row {
@@ -713,8 +725,9 @@
 .cd-banner {
   position: relative;
   width: 100%;
-  height: 110px;
-  min-height: 110px;
+  height: 120px;
+  min-height: 120px;
+  max-height: 120px;
   background-size: cover;
   background-position: center;
   flex-shrink: 0;
@@ -753,9 +766,9 @@
   gap: 0.75rem;
 }
 .cd-banner-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  border-radius: 9px;
   background: rgba(255,255,255,0.15);
   border: 2px solid rgba(255,255,255,0.45);
   overflow: hidden;
@@ -949,27 +962,28 @@
 .cd-chat-wrap .chat-send-btn:disabled { opacity: 0.4; }
 .cd-chat-wrap .chat-send-btn:not(:disabled):hover { opacity: 0.87; }
 
-/* ── Sticky action bar ── */
+/* ── Action bar — bottom of card-wrap ── */
 .cd-action-bar {
-  position: sticky;
-  bottom: 0;
-  z-index: 50;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
+  gap: 8px;
+  padding: 0.6rem 1.25rem;
   background: var(--surface);
-  border-top: 0.5px solid var(--border);
-  flex-shrink: 0;
+  border-top: 0.5px solid rgba(255,255,255,0.07);
+}
+[data-theme="light"] .cd-action-bar {
+  border-top-color: var(--border);
 }
 .cd-request-btn {
   flex: 1;
-  max-width: 320px;
+  max-width: 400px;
+  margin: 0 auto;
   background: #0d9488;
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
@@ -977,7 +991,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 9px;
+  padding: 10px;
   transition: opacity 0.15s;
 }
 .cd-request-btn:hover:not(:disabled) { opacity: 0.87; }
@@ -1063,20 +1077,21 @@
 
 /* ── Responsive — Detail Page ── */
 @media (max-width: 640px) {
-  .cd-page { height: calc(100vh - 70px); }
-  .cd-banner { height: 90px; min-height: 90px; }
-  .cd-banner-identity { bottom: 0.65rem; left: 0.85rem; gap: 0.5rem; }
+  .cd-page { height: calc(100vh - 66px); }
+  .cd-banner { height: 95px; min-height: 95px; max-height: 95px; }
+  .cd-banner-identity { bottom: 0.6rem; left: 0.85rem; gap: 0.5rem; }
   .cd-stat-value { font-size: 12px; }
   .cd-stat-label { font-size: 9px; }
   .cd-stat-cell { padding: 0.4rem 0.6rem; }
-  .cd-content { padding: 0.6rem 0.75rem; }
+  .cd-scrollable { padding: 0.6rem 0.75rem; }
   .cd-info-grid { grid-template-columns: 1fr 1fr; }
-  .cd-request-btn { max-width: 100%; }
-  .cd-action-bar { padding: 0.4rem 0.75rem; }
+  .cd-request-btn { max-width: 100%; font-size: 13px; padding: 9px; }
+  .cd-action-bar { padding: 0.5rem 0.75rem; }
+  .cd-card-wrap { max-width: 100%; }
 }
 
 @media (max-width: 380px) {
-  .cd-banner { height: 80px; min-height: 80px; }
+  .cd-banner { height: 80px; min-height: 80px; max-height: 80px; }
   .cd-banner-name { font-size: 13px; }
   .cd-banner-avatar { width: 36px; height: 36px; font-size: 0.8rem; }
   .cd-info-grid { grid-template-columns: 1fr; }
