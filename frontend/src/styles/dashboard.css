@@ -1936,3 +1936,16 @@
         padding: 0;
     }
 }
+
+/* ── Mobile scroll fix: dashboard tab pages (Today, Status, etc.) ── */
+/* .cd-page in client.css uses height:calc(100vh) + overflow:hidden for the  */
+/* clinic detail page's inner-scroll layout. Dashboard pages share that class */
+/* but have no .cd-scrollable wrapper, so content is clipped. Override here  */
+/* using .cd-layout as the discriminator — clinic detail never sits inside it. */
+@media (max-width: 640px) {
+    .cd-layout .cd-page {
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+    }
+}
