@@ -26,6 +26,7 @@ class StoreClinicProfileRequest extends FormRequest
             'license_file'    => ['nullable', 'file', 'mime_types:application/pdf,image/jpeg,image/png', 'max:10240'],
             'cert_file'       => ['nullable', 'file', 'mime_types:application/pdf,image/jpeg,image/png', 'max:10240'],
             'profile_photo'   => ['nullable', 'image', 'mime_types:image/jpeg,image/png,image/webp', 'max:10240'],
+            'cover_photo'     => ['nullable', 'image', 'mime_types:image/jpeg,image/png,image/webp', 'max:10240'],
             'certifications'  => ['nullable', 'string', 'max:2000'],
             'experience'      => ['nullable', 'string', 'max:255'],
             'payment_methods'          => ['required', 'string', 'max:255'],

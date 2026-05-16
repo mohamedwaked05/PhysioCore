@@ -281,10 +281,10 @@ export default function ClinicListingPage() {
                                     tabIndex={0}
                                     onKeyDown={e => e.key === 'Enter' && navigate(`/clinics/${clinic.id}`)}
                                 >
-                                    {/* Banner — uses cover_photo_url (from users table) as cover bg */}
+                                    {/* Banner — cover_photo_url from clinics table (base64 data URI) */}
                                     <div
                                         className={`clinic-card-banner${clinic.cover_photo_url ? ' clinic-card-banner--photo' : ''}`}
-                                        style={clinic.cover_photo_url ? { backgroundImage: `url(${clinic.cover_photo_url})` } : {}}
+                                        style={clinic.cover_photo_url ? { backgroundImage: `url("${clinic.cover_photo_url}")` } : {}}
                                     >
                                         <div className="clinic-card-verified">
                                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

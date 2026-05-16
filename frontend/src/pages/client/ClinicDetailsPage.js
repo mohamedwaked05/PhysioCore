@@ -168,7 +168,7 @@ export default function ClinicDetailsPage() {
     const priceRange = formatPriceRange(clinic.min_price, clinic.max_price);
 
     const heroStyle = clinic.cover_photo_url
-        ? { backgroundImage: `url(${clinic.cover_photo_url})` }
+        ? { backgroundImage: `url("${clinic.cover_photo_url}")` }
         : {};
 
     return (
