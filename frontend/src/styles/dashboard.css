@@ -558,13 +558,19 @@
 .cd-quick-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 0.5rem;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0;
 }
 
 .cd-quick-card {
-    background: transparent;
-    border-radius: var(--radius-lg);
-    padding: 1.25rem 1.4rem;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0;
+    padding: 1rem 0;
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -847,6 +853,9 @@
     background: rgba(123, 143, 232, 0.12);
 }
 
+[data-theme="dark"] .cd-quick-card { background: transparent !important; border: none !important; }
+[data-theme="dark"] .cd-quick-actions { background: transparent !important; }
+
 [data-theme="dark"] .cd-day-list-item--active {
     background: rgba(123, 143, 232, 0.08);
 }
@@ -877,6 +886,29 @@
 
 [data-theme="dark"] .cd-feedback textarea {
     background: var(--surface-dim);
+}
+
+/* ── AI Insight Charts ───────────────────────────────────────── */
+.cd-insight-charts {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+    flex-wrap: wrap;
+}
+
+.cd-insight-chart-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 80px;
+}
+
+.cd-insight-chart-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
 }
 
 /* ── Responsive ──────────────────────────────────────────────── */
@@ -987,6 +1019,28 @@
 
     .cd-day-list-name {
         font-size: 11px;
+    }
+
+    .cd-day-tracker {
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        scrollbar-width: none;
+        width: 100%;
+        padding-bottom: 4px;
+        gap: 0.4rem;
+    }
+
+    .cd-day-tracker::-webkit-scrollbar {
+        display: none;
+    }
+
+    .cd-day-block {
+        flex-shrink: 0 !important;
+        min-width: 42px;
+        scroll-snap-align: start;
     }
 }
 

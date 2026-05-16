@@ -298,28 +298,85 @@ export default function StatusPage() {
                                 {new Date(aiInsight.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                             </span>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', padding: '0.25rem 0 0.5rem' }}>
-                            {/* Adherence */}
-                            <div style={{ textAlign: 'center', padding: '0.75rem', background: 'var(--surface-dim)', borderRadius: 'var(--radius-md)' }}>
-                                <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1.4rem', color: aiInsight.adherence_score >= 70 ? '#16a34a' : aiInsight.adherence_score >= 40 ? '#d97706' : '#dc2626' }}>
-                                    {aiInsight.adherence_score}%
-                                </div>
-                                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Adherence</div>
-                            </div>
-                            {/* Pain Trend */}
-                            <div style={{ textAlign: 'center', padding: '0.75rem', background: 'var(--surface-dim)', borderRadius: 'var(--radius-md)' }}>
-                                <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1rem', color: aiInsight.pain_trend === 'improving' ? '#16a34a' : aiInsight.pain_trend === 'worsening' ? '#dc2626' : '#d97706' }}>
-                                    {aiInsight.pain_trend === 'improving' ? '↓ Improving' : aiInsight.pain_trend === 'worsening' ? '↑ Worsening' : '→ Stable'}
-                                </div>
-                                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Pain Trend</div>
-                            </div>
-                            {/* Recovery Status */}
-                            <div style={{ textAlign: 'center', padding: '0.75rem', background: 'var(--surface-dim)', borderRadius: 'var(--radius-md)' }}>
-                                <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '1rem', color: aiInsight.recovery_status === 'good' ? '#16a34a' : aiInsight.recovery_status === 'poor' ? '#dc2626' : '#d97706' }}>
-                                    {aiInsight.recovery_status ? aiInsight.recovery_status.charAt(0).toUpperCase() + aiInsight.recovery_status.slice(1) : '—'}
-                                </div>
-                                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>Recovery</div>
-                            </div>
+                        <div className="cd-insight-charts">
+                            {/* ── Adherence donut ── */}
+                            {(() => {
+                                const score = aiInsight.adherence_score ?? 0;
+                                const circ  = 150.8;
+                                const dash  = (score / 100) * circ;
+                                const color = score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444';
+                                return (
+                                    <div className="cd-insight-chart-wrap">
+                                        <svg viewBox="0 0 60 60" width="60" height="60">
+                                            <circle cx="30" cy="30" r="24" fill="none" stroke="var(--border)" strokeWidth="6"/>
+                                            <circle cx="30" cy="30" r="24" fill="none"
+                                                stroke={color} strokeWidth="6"
+                                                strokeDasharray={`${dash} ${circ}`}
+                                                strokeLinecap="round"
+                                                transform="rotate(-90 30 30)"
+                                            />
+                                            <text x="30" y="35" textAnchor="middle" fontSize="12" fontWeight="600" fill="var(--text)">{score}%</text>
+                                        </svg>
+                                        <div className="cd-insight-chart-label">Adherence</div>
+                                    </div>
+                                );
+                            })()}
+
+                            {/* ── Pain Trend mini line ── */}
+                            {(() => {
+                                const pts      = painTrend.slice(-6);
+                                const trendStr = aiInsight.pain_trend;
+                                const color    = trendStr === 'improving' ? '#22c55e' : trendStr === 'worsening' ? '#ef4444' : '#f59e0b';
+                                const label    = trendStr === 'improving' ? '↓ Improving' : trendStr === 'worsening' ? '↑ Worsening' : '→ Stable';
+                                let chart;
+                                if (pts.length >= 2) {
+                                    const n  = pts.length;
+                                    const xs = pts.map((_, i) => 8 + i * (64 / (n - 1)));
+                                    const ys = pts.map(p => 4 + (1 - Math.min(p.level, 10) / 10) * 36);
+                                    chart = (
+                                        <svg viewBox="0 0 80 44" width="80" height="44">
+                                            <polyline
+                                                points={xs.map((x, i) => `${x},${ys[i]}`).join(' ')}
+                                                fill="none" stroke={color} strokeWidth="2"
+                                                strokeLinecap="round" strokeLinejoin="round"
+                                            />
+                                            {xs.map((x, i) => <circle key={i} cx={x} cy={ys[i]} r="2.5" fill={color}/>)}
+                                        </svg>
+                                    );
+                                } else {
+                                    chart = (
+                                        <div style={{ width: 80, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontFamily: 'Syne', fontWeight: 700, fontSize: '1.4rem', color }}>
+                                            {trendStr === 'improving' ? '↓' : trendStr === 'worsening' ? '↑' : '→'}
+                                        </div>
+                                    );
+                                }
+                                return (
+                                    <div className="cd-insight-chart-wrap">
+                                        {chart}
+                                        <div className="cd-insight-chart-label">Pain Trend</div>
+                                        <div style={{ fontSize: '11px', color }}>{label}</div>
+                                    </div>
+                                );
+                            })()}
+
+                            {/* ── Recovery status bar ── */}
+                            {(() => {
+                                const s     = aiInsight.recovery_status;
+                                const width = s === 'good' ? '100%' : s === 'poor' ? '30%' : '60%';
+                                const color = s === 'good' ? '#22c55e' : s === 'poor' ? '#ef4444' : '#f59e0b';
+                                return (
+                                    <div className="cd-insight-chart-wrap" style={{ flex: 1, minWidth: 100, alignItems: 'flex-start' }}>
+                                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)', marginBottom: '6px', textTransform: 'capitalize' }}>
+                                            {s ?? '—'}
+                                        </div>
+                                        <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
+                                            <div style={{ height: '100%', borderRadius: '4px', width, background: color, transition: 'width 0.6s ease' }}/>
+                                        </div>
+                                        <div className="cd-insight-chart-label">Recovery</div>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
                 </div>
