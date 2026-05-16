@@ -15,7 +15,7 @@ export default function PhysioCoreLogo({ textColor }) {
             <span style={{
                 fontSize: 15, fontWeight: 600,
                 fontFamily: "'Syne', sans-serif",
-                color: textColor || 'inherit',
+                color: textColor || 'var(--text)',
             }}>PhysioCore</span>
         </div>
     );

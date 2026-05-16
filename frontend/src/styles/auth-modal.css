@@ -75,13 +75,14 @@
 .auth-modal-logo-icon {
     width: 28px;
     height: 28px;
-    background: var(--primary);
+    background: #0891b2;
     border-radius: 7px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
+[data-theme="dark"] .auth-modal-logo-icon { background: #06b6d4; }
 
 .auth-modal-logo-text {
     font-family: 'Instrument Serif', serif;
@@ -394,7 +395,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 .am-role-card.active .am-role-card-icon {
@@ -445,15 +446,24 @@
     border: 1.5px solid var(--border);
     border-radius: 10px;
     margin-bottom: 1rem;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 .am-step {
     display: flex;
     align-items: center;
     gap: 7px;
     flex: 1;
+    min-width: 0;
     font-size: 0.78rem;
     font-weight: 500;
     color: var(--text-muted);
+}
+.am-step > span:last-child {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 .am-step--active { color: var(--primary); }
 .am-step--done   { color: #22c55e; }
