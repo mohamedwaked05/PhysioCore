@@ -332,12 +332,14 @@ export default function Chatbot({ embedded = false }) {
         );
     }
 
-    const isClinicDetail = /^\/clinics\/[^/]+/.test(location.pathname);
+    const hiddenRoutes = ['/', '/clinics'];
+    const hideFab = hiddenRoutes.includes(location.pathname) ||
+                    /^\/clinics\/[^/]+/.test(location.pathname);
 
     return (
         <>
-            {/* Floating toggle — hidden on clinic detail page */}
-            {!isClinicDetail && (
+            {/* Floating toggle — hidden on landing, browse clinics, and clinic detail */}
+            {!hideFab && (
             <button
                 className={`cb-toggle${open ? ' cb-toggle--hidden' : ''}`}
                 onClick={handleOpen}

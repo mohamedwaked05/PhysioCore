@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import NavBar from './NavBar';
 import Chatbot from './Chatbot';
+import PhysioCoreLogo from './PhysioCoreLogo';
 import '../styles/client.css';
 import '../styles/guest.css';
 
@@ -83,23 +84,6 @@ function GuestThemeToggle() {
     );
 }
 
-/* ── New ECG logo icon ────────────────────────────────────── */
-function EcgLogo() {
-    return (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path
-                d="M2 12h4l2-6 4 12 2-6h10"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity="0.95"
-            />
-        </svg>
-    );
-}
-
-
 export default function GuestLayout({ children }) {
     const { user }   = useAuth();
     const navigate   = useNavigate();
@@ -145,11 +129,8 @@ export default function GuestLayout({ children }) {
     return (
         <div className="guest-shell">
             <nav className="client-nav">
-                <NavLink to="/" className="client-nav-logo">
-                    <div className="client-nav-logo-icon">
-                        <EcgLogo />
-                    </div>
-                    <span className="client-nav-logo-text">PhysioCore</span>
+                <NavLink to="/" className="client-nav-logo" style={{ textDecoration: 'none' }}>
+                    <PhysioCoreLogo />
                 </NavLink>
 
                 {/* Desktop links */}
