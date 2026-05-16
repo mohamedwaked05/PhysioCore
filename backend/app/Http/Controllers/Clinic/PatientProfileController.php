@@ -73,6 +73,7 @@ class PatientProfileController extends Controller
             'name'              => $fullName ?: 'Unknown',
             'initials'          => $initials,
             'email'             => $user?->email,
+            'gender'            => $profile->gender ?? null,
             'profile_photo_url' => $profile->profile_photo_url,
             'cover_photo_url'   => $user?->cover_photo_url,
             'condition'         => $profile->condition_summary,

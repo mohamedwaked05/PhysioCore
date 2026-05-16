@@ -20,7 +20,10 @@ class AccessRequestController extends Controller
 
         $requests = Cache::remember("clinic_access_requests_{$clinic->id}", 60, fn() =>
             AccessRequest::where('clinic_id', $clinic->id)
-                ->with('clientProfile.user:id,first_name,last_name')
+                ->with([
+                    'clientProfile:id,user_id,profile_photo_url,gender,condition_summary',
+                    'clientProfile.user:id,first_name,last_name,cover_photo_url',
+                ])
                 ->latest()
                 ->get()
         );

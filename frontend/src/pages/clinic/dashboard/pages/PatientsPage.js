@@ -22,14 +22,16 @@ function sinceDate(iso) {
 function toPatient(r) {
     const u = r.client_profile?.user ?? {};
     return {
-        id:              r.id,
-        clientProfileId: r.client_profile_id,
-        userId:          u.id,
-        name:            `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || 'Unknown',
-        initials:        initials(u.first_name, u.last_name),
-        condition:       r.client_profile?.condition_summary ?? '—',
-        payment:         r.payment_preference ?? '—',
-        since:           sinceDate(r.updated_at ?? r.created_at),
+        id:               r.id,
+        clientProfileId:  r.client_profile_id,
+        userId:           u.id,
+        name:             `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || 'Unknown',
+        initials:         initials(u.first_name, u.last_name),
+        condition:        r.client_profile?.condition_summary ?? '—',
+        payment:          r.payment_preference ?? '—',
+        since:            sinceDate(r.updated_at ?? r.created_at),
+        profile_photo_url: r.client_profile?.profile_photo_url || null,
+        gender:           r.client_profile?.gender || null,
     };
 }
 
@@ -174,7 +176,14 @@ export default function PatientsPage() {
                                     title={`View ${p.name}'s profile`}
                                     onClick={e => { e.stopPropagation(); openPatientPopup(p); }}
                                 >
-                                    {popupLoading ? '…' : p.initials}
+                                    {p.profile_photo_url?.trim()
+                                        ? <img
+                                            src={p.profile_photo_url}
+                                            alt={p.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                                          />
+                                        : (popupLoading ? '…' : p.initials)
+                                    }
                                 </div>
 
                                 <div className="cld-patient-info" style={{ flex: 1, minWidth: 0 }}>
