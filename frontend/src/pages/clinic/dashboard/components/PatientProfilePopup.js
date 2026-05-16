@@ -51,8 +51,8 @@ export default function PatientProfilePopup({ patient, onClose, onMessage }) {
                 {/* Banner */}
                 <div
                     className="ppp-banner"
-                    style={patient.cover_photo_url
-                        ? { backgroundImage: `url(${patient.cover_photo_url})` }
+                    style={patient.cover_photo_url?.trim()
+                        ? { backgroundImage: `url("${patient.cover_photo_url}")` }
                         : undefined
                     }
                 />
