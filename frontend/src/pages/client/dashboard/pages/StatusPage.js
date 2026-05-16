@@ -1,34 +1,7 @@
 import { useState, useEffect } from 'react';
-import MetricCard from '../components/MetricCard';
 import ProgressBar from '../components/ProgressBar';
 import Skeleton from '../../../../components/ui/Skeleton';
 import { getAccessRequests, getTrackingStatus, getLatestAiInsight } from '../../../../api/client';
-
-/* ── Icons ───────────────────────────────────────────────────── */
-function HeartIcon() {
-    return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-        </svg>
-    );
-}
-
-function ActivityIcon() {
-    return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-        </svg>
-    );
-}
-
-function TrendUpIcon() {
-    return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
-            <polyline points="17 6 23 6 23 12"/>
-        </svg>
-    );
-}
 
 /* ── SVG Weekly Bar Chart ─────────────────────────────────────── */
 function WeeklyChart({ days }) {
@@ -198,13 +171,10 @@ export default function StatusPage() {
         ? `${data.weekly_days[0].date} – ${data.weekly_days[6]?.date ?? ''}`
         : '';
 
-    // Pain reduction trend label
+    // Pain trend data
     const painTrend = data?.pain_trend ?? [];
     const firstPain = painTrend[0]?.level;
     const lastPain  = painTrend[painTrend.length - 1]?.level;
-    const painDiffLabel = (firstPain && lastPain)
-        ? `${firstPain > lastPain ? '−' : '+'}${Math.abs(firstPain - lastPain).toFixed(1)} pts since W1`
-        : null;
 
     // AI insight derived values
     const adherence      = aiInsight?.adherence_score ?? 0;
@@ -235,9 +205,9 @@ export default function StatusPage() {
         {
             icon: 'trending-down',
             label: 'Pain Reduction',
-            value: painReductionPct !== null ? `−${Math.abs(painReductionPct)}` : '—',
+            value: painReductionPct !== null ? Math.abs(Math.round(painReductionPct)) : '—',
             unit: painReductionPct !== null ? '%' : '',
-            achieved: (painReductionPct ?? 0) < 0,
+            achieved: (painReductionPct ?? 0) <= -10,
         },
     ];
     const achieved = milestones.filter(m => m.achieved).length;
@@ -258,139 +228,6 @@ export default function StatusPage() {
                     </select>
                 </div>
             )}
-
-            {/* ── Metric Cards ─── */}
-            <div className="cd-section">
-                {loading ? (
-                    <div className="cd-metrics-grid">
-                        {[1,2,3].map(i => <Skeleton key={i} height="96px" radius="10px" />)}
-                    </div>
-                ) : (
-                    <div className="cd-metrics-grid">
-                        <MetricCard
-                            icon={<HeartIcon />}
-                            label="Adherence Rate"
-                            value={data ? `${data.adherence_rate}%` : '—'}
-                            trend={null}
-                            trendDirection="neutral"
-                            color="primary"
-                        />
-                        <MetricCard
-                            icon={<ActivityIcon />}
-                            label="Pain Level"
-                            value={data?.avg_pain != null ? `${data.avg_pain} / 10` : '—'}
-                            trend={painDiffLabel}
-                            trendDirection={firstPain > lastPain ? 'up' : 'neutral'}
-                            color="warning"
-                        />
-                        <MetricCard
-                            icon={<TrendUpIcon />}
-                            label="Sessions Done"
-                            value={data ? String(data.milestones?.find(m => m.type === 'sessions')?.value ?? '—') : '—'}
-                            trend={null}
-                            trendDirection="neutral"
-                            color="success"
-                        />
-                    </div>
-                )}
-            </div>
-
-            {/* ── AI Recovery Insight ─── */}
-            {!loading && aiInsight && (
-                <div className="cd-section">
-                    <div className="ui-card">
-                        <div className="cd-card-header">
-                            <span className="cd-card-title">AI Recovery Insight</span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                                {new Date(aiInsight.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                            </span>
-                        </div>
-                        <div className="cd-insight-charts-row">
-
-                            {/* Card 1 — Adherence donut */}
-                            <div className="cd-insight-card">
-                                <div className="cd-insight-card-title">Adherence</div>
-                                <svg viewBox="0 0 100 100" width="100" height="100" style={{ margin: '0.5rem auto', display: 'block' }}>
-                                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--border)" strokeWidth="10"/>
-                                    <circle cx="50" cy="50" r="38" fill="none"
-                                        stroke={adherence >= 80 ? '#22c55e' : adherence >= 50 ? '#f59e0b' : '#ef4444'}
-                                        strokeWidth="10"
-                                        strokeDasharray={`${(adherence / 100) * 238.76} 238.76`}
-                                        strokeLinecap="round"
-                                        transform="rotate(-90 50 50)"
-                                        style={{ transition: 'stroke-dasharray 0.8s ease' }}
-                                    />
-                                    <text x="50" y="56" textAnchor="middle" fontSize="18" fontWeight="700" fill="var(--text)">{adherence}%</text>
-                                </svg>
-                                <div className="cd-insight-card-sub">{adherence >= 80 ? 'Great' : adherence >= 50 ? 'Moderate' : 'Low'}</div>
-                            </div>
-
-                            {/* Card 2 — Recovery Status vertical bar */}
-                            <div className="cd-insight-card">
-                                <div className="cd-insight-card-title">Recovery</div>
-                                <svg viewBox="0 0 70 100" width="70" height="100" style={{ margin: '0.5rem auto', display: 'block' }}>
-                                    <rect x="25" y="8" width="20" height="78" rx="8" fill="var(--border)"/>
-                                    <rect
-                                        x="25"
-                                        y={8 + 78 * (1 - (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.25 : 0.6))}
-                                        width="20"
-                                        height={78 * (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.25 : 0.6)}
-                                        rx="8"
-                                        fill={recoveryStatus === 'good' ? '#22c55e' : recoveryStatus === 'poor' ? '#ef4444' : '#f59e0b'}
-                                    />
-                                    <text x="35" y="52" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fff">
-                                        {recoveryStatus === 'good' ? '100%' : recoveryStatus === 'poor' ? '25%' : '60%'}
-                                    </text>
-                                </svg>
-                                <div className="cd-insight-card-sub" style={{ color: recoveryStatus === 'good' ? '#22c55e' : recoveryStatus === 'poor' ? '#ef4444' : '#f59e0b' }}>
-                                    {recoveryStatus ? recoveryStatus.charAt(0).toUpperCase() + recoveryStatus.slice(1) : '—'}
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ── Weekly Progress Chart + Pain Trend Chart ─── */}
-            <div className="cd-two-col cd-section">
-                {/* Weekly bar chart */}
-                <div className="ui-card">
-                    <div className="cd-card-header">
-                        <span className="cd-card-title">Weekly Progress</span>
-                        {weekLabel && <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{weekLabel}</span>}
-                    </div>
-                    {loading ? (
-                        <Skeleton height="100px" radius="8px" />
-                    ) : (
-                        <>
-                            <WeeklyChart days={data?.weekly_days ?? []} />
-                            {(data?.weekly_days?.length > 0) && (
-                                <div style={{ marginTop: '0.75rem' }}>
-                                    <ProgressBar value={data?.adherence_rate ?? 0} label="Week adherence" color="primary" size="sm" />
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-
-                {/* Pain line chart */}
-                <div className="ui-card">
-                    <div className="cd-card-header">
-                        <span className="cd-card-title">Pain Trend</span>
-                        {firstPain && lastPain && (
-                            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: firstPain > lastPain ? '#16a34a' : '#ef4444' }}>
-                                {firstPain > lastPain ? '↓' : '↑'} {Math.abs(firstPain - lastPain).toFixed(1)} pts
-                            </span>
-                        )}
-                    </div>
-                    {loading ? (
-                        <Skeleton height="120px" radius="8px" />
-                    ) : (
-                        <PainLineChart trend={painTrend} />
-                    )}
-                </div>
-            </div>
 
             {/* ── Milestones ─── */}
             <div className="cd-section">
@@ -413,7 +250,7 @@ export default function StatusPage() {
                                         <div className="cd-ms-accent" />
                                         <div className="cd-ms-top">
                                             <div className="cd-ms-icon">
-                                                <i className={`ti ti-${m.icon}`} aria-hidden="true" />
+                                                <i className={`ti ti-${m.icon}`} aria-hidden="true" style={{ fontSize: '18px' }} />
                                             </div>
                                             <div className={`cd-ms-check ${m.achieved ? 'cd-ms-check--done' : ''}`}>
                                                 {m.achieved && <i className="ti ti-check" aria-hidden="true" />}
@@ -428,6 +265,95 @@ export default function StatusPage() {
                             </div>
                         )}
                     </div>
+                </div>
+            </div>
+
+            {/* ── AI Recovery Insight ─── */}
+            {!loading && aiInsight && (
+                <div className="cd-section">
+                    <div className="ui-card">
+                        <div className="cd-card-header">
+                            <span className="cd-card-title">AI Recovery Insight</span>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                                {new Date(aiInsight.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            </span>
+                        </div>
+                        <div className="cd-insight-charts-row">
+                            <div className="cd-insight-card">
+                                <div className="cd-insight-card-title">Adherence</div>
+                                <svg viewBox="0 0 100 100" width="100" height="100" style={{ margin: '0.5rem auto', display: 'block' }}>
+                                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--border)" strokeWidth="10"/>
+                                    <circle cx="50" cy="50" r="38" fill="none"
+                                        stroke={adherence >= 80 ? '#22c55e' : adherence >= 50 ? '#f59e0b' : '#ef4444'}
+                                        strokeWidth="10"
+                                        strokeDasharray={`${(adherence / 100) * 238.76} 238.76`}
+                                        strokeLinecap="round"
+                                        transform="rotate(-90 50 50)"
+                                        style={{ transition: 'stroke-dasharray 0.8s ease' }}
+                                    />
+                                    <text x="50" y="56" textAnchor="middle" fontSize="18" fontWeight="700" fill="var(--text)">{adherence}%</text>
+                                </svg>
+                                <div className="cd-insight-card-sub">{adherence >= 80 ? 'Great' : adherence >= 50 ? 'Moderate' : 'Low'}</div>
+                            </div>
+                            <div className="cd-insight-card">
+                                <div className="cd-insight-card-title">Recovery</div>
+                                <svg viewBox="0 0 70 100" width="70" height="100" style={{ margin: '0.5rem auto', display: 'block' }}>
+                                    <rect x="25" y="8" width="20" height="78" rx="8" fill="var(--border)"/>
+                                    <rect
+                                        x="25"
+                                        y={8 + 78 * (1 - (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.25 : 0.6))}
+                                        width="20"
+                                        height={78 * (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.25 : 0.6)}
+                                        rx="8"
+                                        fill={recoveryStatus === 'good' ? '#22c55e' : recoveryStatus === 'poor' ? '#ef4444' : '#f59e0b'}
+                                    />
+                                    <text x="35" y="52" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fff">
+                                        {recoveryStatus === 'good' ? '100%' : recoveryStatus === 'poor' ? '25%' : '60%'}
+                                    </text>
+                                </svg>
+                                <div className="cd-insight-card-sub" style={{ color: recoveryStatus === 'good' ? '#22c55e' : recoveryStatus === 'poor' ? '#ef4444' : '#f59e0b' }}>
+                                    {recoveryStatus ? recoveryStatus.charAt(0).toUpperCase() + recoveryStatus.slice(1) : '—'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Weekly Progress + Pain Trend ─── */}
+            <div className="cd-two-col cd-section">
+                <div className="ui-card">
+                    <div className="cd-card-header">
+                        <span className="cd-card-title">Weekly Progress</span>
+                        {weekLabel && <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{weekLabel}</span>}
+                    </div>
+                    {loading ? (
+                        <Skeleton height="100px" radius="8px" />
+                    ) : (
+                        <>
+                            <WeeklyChart days={data?.weekly_days ?? []} />
+                            {(data?.weekly_days?.length > 0) && (
+                                <div style={{ marginTop: '0.75rem' }}>
+                                    <ProgressBar value={data?.adherence_rate ?? 0} label="Week adherence" color="primary" size="sm" />
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+                <div className="ui-card">
+                    <div className="cd-card-header">
+                        <span className="cd-card-title">Pain Trend</span>
+                        {firstPain && lastPain && (
+                            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: firstPain > lastPain ? '#16a34a' : '#ef4444' }}>
+                                {firstPain > lastPain ? '↓' : '↑'} {Math.abs(firstPain - lastPain).toFixed(1)} pts
+                            </span>
+                        )}
+                    </div>
+                    {loading ? (
+                        <Skeleton height="120px" radius="8px" />
+                    ) : (
+                        <PainLineChart trend={painTrend} />
+                    )}
                 </div>
             </div>
 

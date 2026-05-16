@@ -114,78 +114,6 @@
     margin-bottom: 1.75rem;
 }
 
-/* ── Metrics Grid ─────────────────────────────────────────────── */
-.cd-metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-}
-
-.cd-metric-card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem 1.4rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    transition: transform 0.15s ease;
-    cursor: default;
-}
-
-.cd-metric-card:hover {
-    transform: translateY(-1px);
-}
-
-.cd-metric-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.cd-metric-icon--primary  { background: rgba(6, 182, 212, 0.09);  color: var(--primary); }
-.cd-metric-icon--success  { background: rgba(22, 163, 74, 0.09);  color: #16a34a; }
-.cd-metric-icon--warning  { background: rgba(217, 119, 6, 0.09);  color: #d97706; }
-.cd-metric-icon--danger   { background: rgba(220, 38, 38, 0.09);  color: #dc2626; }
-
-.cd-metric-body {
-    flex: 1;
-    min-width: 0;
-}
-
-.cd-metric-label {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--text-muted);
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    margin-bottom: 0.3rem;
-}
-
-.cd-metric-value {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.85rem;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1;
-    margin-bottom: 0.4rem;
-}
-
-.cd-metric-trend {
-    font-size: 0.78rem;
-    font-weight: 500;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.cd-metric-trend--up   { color: #16a34a; }
-.cd-metric-trend--down { color: #dc2626; }
-.cd-metric-trend--neutral { color: var(--text-muted); }
-
 /* ── Progress Bar ─────────────────────────────────────────────── */
 .cd-progress {
     width: 100%;
@@ -800,10 +728,6 @@
 }
 
 /* ── Dark mode overrides ─────────────────────────────────────── */
-[data-theme="dark"] .cd-metric-icon--primary  { background: rgba(123, 143, 232, 0.12); }
-[data-theme="dark"] .cd-metric-icon--success  { background: rgba(74, 222, 128, 0.1);  }
-[data-theme="dark"] .cd-metric-icon--warning  { background: rgba(252, 211, 77, 0.1);  }
-[data-theme="dark"] .cd-metric-icon--danger   { background: rgba(248, 113, 113, 0.1); }
 
 [data-theme="dark"] .cd-ms-card { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.08); }
 [data-theme="dark"] .cd-ms-card--done { border-color: rgba(34, 197, 94, 0.3); }
@@ -896,14 +820,6 @@
         padding: 1.5rem 1.25rem 2.5rem;
     }
 
-    .cd-metrics-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .cd-metrics-grid > :last-child {
-        grid-column: 1 / -1;
-    }
-
     .cd-two-col {
         grid-template-columns: 1fr;
     }
@@ -940,14 +856,6 @@
 }
 
 @media (max-width: 520px) {
-    .cd-metrics-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .cd-metrics-grid > :last-child {
-        grid-column: auto;
-    }
-
     .cd-day-tracker {
         gap: 0.4rem;
     }
@@ -1061,10 +969,6 @@
 
     .cd-subnav-icon {
         opacity: 1;
-    }
-
-    .cd-metrics-grid {
-        gap: 0.65rem;
     }
 
     .cd-two-col {
