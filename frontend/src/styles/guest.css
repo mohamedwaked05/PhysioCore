@@ -25,20 +25,24 @@
     padding: 0 2.5rem;
     position: relative;
     z-index: 10;
+    border-radius: 14px;
+    margin: 0.6rem 0.75rem;
 }
 
 .landing-dark .lp-nav {
     background: rgba(10, 13, 26, 0.9);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid #1e2540;
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
 }
 
 .landing-light .lp-nav {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid #dde3f0;
+    border: 0.5px solid #dde3f0;
+    box-shadow: 0 4px 16px rgba(15, 22, 41, 0.07);
 }
 
 /* Logo */
@@ -2266,6 +2270,7 @@
 }
 
 @media (max-width: 640px) {
+  .lp-nav { margin: 0.4rem 0.5rem; border-radius: 12px; }
   .lp-new-hero { padding: 0.85rem 1rem 0; }
   .lp-new-h1 { font-size: clamp(22px, 6vw, 30px); }
   .lp-new-sub { font-size: 12px; max-width: 100%; margin-bottom: 0.75rem; }
