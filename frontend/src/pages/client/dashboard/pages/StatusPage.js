@@ -236,6 +236,14 @@ export default function StatusPage() {
         ? `${firstPain > lastPain ? '−' : '+'}${Math.abs(firstPain - lastPain).toFixed(1)} pts since W1`
         : null;
 
+    // AI insight derived values
+    const adherence     = aiInsight?.adherence_score ?? 0;
+    const painPoints    = painTrend.map(p => p.level);
+    const painDirection = painPoints.length >= 2
+        ? (painPoints[painPoints.length - 1] < painPoints[0] ? 'down' : painPoints[painPoints.length - 1] > painPoints[0] ? 'up' : 'stable')
+        : (aiInsight?.pain_trend === 'improving' ? 'down' : aiInsight?.pain_trend === 'worsening' ? 'up' : 'stable');
+    const recoveryStatus = aiInsight?.recovery_status ?? '';
+
     return (
         <div className="cd-page">
             {/* Clinic selector */}
@@ -298,85 +306,77 @@ export default function StatusPage() {
                                 {new Date(aiInsight.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                             </span>
                         </div>
-                        <div className="cd-insight-charts">
-                            {/* ── Adherence donut ── */}
-                            {(() => {
-                                const score = aiInsight.adherence_score ?? 0;
-                                const circ  = 150.8;
-                                const dash  = (score / 100) * circ;
-                                const color = score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444';
-                                return (
-                                    <div className="cd-insight-chart-wrap">
-                                        <svg viewBox="0 0 60 60" width="60" height="60">
-                                            <circle cx="30" cy="30" r="24" fill="none" stroke="var(--border)" strokeWidth="6"/>
-                                            <circle cx="30" cy="30" r="24" fill="none"
-                                                stroke={color} strokeWidth="6"
-                                                strokeDasharray={`${dash} ${circ}`}
-                                                strokeLinecap="round"
-                                                transform="rotate(-90 30 30)"
-                                            />
-                                            <text x="30" y="35" textAnchor="middle" fontSize="12" fontWeight="600" fill="var(--text)">{score}%</text>
-                                        </svg>
-                                        <div className="cd-insight-chart-label">Adherence</div>
-                                    </div>
-                                );
-                            })()}
+                        <div className="cd-insight-charts-row">
 
-                            {/* ── Pain Trend mini line ── */}
-                            {(() => {
-                                const pts      = painTrend.slice(-6);
-                                const trendStr = aiInsight.pain_trend;
-                                const color    = trendStr === 'improving' ? '#22c55e' : trendStr === 'worsening' ? '#ef4444' : '#f59e0b';
-                                const label    = trendStr === 'improving' ? '↓ Improving' : trendStr === 'worsening' ? '↑ Worsening' : '→ Stable';
-                                let chart;
-                                if (pts.length >= 2) {
-                                    const n  = pts.length;
-                                    const xs = pts.map((_, i) => 8 + i * (64 / (n - 1)));
-                                    const ys = pts.map(p => 4 + (1 - Math.min(p.level, 10) / 10) * 36);
-                                    chart = (
-                                        <svg viewBox="0 0 80 44" width="80" height="44">
+                            {/* Card 1 — Adherence donut */}
+                            <div className="cd-insight-card">
+                                <div className="cd-insight-card-title">Adherence</div>
+                                <svg viewBox="0 0 80 80" width="80" height="80" style={{ margin: '0.5rem auto', display: 'block' }}>
+                                    <circle cx="40" cy="40" r="30" fill="none" stroke="var(--border)" strokeWidth="8"/>
+                                    <circle cx="40" cy="40" r="30" fill="none"
+                                        stroke={adherence >= 80 ? '#22c55e' : adherence >= 50 ? '#f59e0b' : '#ef4444'}
+                                        strokeWidth="8"
+                                        strokeDasharray={`${(adherence / 100) * 188.5} 188.5`}
+                                        strokeLinecap="round"
+                                        transform="rotate(-90 40 40)"
+                                        style={{ transition: 'stroke-dasharray 0.8s ease' }}
+                                    />
+                                    <text x="40" y="45" textAnchor="middle" fontSize="16" fontWeight="700" fill="var(--text)">{adherence}%</text>
+                                </svg>
+                                <div className="cd-insight-card-sub">{adherence >= 80 ? 'Great' : adherence >= 50 ? 'Moderate' : 'Low'}</div>
+                            </div>
+
+                            {/* Card 2 — Pain Trend line chart */}
+                            <div className="cd-insight-card">
+                                <div className="cd-insight-card-title">Pain Trend</div>
+                                <svg viewBox="0 0 120 70" width="120" height="70" style={{ margin: '0.5rem auto', display: 'block' }}>
+                                    <line x1="15" y1="5" x2="15" y2="60" stroke="var(--border)" strokeWidth="1"/>
+                                    <line x1="15" y1="60" x2="115" y2="60" stroke="var(--border)" strokeWidth="1"/>
+                                    {painPoints.length >= 2 && (
+                                        <>
                                             <polyline
-                                                points={xs.map((x, i) => `${x},${ys[i]}`).join(' ')}
-                                                fill="none" stroke={color} strokeWidth="2"
-                                                strokeLinecap="round" strokeLinejoin="round"
+                                                points={painPoints.map((v, i) => `${15 + (i / (painPoints.length - 1)) * 100},${60 - (v / 10) * 55}`).join(' ')}
+                                                fill="none"
+                                                stroke={painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b'}
+                                                strokeWidth="2.5"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
                                             />
-                                            {xs.map((x, i) => <circle key={i} cx={x} cy={ys[i]} r="2.5" fill={color}/>)}
-                                        </svg>
-                                    );
-                                } else {
-                                    chart = (
-                                        <div style={{ width: 80, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontFamily: 'Syne', fontWeight: 700, fontSize: '1.4rem', color }}>
-                                            {trendStr === 'improving' ? '↓' : trendStr === 'worsening' ? '↑' : '→'}
-                                        </div>
-                                    );
-                                }
-                                return (
-                                    <div className="cd-insight-chart-wrap">
-                                        {chart}
-                                        <div className="cd-insight-chart-label">Pain Trend</div>
-                                        <div style={{ fontSize: '11px', color }}>{label}</div>
-                                    </div>
-                                );
-                            })()}
+                                            {painPoints.map((v, i) => (
+                                                <circle key={i}
+                                                    cx={15 + (i / (painPoints.length - 1)) * 100}
+                                                    cy={60 - (v / 10) * 55}
+                                                    r="3"
+                                                    fill={painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b'}
+                                                />
+                                            ))}
+                                        </>
+                                    )}
+                                </svg>
+                                <div className="cd-insight-card-sub" style={{ color: painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b' }}>
+                                    {painDirection === 'down' ? '↓ Improving' : painDirection === 'up' ? '↑ Worsening' : '→ Stable'}
+                                </div>
+                            </div>
 
-                            {/* ── Recovery status bar ── */}
-                            {(() => {
-                                const s     = aiInsight.recovery_status;
-                                const width = s === 'good' ? '100%' : s === 'poor' ? '30%' : '60%';
-                                const color = s === 'good' ? '#22c55e' : s === 'poor' ? '#ef4444' : '#f59e0b';
-                                return (
-                                    <div className="cd-insight-chart-wrap" style={{ flex: 1, minWidth: 100, alignItems: 'flex-start' }}>
-                                        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)', marginBottom: '6px', textTransform: 'capitalize' }}>
-                                            {s ?? '—'}
-                                        </div>
-                                        <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: '4px', overflow: 'hidden' }}>
-                                            <div style={{ height: '100%', borderRadius: '4px', width, background: color, transition: 'width 0.6s ease' }}/>
-                                        </div>
-                                        <div className="cd-insight-chart-label">Recovery</div>
-                                    </div>
-                                );
-                            })()}
+                            {/* Card 3 — Recovery Status vertical bar */}
+                            <div className="cd-insight-card">
+                                <div className="cd-insight-card-title">Recovery</div>
+                                <svg viewBox="0 0 60 80" width="60" height="80" style={{ margin: '0.5rem auto', display: 'block' }}>
+                                    <rect x="20" y="5" width="20" height="65" rx="6" fill="var(--border)"/>
+                                    <rect
+                                        x="20"
+                                        y={5 + 65 * (1 - (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.3 : 0.6))}
+                                        width="20"
+                                        height={65 * (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.3 : 0.6)}
+                                        rx="6"
+                                        fill={recoveryStatus === 'good' ? '#22c55e' : recoveryStatus === 'poor' ? '#ef4444' : '#f59e0b'}
+                                    />
+                                </svg>
+                                <div className="cd-insight-card-sub" style={{ color: recoveryStatus === 'good' ? '#22c55e' : recoveryStatus === 'poor' ? '#ef4444' : '#f59e0b' }}>
+                                    {recoveryStatus ? recoveryStatus.charAt(0).toUpperCase() + recoveryStatus.slice(1) : '—'}
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>

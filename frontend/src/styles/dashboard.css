@@ -556,32 +556,36 @@
 
 /* ── Quick Action Cards ──────────────────────────────────────── */
 .cd-quick-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .cd-quick-card {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+    background: transparent;
+    border: none;
+    box-shadow: none;
     border-radius: 0;
-    padding: 1rem 0;
+    padding: 0.85rem 0;
+    border-bottom: 0.5px solid var(--border);
     display: flex;
     align-items: center;
     gap: 1rem;
     text-decoration: none;
     color: var(--text);
-    transition: transform 0.15s;
+    transition: opacity 0.15s;
     cursor: pointer;
 }
 
+.cd-quick-card:last-child {
+    border-bottom: none;
+}
+
 .cd-quick-card:hover {
-    transform: translateY(-1px);
+    opacity: 0.75;
     color: var(--text);
 }
 
@@ -853,8 +857,6 @@
     background: rgba(123, 143, 232, 0.12);
 }
 
-[data-theme="dark"] .cd-quick-card { background: transparent !important; border: none !important; }
-[data-theme="dark"] .cd-quick-actions { background: transparent !important; }
 
 [data-theme="dark"] .cd-day-list-item--active {
     background: rgba(123, 143, 232, 0.08);
@@ -889,26 +891,40 @@
 }
 
 /* ── AI Insight Charts ───────────────────────────────────────── */
-.cd-insight-charts {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 0.5rem 0;
-    flex-wrap: wrap;
+.cd-insight-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.75rem;
 }
 
-.cd-insight-chart-wrap {
+.cd-insight-card {
+    background: var(--surface-dim);
+    border-radius: var(--radius-lg);
+    padding: 1rem 0.75rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    min-width: 80px;
+    text-align: center;
 }
 
-.cd-insight-chart-label {
+[data-theme="dark"] .cd-insight-card {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.cd-insight-card-title {
     font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     color: var(--text-muted);
-    text-align: center;
+}
+
+.cd-insight-card-sub {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-top: 4px;
 }
 
 /* ── Responsive ──────────────────────────────────────────────── */
@@ -953,10 +969,6 @@
 
     .cd-day-list-rest-label {
         display: none;
-    }
-
-    .cd-quick-actions {
-        grid-template-columns: 1fr;
     }
 
     .cd-workout-summary {
@@ -1041,6 +1053,15 @@
         flex-shrink: 0 !important;
         min-width: 42px;
         scroll-snap-align: start;
+    }
+
+    .cd-insight-charts-row {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .cd-insight-card {
+        padding: 0.75rem 0.5rem;
     }
 }
 
