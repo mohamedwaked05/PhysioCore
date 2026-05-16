@@ -306,71 +306,105 @@
 }
 
 /* ── Milestones ───────────────────────────────────────────────── */
-.cd-milestones {
+.cd-milestone-wrap {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 0.75rem;
 }
 
-.cd-milestone-item {
+.cd-milestone-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.85rem;
+}
+
+.cd-ms-card {
+    background: var(--surface-dim);
+    border-radius: var(--radius-lg);
+    padding: 1rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s;
+}
+
+.cd-ms-card--done {
+    background: var(--surface-dim);
+}
+
+.cd-ms-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    background: var(--border);
+}
+
+.cd-ms-card--done .cd-ms-accent {
+    background: #22c55e;
+}
+
+.cd-ms-top {
     display: flex;
     align-items: center;
-    gap: 0.9rem;
-    padding: 0.85rem 0;
+    justify-content: space-between;
 }
 
-.cd-milestone-item:last-child {
-    padding-bottom: 0;
-}
-
-.cd-milestone-item:first-child {
-    padding-top: 0;
-}
-
-.cd-milestone-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: var(--radius-md);
+.cd-ms-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.06);
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-}
-
-.cd-milestone-icon--achieved {
-    background: rgba(22, 163, 74, 0.09);
-    color: #16a34a;
-}
-
-.cd-milestone-icon--pending {
-    background: var(--surface-dim);
+    font-size: 16px;
     color: var(--text-muted);
 }
 
-.cd-milestone-body {
-    flex: 1;
-    min-width: 0;
+.cd-ms-card--done .cd-ms-icon {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22c55e;
 }
 
-.cd-milestone-label {
-    font-size: 0.84rem;
+.cd-ms-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: transparent;
+}
+
+.cd-ms-check--done {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+}
+
+.cd-ms-big {
+    font-size: 22px;
     font-weight: 500;
     color: var(--text);
-    margin-bottom: 0.1rem;
+    line-height: 1;
 }
 
-.cd-milestone-value {
-    font-size: 0.78rem;
+.cd-ms-unit {
+    font-size: 11px;
     color: var(--text-muted);
+    margin-left: 2px;
+    font-weight: 400;
 }
 
-.cd-milestone-check {
-    flex-shrink: 0;
-    color: #16a34a;
-}
-
-.cd-milestone-check--pending {
-    color: var(--border);
+.cd-ms-name {
+    font-size: 11px;
+    color: var(--text-muted);
 }
 
 /* ── Workout Summary ──────────────────────────────────────────── */
@@ -770,7 +804,9 @@
 [data-theme="dark"] .cd-metric-icon--warning  { background: rgba(252, 211, 77, 0.1);  }
 [data-theme="dark"] .cd-metric-icon--danger   { background: rgba(248, 113, 113, 0.1); }
 
-[data-theme="dark"] .cd-milestone-icon--achieved { background: rgba(74, 222, 128, 0.1); }
+[data-theme="dark"] .cd-ms-card { background: rgba(255, 255, 255, 0.05); }
+[data-theme="dark"] .cd-ms-icon { background: rgba(255, 255, 255, 0.06); }
+[data-theme="dark"] .cd-ms-card--done .cd-ms-icon { background: rgba(34, 197, 94, 0.12); }
 
 [data-theme="dark"] .cd-exercise-tag {
     background: rgba(123, 143, 232, 0.12);
@@ -816,7 +852,7 @@
 /* ── AI Insight Charts ───────────────────────────────────────── */
 .cd-insight-charts-row {
     display: grid;
-    grid-template-columns: 1fr 1.8fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 1.25rem;
     margin-top: 0.75rem;
 }
@@ -981,13 +1017,25 @@
     }
 
     .cd-insight-charts-row {
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 0.5rem;
     }
 
     .cd-insight-card {
         padding: 0.75rem 0.4rem;
         min-height: 140px;
+    }
+
+    .cd-milestone-cards {
+        gap: 0.5rem;
+    }
+
+    .cd-ms-big {
+        font-size: 18px;
+    }
+
+    .cd-ms-card {
+        padding: 0.85rem 0.7rem;
     }
 }
 

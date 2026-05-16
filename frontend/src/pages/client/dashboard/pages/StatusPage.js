@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import MetricCard from '../components/MetricCard';
 import ProgressBar from '../components/ProgressBar';
-import MilestoneItem from '../components/MilestoneItem';
 import Skeleton from '../../../../components/ui/Skeleton';
 import { getAccessRequests, getTrackingStatus, getLatestAiInsight } from '../../../../api/client';
 
@@ -208,12 +207,40 @@ export default function StatusPage() {
         : null;
 
     // AI insight derived values
-    const adherence     = aiInsight?.adherence_score ?? 0;
-    const painPoints    = painTrend.map(p => p.level);
-    const painDirection = painPoints.length >= 2
-        ? (painPoints[painPoints.length - 1] < painPoints[0] ? 'down' : painPoints[painPoints.length - 1] > painPoints[0] ? 'up' : 'stable')
-        : (aiInsight?.pain_trend === 'improving' ? 'down' : aiInsight?.pain_trend === 'worsening' ? 'up' : 'stable');
+    const adherence      = aiInsight?.adherence_score ?? 0;
     const recoveryStatus = aiInsight?.recovery_status ?? '';
+
+    // Milestone cards — derived from existing tracking data, no extra API call
+    const streak            = data?.milestones?.find(m => m.type === 'streak')?.value ?? data?.streak ?? null;
+    const sessionsCompleted = data?.milestones?.find(m => m.type === 'sessions')?.value ?? null;
+    const painReductionPct  = (firstPain != null && lastPain != null && firstPain > 0)
+        ? Math.round(((lastPain - firstPain) / firstPain) * 100)
+        : null;
+    const milestones = [
+        {
+            icon: 'flame',
+            label: 'Current Streak',
+            value: streak ?? 0,
+            unit: streak === 1 ? ' day' : ' days',
+            achieved: (streak ?? 0) >= 1,
+        },
+        {
+            icon: 'circle-check',
+            label: 'Sessions Done',
+            value: sessionsCompleted ?? 0,
+            unit: ' sessions',
+            achieved: (sessionsCompleted ?? 0) >= 1,
+        },
+        {
+            icon: 'trending-down',
+            label: 'Pain Reduction',
+            value: painReductionPct !== null ? `−${Math.abs(painReductionPct)}` : '—',
+            unit: painReductionPct !== null ? '%' : '',
+            achieved: (painReductionPct ?? 0) < 0,
+        },
+    ];
+    const achieved = milestones.filter(m => m.achieved).length;
+    const total    = milestones.length;
 
     return (
         <div className="cd-page">
@@ -297,71 +324,7 @@ export default function StatusPage() {
                                 <div className="cd-insight-card-sub">{adherence >= 80 ? 'Great' : adherence >= 50 ? 'Moderate' : 'Low'}</div>
                             </div>
 
-                            {/* Card 2 — Pain Trend full chart */}
-                            <div className="cd-insight-card">
-                                <div className="cd-insight-card-title">Pain Trend</div>
-                                <svg viewBox="0 0 200 110" width="100%" height="110" style={{ margin: '0.5rem 0', display: 'block' }}>
-                                    {[0, 2.5, 5, 7.5, 10].map((val, i) => {
-                                        const y = 15 + (1 - val / 10) * 75;
-                                        return (
-                                            <g key={i}>
-                                                <line x1="28" y1={y} x2="195" y2={y} stroke="var(--border)" strokeWidth="0.5" strokeDasharray="3 3"/>
-                                                <text x="24" y={y + 3} textAnchor="end" fontSize="7" fill="var(--text-muted)">{val}</text>
-                                            </g>
-                                        );
-                                    })}
-                                    <line x1="28" y1="10" x2="28" y2="90" stroke="var(--border)" strokeWidth="1"/>
-                                    <line x1="28" y1="90" x2="195" y2="90" stroke="var(--border)" strokeWidth="1"/>
-                                    {painPoints.length >= 2 && painPoints.map((v, i) => (
-                                        <text key={i} x={28 + (i / (painPoints.length - 1)) * 167} y="100" textAnchor="middle" fontSize="7" fill="var(--text-muted)">W{i + 1}</text>
-                                    ))}
-                                    {painPoints.length >= 2 && (
-                                        <polygon
-                                            points={[
-                                                ...painPoints.map((v, i) => `${28 + (i / (painPoints.length - 1)) * 167},${15 + (1 - v / 10) * 75}`),
-                                                `${28 + ((painPoints.length - 1) / (painPoints.length - 1)) * 167},90`,
-                                                '28,90',
-                                            ].join(' ')}
-                                            fill={painDirection === 'down' ? 'rgba(34,197,94,0.08)' : painDirection === 'up' ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)'}
-                                        />
-                                    )}
-                                    {painPoints.length >= 2 && (
-                                        <polyline
-                                            points={painPoints.map((v, i) => `${28 + (i / (painPoints.length - 1)) * 167},${15 + (1 - v / 10) * 75}`).join(' ')}
-                                            fill="none"
-                                            stroke={painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b'}
-                                            strokeWidth="2.5"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    )}
-                                    {painPoints.length >= 2 && painPoints.map((v, i) => (
-                                        <circle key={i}
-                                            cx={28 + (i / (painPoints.length - 1)) * 167}
-                                            cy={15 + (1 - v / 10) * 75}
-                                            r="3.5"
-                                            fill={painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b'}
-                                            stroke="var(--surface)"
-                                            strokeWidth="1.5"
-                                        />
-                                    ))}
-                                    {painPoints.length >= 2 && painPoints.map((v, i) => (
-                                        <text key={i}
-                                            x={28 + (i / (painPoints.length - 1)) * 167}
-                                            y={15 + (1 - v / 10) * 75 - 6}
-                                            textAnchor="middle"
-                                            fontSize="7"
-                                            fontWeight="600"
-                                            fill={painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b'}
-                                        >{v}</text>
-                                    ))}
-                                </svg>
-                                <div className="cd-insight-card-sub" style={{ color: painDirection === 'down' ? '#22c55e' : painDirection === 'up' ? '#ef4444' : '#f59e0b' }}>
-                                    {painDirection === 'down' ? '↓ Improving' : painDirection === 'up' ? '↑ Worsening' : '→ Stable'}
-                                </div>
-                            </div>
-
-                            {/* Card 3 — Recovery Status vertical bar */}
+                            {/* Card 2 — Recovery Status vertical bar */}
                             <div className="cd-insight-card">
                                 <div className="cd-insight-card-title">Recovery</div>
                                 <svg viewBox="0 0 70 100" width="70" height="100" style={{ margin: '0.5rem auto', display: 'block' }}>
@@ -431,25 +394,39 @@ export default function StatusPage() {
             {/* ── Milestones ─── */}
             <div className="cd-section">
                 <div className="ui-card">
-                    <div className="cd-card-header">
-                        <span className="cd-card-title">Milestones</span>
-                        {data?.milestones && (
+                    <div className="cd-milestone-wrap">
+                        <div className="cd-card-header">
+                            <span className="cd-card-title">Milestones</span>
                             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                                {data.milestones.filter(m => m.achieved).length} / {data.milestones.length} achieved
+                                {achieved} / {total} achieved
                             </span>
+                        </div>
+                        {loading ? (
+                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                {[1, 2, 3].map(i => <Skeleton key={i} height="120px" radius="10px" style={{ flex: 1 }} />)}
+                            </div>
+                        ) : (
+                            <div className="cd-milestone-cards">
+                                {milestones.map((m, i) => (
+                                    <div key={i} className={`cd-ms-card ${m.achieved ? 'cd-ms-card--done' : ''}`}>
+                                        <div className="cd-ms-accent" />
+                                        <div className="cd-ms-top">
+                                            <div className="cd-ms-icon">
+                                                <i className={`ti ti-${m.icon}`} aria-hidden="true" />
+                                            </div>
+                                            <div className={`cd-ms-check ${m.achieved ? 'cd-ms-check--done' : ''}`}>
+                                                {m.achieved && <i className="ti ti-check" aria-hidden="true" />}
+                                            </div>
+                                        </div>
+                                        <div className="cd-ms-big">
+                                            {m.value}<span className="cd-ms-unit">{m.unit}</span>
+                                        </div>
+                                        <div className="cd-ms-name">{m.label}</div>
+                                    </div>
+                                ))}
+                            </div>
                         )}
                     </div>
-                    {loading ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.5rem 0' }}>
-                            {[1,2,3].map(i => <Skeleton key={i} height="44px" radius="8px" />)}
-                        </div>
-                    ) : (
-                        <div className="cd-milestones">
-                            {(data?.milestones ?? []).map(m => (
-                                <MilestoneItem key={m.id} milestone={m} />
-                            ))}
-                        </div>
-                    )}
                 </div>
             </div>
 
