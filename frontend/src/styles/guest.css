@@ -2275,7 +2275,34 @@
 }
 
 @media (max-width: 640px) {
-  .lp-nav { margin: 0.4rem 0.5rem; border-radius: 12px; }
+  /* ── Navbar layout ── */
+  .lp-nav {
+    margin: 0.4rem 0.5rem;
+    border-radius: 12px;
+    padding: 0 0.75rem;
+    gap: 8px;
+  }
+  .lp-nav-actions { gap: 6px; }
+
+  /* FIX 1 — hide Sign in from navbar only (hero Sign in stays) */
+  .lp-nav-signin { display: none !important; }
+
+  /* FIX 2 — compact Get started button so it never wraps */
+  .lp-nav-cta {
+    font-size: 12px !important;
+    padding: 5px 12px !important;
+    white-space: nowrap;
+    border-radius: 7px !important;
+  }
+
+  /* FIX 3 — compact theme toggle */
+  .lp-nav-theme-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
   .lp-new-hero { padding: 0.85rem 1rem 0; }
   .lp-new-h1 { font-size: clamp(22px, 6vw, 30px); }
   .lp-new-sub { font-size: 12px; max-width: 100%; margin-bottom: 0.75rem; }
