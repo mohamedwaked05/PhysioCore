@@ -211,8 +211,9 @@ export default function StatusPage() {
     const recoveryStatus = aiInsight?.recovery_status ?? '';
 
     // Milestone cards — derived from existing tracking data, no extra API call
-    const streak            = data?.milestones?.find(m => m.type === 'streak')?.value ?? data?.streak ?? null;
-    const sessionsCompleted = data?.milestones?.find(m => m.type === 'sessions')?.value ?? null;
+    const toNum = v => { const n = parseInt(v, 10); return isNaN(n) ? null : n; };
+    const streak            = toNum(data?.milestones?.find(m => m.type === 'streak')?.value ?? data?.streak);
+    const sessionsCompleted = toNum(data?.milestones?.find(m => m.type === 'sessions')?.value);
     const painReductionPct  = (firstPain != null && lastPain != null && firstPain > 0)
         ? Math.round(((lastPain - firstPain) / firstPain) * 100)
         : null;
