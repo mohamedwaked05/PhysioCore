@@ -562,7 +562,7 @@
 }
 
 .cd-quick-card {
-    background: var(--surface);
+    background: transparent;
     border-radius: var(--radius-lg);
     padding: 1.25rem 1.4rem;
     display: flex;
@@ -960,6 +960,33 @@
 
     .cd-feedback textarea {
         font-size: 1rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .cd-day-list {
+        display: flex;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        scroll-snap-type: x mandatory;
+        gap: 4px;
+        padding-bottom: 4px;
+    }
+
+    .cd-day-list::-webkit-scrollbar {
+        display: none;
+    }
+
+    .cd-day-list-item {
+        flex-shrink: 0;
+        scroll-snap-align: center;
+        min-width: fit-content;
+        padding: 6px 10px;
+    }
+
+    .cd-day-list-name {
+        font-size: 11px;
     }
 }
 

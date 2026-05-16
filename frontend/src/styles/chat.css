@@ -38,8 +38,16 @@
     padding: 1rem;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
     gap: 0.6rem;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Pushes messages to the bottom when they don't fill the container,
+   but collapses when they overflow so the user can scroll up. */
+.chat-messages::before {
+    content: '';
+    flex: 1;
 }
 
 .chat-messages::-webkit-scrollbar {
