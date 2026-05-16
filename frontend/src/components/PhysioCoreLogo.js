@@ -3,7 +3,7 @@ export default function PhysioCoreLogo({ textColor }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{
                 width: 30, height: 30, borderRadius: 8,
-                background: '#0d9488',
+                background: '#0891b2',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#fff', flexShrink: 0,
             }}>

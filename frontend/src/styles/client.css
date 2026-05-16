@@ -948,7 +948,7 @@
 .cd-chat-wrap .chat-send-btn {
   width: 32px;
   height: 32px;
-  background: #0d9488;
+  background: #0891b2;
   border-radius: 6px;
   border: none;
   display: flex;
@@ -959,6 +959,7 @@
   transition: opacity 0.15s;
   flex-shrink: 0;
 }
+[data-theme="dark"] .cd-chat-wrap .chat-send-btn { background: #06b6d4; }
 .cd-chat-wrap .chat-send-btn:disabled { opacity: 0.4; }
 .cd-chat-wrap .chat-send-btn:not(:disabled):hover { opacity: 0.87; }
 
@@ -979,7 +980,7 @@
   flex: 1;
   max-width: 400px;
   margin: 0 auto;
-  background: #0d9488;
+  background: #0891b2;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -996,6 +997,7 @@
 }
 .cd-request-btn:hover:not(:disabled) { opacity: 0.87; }
 .cd-request-btn:disabled { cursor: default; }
+[data-theme="dark"] .cd-request-btn { background: #06b6d4; color: #0a0d1a; }
 .cd-request-btn--sent {
   background: var(--surface-dim);
   color: #16a34a;
