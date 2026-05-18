@@ -2130,7 +2130,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem 4rem 0;
+  padding: 0.75rem 4rem 0;
   text-align: center;
   overflow: visible;
 }
@@ -2190,7 +2190,7 @@
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   flex-shrink: 0;
 }
 
@@ -2206,7 +2206,7 @@
   text-align: center;
   font-size: 13px;
   color: var(--text-muted);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.4rem;
   font-family: 'Inter', sans-serif;
   flex-shrink: 0;
 }
