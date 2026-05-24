@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
+use App\Models\ExerciseLog;
+use App\Models\PainEffortLog;
 use App\Models\RehabPlan;
 use App\Models\SessionFeedback;
 use Carbon\Carbon;
@@ -122,40 +124,42 @@ class TrackingController extends Controller
         $painValues = $feedbacks->whereNotNull('pain_level')->pluck('pain_level');
         $avgPain    = $painValues->count() > 0 ? round($painValues->avg(), 1) : null;
 
-        // ── Streak (consecutive completed exercise days) ──────
-        $streak = 0;
-        if ($plan) {
-            $exercisesByDay = $plan->exercisesByDay();
-            $progressByDay  = $plan->progressByDay();
-            $todayName      = strtolower(Carbon::now('UTC')->format('l'));
-            $dayIndex       = array_search($todayName, RehabPlan::DAYS);
+        // ── Streak (consecutive calendar days with ≥1 completed exercise) ──
+        $completedDates = ExerciseLog::where('client_profile_id', $profile->id)
+            ->where('completed', true)
+            ->distinct()
+            ->orderBy('session_date', 'desc')
+            ->pluck('session_date')
+            ->map(fn($d) => Carbon::parse($d)->toDateString())
+            ->toArray();
 
-            if ($dayIndex !== false) {
-                for ($i = $dayIndex; $i >= 0; $i--) {
-                    $checkDay     = RehabPlan::DAYS[$i];
-                    $hasExercises = count($exercisesByDay[$checkDay]) > 0;
-                    if ($hasExercises) {
-                        if ($progressByDay[$checkDay]['completed']) {
-                            $streak++;
-                        } else {
-                            break;
-                        }
-                    }
-                    // Rest days are skipped without breaking streak
-                }
-            }
+        $streak   = 0;
+        $check    = Carbon::today('UTC');
+        $dateSet  = array_flip($completedDates);
+        while (isset($dateSet[$check->toDateString()])) {
+            $streak++;
+            $check->subDay();
         }
 
         // ── Milestones ────────────────────────────────────────
         $sessionCount = $feedbacks->count();
 
-        $firstFeedback = $feedbacks->first();
-        $lastFeedback  = $feedbacks->last();
-        $painReduction = null;
-        if ($firstFeedback?->pain_level && $lastFeedback?->pain_level) {
-            $diff          = $firstFeedback->pain_level - $lastFeedback->pain_level;
-            $pct           = $firstFeedback->pain_level > 0 ? round(($diff / $firstFeedback->pain_level) * 100) : 0;
-            $painReduction = ($pct >= 0 ? '−' : '+') . abs($pct) . '% from start';
+        // Pain reduction from PainEffortLog (more granular than session feedback)
+        $painLogs = PainEffortLog::where('client_profile_id', $profile->id)
+            ->where('clinic_id', $clinicId)
+            ->whereNotNull('pain_level')
+            ->orderBy('session_date', 'asc')
+            ->get(['pain_level', 'session_date']);
+
+        $painReductionPct = null;
+        $painReduction    = null;
+        if ($painLogs->count() >= 2) {
+            $firstPain        = (float) $painLogs->first()->pain_level;
+            $lastPain         = (float) $painLogs->last()->pain_level;
+            $painReductionPct = $firstPain > 0
+                ? (int) round((($firstPain - $lastPain) / $firstPain) * 100)
+                : 0;
+            $painReduction = ($painReductionPct >= 0 ? '−' : '+') . abs($painReductionPct) . '% from start';
         }
 
         $milestones = [
@@ -183,11 +187,12 @@ class TrackingController extends Controller
         ];
 
         return response()->json([
-            'adherence_rate' => $adherenceRate,
-            'avg_pain'       => $avgPain,
-            'pain_trend'     => $painTrend,
-            'weekly_days'    => $weeklyDays,
-            'milestones'     => $milestones,
+            'adherence_rate'    => $adherenceRate,
+            'avg_pain'          => $avgPain,
+            'pain_trend'        => $painTrend,
+            'weekly_days'       => $weeklyDays,
+            'milestones'        => $milestones,
+            'pain_reduction_pct' => $painReductionPct,
         ]);
     }
 }

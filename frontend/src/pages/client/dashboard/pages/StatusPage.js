@@ -184,9 +184,8 @@ export default function StatusPage() {
     const toNum = v => { const n = parseInt(v, 10); return isNaN(n) ? null : n; };
     const streak            = toNum(data?.milestones?.find(m => m.type === 'streak')?.value ?? data?.streak);
     const sessionsCompleted = toNum(data?.milestones?.find(m => m.type === 'sessions')?.value);
-    const painReductionPct  = (firstPain != null && lastPain != null && firstPain > 0)
-        ? Math.round(((lastPain - firstPain) / firstPain) * 100)
-        : null;
+    // pain_reduction_pct from API: positive = improvement, negative = worsening, null = no data
+    const painReductionPct  = data?.pain_reduction_pct ?? null;
     const milestones = [
         {
             icon: 'flame',
@@ -205,9 +204,11 @@ export default function StatusPage() {
         {
             icon: 'trending-down',
             label: 'Pain Reduction',
-            value: painReductionPct !== null ? Math.abs(Math.round(painReductionPct)) : '—',
+            value: painReductionPct !== null
+                ? (painReductionPct >= 0 ? `−${Math.abs(painReductionPct)}` : `+${Math.abs(painReductionPct)}`)
+                : '—',
             unit: painReductionPct !== null ? '%' : '',
-            achieved: (painReductionPct ?? 0) <= -10,
+            achieved: painReductionPct !== null && painReductionPct >= 10,
         },
     ];
     const achieved = milestones.filter(m => m.achieved).length;
