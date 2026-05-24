@@ -128,11 +128,11 @@ class AiService
             elseif ($last > $first + 1)  $painTrend = 'worsening';
         }
 
-        // Recovery status
+        // Recovery status — must match frontend: good | moderate | poor
         if ($adherence >= 80 && in_array($painTrend, ['improving', 'stable'])) {
-            $recoveryStatus = 'on_track';
+            $recoveryStatus = 'good';
         } elseif ($adherence < 50 || $painTrend === 'worsening') {
-            $recoveryStatus = 'at_risk';
+            $recoveryStatus = 'poor';
         } else {
             $recoveryStatus = 'moderate';
         }

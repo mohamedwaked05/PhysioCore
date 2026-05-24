@@ -7,6 +7,7 @@ use App\Models\AiInsight;
 use App\Models\Clinic;
 use App\Models\Message;
 use App\Models\PainEffortLog;
+use App\Models\RehabPlan;
 use App\Models\SessionFeedback;
 use App\Services\AiService;
 use App\Services\NotificationService;
@@ -109,7 +110,8 @@ class AiInsightController extends Controller
 
     /**
      * GET /client/ai/latest?clinic_id=X
-     * Returns the most recent progress insight for the client.
+     * Returns (or generates) the most recent progress insight for the client.
+     * Regenerates if no insight exists or the last one is older than 24 hours.
      */
     public function latest(Request $request)
     {
@@ -120,11 +122,86 @@ class AiInsightController extends Controller
         $profile  = $request->user()->clientProfile;
         $clinicId = (int) $request->clinic_id;
 
-        $insight = AiInsight::where('client_profile_id', $profile->id)
+        $approved = $profile->accessRequests()
+            ->where('clinic_id', $clinicId)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$approved) {
+            return response()->json(null);
+        }
+
+        // Return cached progress insight if generated within last 24 hours
+        $cached = AiInsight::where('client_profile_id', $profile->id)
             ->where('clinic_id', $clinicId)
             ->where('insight_type', 'progress')
+            ->where('created_at', '>=', Carbon::now('UTC')->subHours(24))
             ->latest()
             ->first();
+
+        if ($cached) {
+            return response()->json($cached);
+        }
+
+        // Build pain_logs from session feedback
+        $feedbacks = SessionFeedback::where('client_profile_id', $profile->id)
+            ->where('clinic_id', $clinicId)
+            ->orderBy('session_date')
+            ->get(['pain_level', 'session_date']);
+
+        $painLogs = $feedbacks
+            ->whereNotNull('pain_level')
+            ->map(fn($f) => ['pain_level' => (float) $f->pain_level])
+            ->values()
+            ->all();
+
+        // Build exercise_logs from the latest rehab plan
+        $plan = RehabPlan::with(['exercises', 'progress'])
+            ->where('client_profile_id', $profile->id)
+            ->where('clinic_id', $clinicId)
+            ->latest()
+            ->first();
+
+        $exerciseLogs = [];
+        if ($plan) {
+            $exercisesByDay = $plan->exercisesByDay();
+            $progressByDay  = $plan->progressByDay();
+            foreach (RehabPlan::DAYS as $day) {
+                $assigned = count($exercisesByDay[$day]);
+                if ($assigned > 0) {
+                    $exerciseLogs[] = [
+                        'assigned_count'  => $assigned,
+                        'completed_count' => $progressByDay[$day]['completed'] ? $assigned : 0,
+                    ];
+                }
+            }
+        }
+
+        // Need at least some data to produce a meaningful insight
+        if (empty($painLogs) && empty($exerciseLogs)) {
+            return response()->json(null);
+        }
+
+        $aiResult = $this->ai->analyzeProgress([
+            'client_id'     => $profile->id,
+            'clinic_id'     => $clinicId,
+            'pain_logs'     => $painLogs,
+            'exercise_logs' => $exerciseLogs,
+        ]);
+
+        if (!$aiResult) {
+            return response()->json(null);
+        }
+
+        $insight = AiInsight::create([
+            'client_profile_id' => $profile->id,
+            'clinic_id'         => $clinicId,
+            'insight_type'      => 'progress',
+            'adherence_score'   => $aiResult['adherence_score'] ?? null,
+            'pain_trend'        => $aiResult['pain_trend'] ?? null,
+            'recovery_status'   => $aiResult['recovery_status'] ?? null,
+            'safety_flag'       => false,
+        ]);
 
         return response()->json($insight);
     }
