@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAccessRequests } from '../../../../api/client';
+import { getAccessRequests, getClinic } from '../../../../api/client';
 import ChatBox from '../../../../components/chat/ChatBox';
 import Skeleton from '../../../../components/ui/Skeleton';
 import '../../../../styles/chat.css';
@@ -20,6 +20,7 @@ export default function MessagesPage() {
     const [selected, setSelected]   = useState(null);
     const [dotsOpen, setDotsOpen]   = useState(false);
     const dotsRef                   = useRef(null);
+    const [clinicDetail, setClinicDetail] = useState(null);
 
     // Full-screen chat on mobile: strip layout padding, hide page header,
     // hide bottom nav (back button in DashboardLayout replaces it).
@@ -44,6 +45,14 @@ export default function MessagesPage() {
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []);
+
+    useEffect(() => {
+        if (!selected?.id) return;
+        setClinicDetail(null);
+        getClinic(selected.id)
+            .then(res => setClinicDetail(res.data))
+            .catch(() => {});
+    }, [selected?.id]);
 
     useEffect(() => {
         getAccessRequests()
@@ -154,8 +163,12 @@ export default function MessagesPage() {
                         <>
                             <div className="cd-chat-header">
                                 <div className="cd-chat-header-av-wrap">
-                                    {selected.profile_photo_url?.trim()
-                                        ? <img src={selected.profile_photo_url} alt={clinicName(selected)} className="cd-chat-header-av" />
+                                    {clinicDetail?.profile_photo_url && clinicDetail.profile_photo_url.trim() !== ''
+                                        ? <img
+                                            src={clinicDetail.profile_photo_url}
+                                            alt={clinicName(selected)}
+                                            className="cd-chat-header-av"
+                                          />
                                         : <div className="cd-chat-header-av cd-chat-header-av--initials">
                                             {(clinicName(selected) || '?').charAt(0).toUpperCase()}
                                           </div>

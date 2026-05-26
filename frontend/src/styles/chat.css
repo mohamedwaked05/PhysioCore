@@ -481,29 +481,27 @@
     }
 }
 
-/* ── Messages page — desktop: constrain to viewport height ────
-   Prevents the chat wrapper (header + messages + input) from
-   overflowing the viewport. chat-box fills the remaining height
-   after the cd-chat-header via flex.
+/* ── Messages page — desktop: full-width, viewport-capped ─────
+   wrapper stays flex:1 (full width), chat-box is auto-height,
+   messages area is capped so the page never needs to scroll.
    ─────────────────────────────────────────────────────────── */
 @media (min-width: 769px) {
     .messages-page .messages-chat-wrapper {
-        height: calc(100vh - 280px) !important;
-        flex: none !important;
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;
+        width: 100% !important;
     }
     .messages-page .chat-box {
-        flex: 1 !important;
-        height: 0 !important;
-        min-height: 0 !important;
+        height: auto !important;
         max-height: none !important;
+        min-height: 0 !important;
     }
     .messages-page .chat-messages {
         flex: 1 !important;
         overflow-y: auto !important;
-        min-height: 0 !important;
+        min-height: 200px !important;
+        max-height: calc(100vh - 420px) !important;
     }
 }
 
@@ -776,7 +774,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: .75rem 1.25rem;
+  padding: 1rem 1.25rem 0.75rem;
   border-bottom: .5px solid var(--border);
   background: var(--surface);
   flex-shrink: 0;
@@ -823,7 +821,7 @@
 .cd-chat-online-dot--off { background: var(--text-muted); }
 .cd-chat-header-meta { flex: 1; }
 .cd-chat-header-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--text);
 }
