@@ -62,23 +62,13 @@ export default function LandingPage() {
                     <button className="lp-nav-theme-btn" onClick={toggle} aria-label="Toggle theme">
                         {isDark ? <SunIcon /> : <MoonIcon />}
                     </button>
-                    <button className="lp-nav-signin" onClick={() => navigate('/login')}>
-                        Sign in
-                    </button>
-                    <button className="lp-nav-cta" onClick={() => navigate('/register')}>
-                        Get started
-                    </button>
+
                 </div>
             </nav>
 
             {/* ── Hero ────────────────────────────────────────── */}
             <div className="lp-new-hero">
               <div className="lp-new-hero-inner">
-
-                <div className="lp-new-pill">
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', flexShrink: 0 }} />
-                    Rehabilitation Platform
-                </div>
 
                 <h1 className="lp-new-h1">
                     The smarter way to <em>recover.</em>
