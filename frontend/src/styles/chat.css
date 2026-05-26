@@ -487,12 +487,18 @@
    ─────────────────────────────────────────────────────────── */
 @media (min-width: 769px) {
     .messages-page .messages-chat-wrapper {
+        flex: 1 !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
         display: flex !important;
         flex-direction: column !important;
         overflow: hidden !important;
-        width: 100% !important;
     }
     .messages-page .chat-box {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
         height: auto !important;
         max-height: none !important;
         min-height: 0 !important;
