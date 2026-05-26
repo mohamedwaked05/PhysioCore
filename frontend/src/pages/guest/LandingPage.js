@@ -96,6 +96,23 @@ export default function LandingPage() {
                 <p className="lp-chat-hint">Describe your injury and I'll help find the right clinic.</p>
 
                 <div className="lp-chat-embed">
+                    <div className="lp-chat-card-header">
+                        <div className="lp-chat-card-avatar">
+                            <div style={{ width: 30, height: 30, borderRadius: 8, background: '#0891b2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div className="lp-chat-card-meta">
+                            <div className="lp-chat-card-name">PhysioCore Assistant</div>
+                            <div className="lp-chat-card-status">
+                                <span className="lp-chat-status-dot"></span>
+                                <span>Injury assessment</span>
+                                <span className="lp-chat-status-sub"> · Vision enabled</span>
+                            </div>
+                        </div>
+                    </div>
                     <Chatbot embedded />
                 </div>
 

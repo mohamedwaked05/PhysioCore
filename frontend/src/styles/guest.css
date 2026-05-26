@@ -2150,7 +2150,7 @@
   flex-shrink: 0;
 }
 
-.lp-new-h1 em { color: var(--primary); font-style: normal; }
+.lp-new-h1 em { color: #06b6d4; font-style: normal; }
 
 .lp-new-sub {
   font-size: 13px;
@@ -2189,11 +2189,11 @@
 
 [data-theme="dark"] .lp-chat-hint { color: rgba(255,255,255,0.4); }
 
-/* Wrapper for the embedded chatbot — fixed 340px, gap below */
+/* Wrapper for the embedded chatbot — fixed 420px, gap below */
 .lp-chat-embed {
   max-width: 520px;
   width: 100%;
-  height: 340px;
+  height: 420px;
   margin: 0 auto 1.5rem auto;
   overflow: hidden;
   border-radius: 14px;
@@ -2201,11 +2201,12 @@
   flex-direction: column;
 }
 
-/* Force children (cb-embedded) to fill the fixed-height wrapper */
-.lp-chat-embed > * {
-  height: 100% !important;
+/* Force chatbot child to fill remaining height after header */
+.lp-chat-embed > .cb-embedded {
+  flex: 1 1 0;
+  height: 0 !important;
   max-height: 100% !important;
-  border-radius: 14px !important;
+  border-radius: 0 0 14px 14px !important;
 }
 
 /* Embedded chatbot panel — overrides fixed positioning from chatbot.css */
@@ -2215,8 +2216,9 @@
   transform: none !important;
   opacity: 1 !important;
   pointer-events: all !important;
-  border-radius: 14px;
+  border-radius: 0 0 14px 14px;
   border: 0.5px solid var(--border);
+  border-top: none;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -2235,7 +2237,7 @@
 [data-theme="dark"] .lp-new-shell { background: #0b0f1c; }
 [data-theme="dark"] .lp-new-hero  { background: #0b0f1c; }
 [data-theme="dark"] .lp-new-h1   { color: #fff; }
-[data-theme="dark"] .lp-new-h1 em { color: var(--primary); }
+[data-theme="dark"] .lp-new-h1 em { color: #06b6d4; }
 [data-theme="dark"] .lp-new-sub  { color: rgba(255,255,255,0.4); }
 
 /* Hide floating Assess Injury FAB on landing page so it doesn't overlap chat card */
@@ -2248,6 +2250,63 @@
   color: var(--text);
   background: var(--surface);
 }
+
+/* ── Landing chat card header ─────────────────────────────── */
+.lp-chat-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.7rem 1rem;
+  border: 0.5px solid var(--border);
+  border-bottom-color: var(--border);
+  border-radius: 14px 14px 0 0;
+  background: var(--surface);
+  flex-shrink: 0;
+}
+[data-theme="dark"] .lp-chat-card-header {
+  border-bottom-color: rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.04);
+}
+.lp-chat-card-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.lp-chat-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lp-chat-card-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+.lp-chat-card-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #22c55e;
+}
+.lp-chat-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+}
+.lp-chat-status-sub {
+  color: var(--text-muted);
+}
+
+/* Send button cyan override — landing page only */
+.lp-chat-embed .cb-send { background: #06b6d4 !important; color: #0a0d1a !important; }
 
 @media (max-width: 640px) {
   /* ── Navbar layout ── */
@@ -2275,9 +2334,10 @@
   .lp-new-sub { font-size: 12px; max-width: 100%; margin-bottom: 0.75rem; }
   .lp-new-btns { flex-direction: column; align-items: stretch; margin-bottom: 0.75rem; }
   .lp-new-btns > * { width: 100%; justify-content: center; padding: 10px; }
-  .lp-chat-embed { max-width: 100%; height: 280px; margin: 0 auto 1rem auto; border-radius: 12px; }
-  .lp-chat-embed > * { border-radius: 12px !important; }
-  .cb-embedded { border-radius: 12px !important; }
+  .lp-chat-embed { max-width: 100%; height: 320px; margin: 0 auto 1rem auto; border-radius: 12px; }
+  .lp-chat-embed > .cb-embedded { border-radius: 0 0 12px 12px !important; }
+  .lp-chat-card-header { border-radius: 12px 12px 0 0; }
+  .cb-embedded { border-radius: 0 0 12px 12px !important; }
 }
 @media (max-width: 380px) {
   .lp-new-h1 { font-size: 22px; }
