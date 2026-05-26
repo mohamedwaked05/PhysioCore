@@ -481,6 +481,32 @@
     }
 }
 
+/* ── Messages page — desktop: constrain to viewport height ────
+   Prevents the chat wrapper (header + messages + input) from
+   overflowing the viewport. chat-box fills the remaining height
+   after the cd-chat-header via flex.
+   ─────────────────────────────────────────────────────────── */
+@media (min-width: 769px) {
+    .messages-page .messages-chat-wrapper {
+        height: calc(100vh - 280px) !important;
+        flex: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+    }
+    .messages-page .chat-box {
+        flex: 1 !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        max-height: none !important;
+    }
+    .messages-page .chat-messages {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        min-height: 0 !important;
+    }
+}
+
 /* ── Messages page — full-screen chat on mobile ───────────────
    .cd-layout padding + .cd-header are controlled by JS in
    MessagesPage.js (direct DOM manipulation). CSS here only
