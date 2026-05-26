@@ -742,3 +742,146 @@
         padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }
 }
+
+/* ============================================================
+   Client Messages — Option C chat card header
+   ============================================================ */
+.cd-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: .75rem 1.25rem;
+  border-bottom: .5px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.cd-chat-header-av-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.cd-chat-header-av {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d9488;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+}
+.cd-chat-header-av--initials {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #0d9488;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+}
+.cd-chat-online-dot {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+}
+.cd-chat-online-dot--on  { background: #22c55e; }
+.cd-chat-online-dot--off { background: var(--text-muted); }
+.cd-chat-header-meta { flex: 1; }
+.cd-chat-header-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.cd-chat-header-status {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+.cd-chat-header-status--on { color: #22c55e; }
+.cd-chat-header-actions { flex-shrink: 0; }
+.cd-chat-dots-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--surface-dim);
+  border: .5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  position: relative;
+  user-select: none;
+}
+.cd-chat-dots-menu {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  background: var(--surface);
+  border: .5px solid var(--border);
+  border-radius: 10px;
+  padding: .35rem;
+  min-width: 180px;
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.cd-chat-dots-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: .55rem .75rem;
+  font-size: 13px;
+  color: var(--text);
+  border-radius: 7px;
+  cursor: pointer;
+}
+.cd-chat-dots-item:hover { background: var(--surface-dim); }
+
+/* ── Option C input bar — scoped to client messages page ─── */
+.messages-page .chat-input-area {
+  padding: .65rem 1rem;
+}
+.messages-page .chat-input-row {
+  background: var(--surface-dim);
+  border: .5px solid var(--border);
+  border-radius: 12px;
+  padding: 6px 8px;
+  gap: 8px;
+}
+.messages-page .chat-input-area textarea {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 4px 2px;
+  min-height: 32px;
+}
+.messages-page .chat-input-area textarea:focus { border-color: transparent; }
+.messages-page .chat-attach-btn {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 7px;
+  background: var(--surface);
+  border: .5px solid var(--border);
+}
+.messages-page .chat-send-btn {
+  width: 32px;
+  height: 32px;
+  background: #06b6d4;
+  color: #0a0d1a;
+  box-shadow: none;
+}
+.messages-page .chat-send-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: none;
+}

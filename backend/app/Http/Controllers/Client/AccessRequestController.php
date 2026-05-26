@@ -19,7 +19,7 @@ class AccessRequestController extends Controller
             $request->user()
                 ->clientProfile
                 ->accessRequests()
-                ->with('clinic:id,user_id,legal_name,commercial_name,specialty_text,address')
+                ->with('clinic:id,user_id,legal_name,commercial_name,specialty_text,address,profile_photo_url')
                 ->latest()
                 ->get()
         );
@@ -68,7 +68,7 @@ class AccessRequestController extends Controller
         Cache::forget("clinic_counts_{$request->clinic_id}");
 
         return response()->json(
-            $accessRequest->load('clinic:id,user_id,legal_name,commercial_name,specialty_text,address'),
+            $accessRequest->load('clinic:id,user_id,legal_name,commercial_name,specialty_text,address,profile_photo_url'),
             201
         );
     }
