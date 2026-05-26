@@ -62,7 +62,12 @@ export default function LandingPage() {
                     <button className="lp-nav-theme-btn" onClick={toggle} aria-label="Toggle theme">
                         {isDark ? <SunIcon /> : <MoonIcon />}
                     </button>
-
+                    <button className="lp-nav-signin" onClick={() => navigate('/login')}>
+                        Sign in
+                    </button>
+                    <button className="lp-nav-cta" onClick={() => navigate('/register')}>
+                        Get started
+                    </button>
                 </div>
             </nav>
 
