@@ -287,35 +287,61 @@ export default function StatusPage() {
                             </span>
                         </div>
                         <div className="cd-insight-charts-row">
+                            {/* Card 1 — Adherence */}
                             <div className="cd-insight-card">
                                 <div className="cd-insight-card-title">Adherence</div>
-                                <svg viewBox="0 0 100 100" width="100" height="100" style={{ margin: '0.5rem auto', display: 'block' }}>
-                                    <circle cx="50" cy="50" r="38" fill="none" stroke="var(--border)" strokeWidth="10"/>
-                                    <circle cx="50" cy="50" r="38" fill="none"
-                                        stroke={adherence >= 80 ? '#22c55e' : adherence >= 50 ? '#f59e0b' : '#ef4444'}
-                                        strokeWidth="10"
-                                        strokeDasharray={`${(adherence / 100) * 238.76} 238.76`}
-                                        strokeLinecap="round"
-                                        transform="rotate(-90 50 50)"
-                                        style={{ transition: 'stroke-dasharray 0.8s ease' }}
-                                    />
-                                    <text x="50" y="56" textAnchor="middle" fontSize="18" fontWeight="700" fill="var(--text)">{adherence}%</text>
-                                </svg>
-                                <div className="cd-insight-card-sub">{adherence >= 80 ? 'Great' : adherence >= 50 ? 'Moderate' : 'Low'}</div>
+                                <div style={{ position:'relative', width:90, height:90, margin:'0.5rem auto' }}>
+                                    <svg viewBox="0 0 90 90" width="90" height="90" style={{ position:'absolute', top:0, left:0 }}>
+                                        <circle cx="45" cy="45" r="38" fill="none" stroke="var(--border)" strokeWidth="6"/>
+                                        <circle cx="45" cy="45" r="38" fill="none"
+                                            stroke={adherence >= 80 ? '#22c55e' : adherence >= 50 ? '#f59e0b' : '#ef4444'}
+                                            strokeWidth="6"
+                                            strokeDasharray={`${(adherence / 100) * 238.76} 238.76`}
+                                            strokeLinecap="round"
+                                            transform="rotate(-90 45 45)"
+                                            style={{ transition: 'stroke-dasharray 0.8s ease' }}
+                                        />
+                                    </svg>
+                                    <div style={{
+                                        position:'absolute', inset:0,
+                                        display:'flex', flexDirection:'column',
+                                        alignItems:'center', justifyContent:'center', gap:0
+                                    }}>
+                                        <span style={{ fontSize:22, fontWeight:700, color:'var(--text)', lineHeight:1 }}>{adherence}</span>
+                                        <span style={{ fontSize:11, color:'var(--text-muted)', marginTop:2 }}>%</span>
+                                    </div>
+                                </div>
+                                <div className="cd-insight-card-sub" style={{ color: adherence >= 80 ? '#22c55e' : adherence >= 50 ? '#f59e0b' : '#ef4444' }}>
+                                    {adherence >= 80 ? 'Great' : adherence >= 50 ? 'Moderate' : 'Low'}
+                                </div>
                             </div>
+
+                            {/* Card 2 — Recovery */}
                             <div className="cd-insight-card">
                                 <div className="cd-insight-card-title">Recovery</div>
-                                <svg viewBox="0 0 70 100" width="70" height="100" style={{ margin: '0.5rem auto', display: 'block' }}>
-                                    <rect x="25" y="8" width="20" height="78" rx="8" fill="var(--border)"/>
-                                    <rect
-                                        x="25"
-                                        y={5 + 65 * (1 - recoveryFill)}
-                                        width="20"
-                                        height={65 * recoveryFill}
-                                        rx="8"
-                                        fill={recoveryColor}
-                                    />
-                                </svg>
+                                <div style={{ position:'relative', width:90, height:90, margin:'0.5rem auto' }}>
+                                    <svg viewBox="0 0 90 90" width="90" height="90" style={{ position:'absolute', top:0, left:0 }}>
+                                        <circle cx="45" cy="45" r="38" fill="none" stroke="var(--border)" strokeWidth="6"/>
+                                        <circle cx="45" cy="45" r="38" fill="none"
+                                            stroke={recoveryColor}
+                                            strokeWidth="6"
+                                            strokeDasharray={`${recoveryFill * 238.76} 238.76`}
+                                            strokeLinecap="round"
+                                            transform="rotate(-90 45 45)"
+                                            style={{ transition: 'stroke-dasharray 0.8s ease' }}
+                                        />
+                                    </svg>
+                                    <div style={{
+                                        position:'absolute', inset:0,
+                                        display:'flex', flexDirection:'column',
+                                        alignItems:'center', justifyContent:'center', gap:0
+                                    }}>
+                                        <span style={{ fontSize:22, fontWeight:700, color:'var(--text)', lineHeight:1 }}>
+                                            {Math.round(recoveryFill * 100)}
+                                        </span>
+                                        <span style={{ fontSize:11, color:'var(--text-muted)', marginTop:2 }}>%</span>
+                                    </div>
+                                </div>
                                 <div className="cd-insight-card-sub" style={{ color: recoveryColor }}>
                                     {recoveryStatus ? recoveryStatus.charAt(0).toUpperCase() + recoveryStatus.slice(1) : '—'}
                                 </div>
