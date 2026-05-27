@@ -94,7 +94,10 @@ export default function InquiriesPage() {
 
     const openThread = (client) => {
         setSelected(client);
-        setMobileChatOpen(true);
+        // Only use the portal overlay on mobile; on desktop the inline panel is always
+        // visible, so setting mobileChatOpen=true would render chatContent twice (inline
+        // + portal), giving two DOM nodes with ref={dotsRef} and breaking the dots menu.
+        if (window.innerWidth <= 768) setMobileChatOpen(true);
     };
 
     const closeThread = () => {
@@ -173,13 +176,15 @@ export default function InquiriesPage() {
                             <div className="cld-inq-dots-item" onClick={(e) => {
                                     e.stopPropagation();
                                     setDotsOpen(false);
-                                    setPopupPatient({
-                                        id: selected?.client_profile_id ?? selected?.id,
-                                        name: `${selected?.first_name ?? ''} ${selected?.last_name ?? ''}`.trim(),
-                                        profile_photo_url: selected?.profile_photo_url ?? null,
-                                        cover_photo_url: selected?.cover_photo_url ?? null,
-                                        gender: selected?.gender ?? null,
-                                    });
+                                    if (selected?.client_profile_id) {
+                                        setPopupPatient({
+                                            id: selected.client_profile_id,
+                                            name: `${selected.first_name ?? ''} ${selected.last_name ?? ''}`.trim(),
+                                            profile_photo_url: selected.profile_photo_url ?? null,
+                                            cover_photo_url: selected.cover_photo_url ?? null,
+                                            gender: selected.gender ?? null,
+                                        });
+                                    }
                                 }}>
                                 <i className="ti ti-user" aria-hidden="true" />
                                 View patient profile
