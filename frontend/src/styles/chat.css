@@ -486,9 +486,22 @@
    messages area is capped so the page never needs to scroll.
    ─────────────────────────────────────────────────────────── */
 @media (min-width: 769px) {
+    .messages-page {
+        height: calc(100vh - 190px);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    .messages-page .messages-body {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
     .messages-page .messages-chat-wrapper {
         flex: 1 !important;
         min-width: 0 !important;
+        min-height: 0 !important;
+        align-self: stretch !important;
         width: 100% !important;
         max-width: none !important;
         display: flex !important;
@@ -496,18 +509,22 @@
         overflow: hidden !important;
     }
     .messages-page .chat-box {
+        flex: 1 !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
         width: 100% !important;
         max-width: none !important;
         min-width: 0 !important;
         height: auto !important;
         max-height: none !important;
-        min-height: 0 !important;
     }
     .messages-page .chat-messages {
         flex: 1 !important;
         overflow-y: auto !important;
-        min-height: 200px !important;
-        max-height: calc(100vh - 420px) !important;
+        min-height: 0 !important;
+        max-height: none !important;
     }
 }
 
