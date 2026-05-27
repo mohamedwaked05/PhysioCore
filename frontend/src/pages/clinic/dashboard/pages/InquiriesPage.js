@@ -5,11 +5,8 @@ import { getClinicProfile } from '../../../../api/clinic';
 import { getMessages } from '../../../../api/messages';
 import ChatBox from '../../../../components/chat/ChatBox';
 import Skeleton from '../../../../components/ui/Skeleton';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 import '../../../../styles/chat.css';
-
-function getInitials(first, last) {
-    return `${first?.[0] ?? ''}${last?.[0] ?? ''}`.toUpperCase() || '?';
-}
 
 function BackArrowIcon() {
     return (
@@ -171,8 +168,8 @@ export default function InquiriesPage() {
                                 onClick={() => openThread(client)}
                                 className={`cld-inquiries-list-item${selected?.id === client.id ? ' active' : ''}`}
                             >
-                                <div className="cld-inquiries-avatar">
-                                    {getInitials(client.first_name, client.last_name)}
+                                <div className="cld-inquiries-avatar" style={{ padding: 0, overflow: 'hidden' }}>
+                                    <GenderAvatar gender={client.gender} size={36} />
                                 </div>
                                 <div style={{ minWidth: 0, flex: 1 }}>
                                     <p className="cld-inquiries-name">
