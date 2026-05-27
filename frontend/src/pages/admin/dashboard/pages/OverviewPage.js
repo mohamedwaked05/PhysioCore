@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminStats } from '../../../../api/admin';
 import Skeleton from '../../../../components/ui/Skeleton';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 
 function timeAgo(iso) {
     const diff = Math.floor((Date.now() - new Date(iso)) / 1000);
@@ -97,12 +98,9 @@ export default function AdminOverviewPage() {
                     </div>
                 ) : (
                     recent_clinics.map(c => {
-                        const initials = c.name?.slice(0, 2).toUpperCase() ?? '??';
                         return (
                             <div key={c.id} className="adm-list-item">
-                                <div className="adm-list-avatar" style={{ background: 'rgba(217,119,6,0.1)', color: '#d97706' }}>
-                                    {initials}
-                                </div>
+                                <GenderAvatar gender={undefined} size={34} />
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div className="adm-list-name">{c.name}</div>
                                     <div className="adm-list-meta">{c.email} · {timeAgo(c.created_at)}</div>

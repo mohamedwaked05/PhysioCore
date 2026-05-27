@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getAdminUsers, toggleUserStatus, deleteUser } from '../../../../api/admin';
 import { useToast } from '../../../../context/ToastContext';
 import Skeleton from '../../../../components/ui/Skeleton';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 
 const ROLE_FILTERS   = ['all', 'client', 'clinic', 'admin'];
 const STATUS_FILTERS = ['all', 'active', 'suspended'];
@@ -195,17 +196,14 @@ export default function UsersPage() {
                             </thead>
                             <tbody>
                                 {users.map(u => {
-                                    const name     = `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || '—';
-                                    const initials = `${u.first_name?.[0] ?? ''}${u.last_name?.[0] ?? ''}`.toUpperCase() || '?';
-                                    const busy     = actionLoading[u.id];
+                                    const name = `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || '—';
+                                    const busy = actionLoading[u.id];
 
                                     return (
                                         <tr key={u.id}>
                                             <td>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                                                    <div className="adm-list-avatar" style={{ width: 32, height: 32, fontSize: '0.72rem' }}>
-                                                        {initials}
-                                                    </div>
+                                                    <GenderAvatar gender={u.gender} size={32} />
                                                     <span style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--text)' }}>{name}</span>
                                                 </div>
                                             </td>

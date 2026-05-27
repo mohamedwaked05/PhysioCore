@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getAdminClinics, getAdminClinic, getAdminStats, approveClinic, rejectClinic } from '../../../../api/admin';
 import { useToast } from '../../../../context/ToastContext';
 import Skeleton from '../../../../components/ui/Skeleton';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 
 const STATUS_FILTERS = ['all', 'pending', 'approved', 'rejected'];
 
@@ -350,16 +351,13 @@ export default function ClinicsPage() {
                             </thead>
                             <tbody>
                                 {clinics.map(c => {
-                                    const name     = c.commercial_name ?? c.legal_name ?? '—';
-                                    const initials = name.slice(0, 2).toUpperCase();
+                                    const name = c.commercial_name ?? c.legal_name ?? '—';
 
                                     return (
                                         <tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => setReviewId(c.id)}>
                                             <td>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                                                    <div className="adm-list-avatar" style={{ width: 32, height: 32, fontSize: '0.7rem' }}>
-                                                        {initials}
-                                                    </div>
+                                                    <GenderAvatar gender={undefined} size={32} />
                                                     <div>
                                                         <div style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--text)' }}>{name}</div>
                                                         {c.rejection_reason && (

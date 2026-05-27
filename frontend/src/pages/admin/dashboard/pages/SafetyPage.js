@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getAdminSafetyFlags, adminResolveFlag } from '../../../../api/admin';
 import { useToast } from '../../../../context/ToastContext';
 import Skeleton from '../../../../components/ui/Skeleton';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 
 const SEVERITY_FILTERS = ['all', 'critical', 'warning'];
 
@@ -42,13 +43,7 @@ function FlagRow({ flag, onResolved }) {
         <tr style={{ opacity: resolved ? 0.4 : 1, transition: 'opacity 0.3s' }}>
             <td>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                    <div className="adm-list-avatar" style={{
-                        width: 32, height: 32, fontSize: '0.72rem',
-                        background: flag.severity === 'critical' ? 'rgba(220,38,38,0.1)' : 'rgba(217,119,6,0.1)',
-                        color: flag.severity === 'critical' ? '#dc2626' : '#d97706',
-                    }}>
-                        {flag.initials}
-                    </div>
+                    <GenderAvatar gender={flag.gender} size={32} />
                     <div>
                         <div style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--text)' }}>{flag.patient_name}</div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{flag.condition}</div>
@@ -120,12 +115,7 @@ function ResolvedFlagRow({ flag }) {
         <tr style={{ opacity: 0.75 }}>
             <td>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-                    <div className="adm-list-avatar" style={{
-                        width: 32, height: 32, fontSize: '0.72rem',
-                        background: 'rgba(22,163,74,0.08)', color: '#16a34a',
-                    }}>
-                        {flag.initials}
-                    </div>
+                    <GenderAvatar gender={flag.gender} size={32} />
                     <div>
                         <div style={{ fontWeight: 600, fontSize: '0.82rem', color: 'var(--text)' }}>{flag.patient_name}</div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{flag.condition}</div>

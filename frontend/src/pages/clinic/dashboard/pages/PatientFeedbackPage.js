@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../../../../api/axios';
 import { getPatientAiInsights } from '../../../../api/clinic';
 import Skeleton from '../../../../components/ui/Skeleton';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 
 function PainDot({ level }) {
     if (!level) return null;
@@ -96,7 +97,6 @@ export default function PatientFeedbackPage() {
     const { patient, feedbacks } = data;
     const u = patient.user ?? {};
     const fullName = `${u.first_name ?? ''} ${u.last_name ?? ''}`.trim() || 'Unknown';
-    const initials = `${u.first_name?.[0] ?? ''}${u.last_name?.[0] ?? ''}`.toUpperCase() || '?';
     const condition = patient.condition_summary ?? '—';
 
     const avgRating = feedbacks.length
@@ -116,7 +116,9 @@ export default function PatientFeedbackPage() {
 
             {/* ── Patient Header ─── */}
             <div className="client-card cld-patient-header-card">
-                <div className="cld-patient-header-avatar">{initials}</div>
+                <div className="cld-patient-header-avatar">
+                    <GenderAvatar gender={patient.gender} size={52} />
+                </div>
                 <div className="cld-patient-header-info">
                     <p className="cld-patient-header-name">{fullName}</p>
                     <p className="cld-patient-header-meta">{condition}</p>

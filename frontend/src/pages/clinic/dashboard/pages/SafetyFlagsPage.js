@@ -6,6 +6,7 @@ import { getSafetyFlags, resolveSafetyFlag, getPatientProfile } from '../../../.
 import { getEcho } from '../../../../services/echo';
 import Skeleton from '../../../../components/ui/Skeleton';
 import PatientProfilePopup from '../components/PatientProfilePopup';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 
 const PRIORITY_FILTERS = ['All', 'High', 'Medium', 'Low'];
 
@@ -51,19 +52,11 @@ function FlagCard({ flag, onResolved, onAvatarClick }) {
         <div className={`cld-flag-item ${priority}`} style={{ opacity: resolved ? 0.45 : 1, transition: 'opacity 0.3s' }}>
             <div
                 className="cld-request-avatar"
-                style={{
-                    background: priority === 'high'   ? 'rgba(220,38,38,0.1)'  :
-                                priority === 'medium' ? 'rgba(217,119,6,0.1)'  :
-                                                        'rgba(22,163,74,0.1)',
-                    color:      priority === 'high'   ? '#dc2626' :
-                                priority === 'medium' ? '#d97706' :
-                                                        '#16a34a',
-                    cursor: 'pointer',
-                }}
+                style={{ cursor: 'pointer', padding: 0, overflow: 'hidden' }}
                 title={`View ${flag.patient_name}'s profile`}
                 onClick={() => onAvatarClick?.(flag)}
             >
-                {flag.initials}
+                <GenderAvatar gender={flag.gender} size={36} />
             </div>
 
             <div className="cld-flag-info" style={{ flex: 1 }}>
@@ -126,8 +119,8 @@ function ResolvedFlagCard({ flag }) {
     const priority = severityToPriority(flag.severity);
     return (
         <div className={`cld-flag-item ${priority}`} style={{ opacity: 0.65 }}>
-            <div className="cld-request-avatar" style={{ background: 'rgba(22,163,74,0.08)', color: '#16a34a' }}>
-                {flag.initials}
+            <div className="cld-request-avatar" style={{ padding: 0, overflow: 'hidden' }}>
+                <GenderAvatar gender={flag.gender} size={36} />
             </div>
             <div className="cld-flag-info" style={{ flex: 1 }}>
                 <p className="cld-flag-name">{flag.patient_name}</p>

@@ -3,6 +3,7 @@ import { getClinicPlans, deleteRehabPlan } from '../../../../api/rehabPlans';
 import CreatePlanModal from '../components/CreatePlanModal';
 import Skeleton from '../../../../components/ui/Skeleton';
 import { useToast } from '../../../../context/ToastContext';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 
 const WEEK_DAYS = [
     { key: 'monday',    label: 'Monday',    short: 'Mon' },
@@ -31,10 +32,6 @@ function formatDateRange(start, end) {
     if (start && end) return `${fmt(start)} – ${fmt(end)}`;
     if (start) return `From ${fmt(start)}`;
     return `Until ${fmt(end)}`;
-}
-
-function initials(name) {
-    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
 }
 
 /* ── Single week plan card ─────────────────────────────────── */
@@ -225,9 +222,7 @@ function ClientPlanRow({ entry, onPlanSaved, onPlanDeleted }) {
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--surface-dim)'}
                 onMouseLeave={e => e.currentTarget.style.background = ''}
             >
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.78rem', fontWeight: 700, flexShrink: 0 }}>
-                    {initials(client.name)}
-                </div>
+                <GenderAvatar gender={client.gender} size={36} />
                 <div style={{ flex: 1 }}>
                     <p style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', marginBottom: '0.1rem' }}>{client.name}</p>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{client.condition_summary} · {plans.length} week plan{plans.length !== 1 ? 's' : ''}</p>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getClinicAccessRequests, updateAccessRequest } from '../../../../api/clinic';
 import { useToast } from '../../../../context/ToastContext';
 import Skeleton from '../../../../components/ui/Skeleton';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 
 const FILTERS = ['All', 'Pending', 'Approved', 'Denied'];
 
@@ -26,6 +27,7 @@ function normalize(r) {
         id:          r.id,
         clientName:  `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() || 'Unknown',
         initials:    initials(user.first_name, user.last_name),
+        gender:      r.client_profile?.gender ?? null,
         condition:   r.client_profile?.condition_summary ?? '—',
         payment:     r.payment_preference ?? '—',
         requestedAt: formatDate(r.created_at),
@@ -152,7 +154,9 @@ function RequestRow({ req, acting, onAction }) {
 
     return (
         <div className="cld-request-item" style={{ opacity: isPending ? 1 : 0.65 }}>
-            <div className="cld-request-avatar">{req.initials}</div>
+            <div className="cld-request-avatar" style={{ padding: 0, overflow: 'hidden' }}>
+                <GenderAvatar gender={req.gender} size={36} />
+            </div>
 
             <div className="cld-request-info">
                 <p className="cld-request-name">{req.clientName}</p>
