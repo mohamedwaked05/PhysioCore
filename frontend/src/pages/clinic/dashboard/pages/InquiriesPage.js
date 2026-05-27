@@ -4,6 +4,7 @@ import { useAuth } from '../../../../context/AuthContext';
 import { getClinicProfile } from '../../../../api/clinic';
 import { getMessages } from '../../../../api/messages';
 import ChatBox from '../../../../components/chat/ChatBox';
+import PatientProfilePopup from '../components/PatientProfilePopup';
 import Skeleton from '../../../../components/ui/Skeleton';
 import GenderAvatar from '../../../../components/ui/GenderAvatar';
 import '../../../../styles/chat.css';
@@ -25,6 +26,7 @@ export default function InquiriesPage() {
     const [loading, setLoading]           = useState(true);
     const [mobileChatOpen, setMobileChatOpen] = useState(false);
     const [dotsOpen, setDotsOpen]         = useState(false);
+    const [popupPatient, setPopupPatient] = useState(null);
     const dotsRef                         = useRef(null);
 
     useEffect(() => {
@@ -161,7 +163,17 @@ export default function InquiriesPage() {
                     <i className="ti ti-dots-vertical" aria-hidden="true" />
                     {dotsOpen && (
                         <div className="cld-inq-dots-menu">
-                            <div className="cld-inq-dots-item" onClick={(e) => { e.stopPropagation(); setDotsOpen(false); }}>
+                            <div className="cld-inq-dots-item" onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDotsOpen(false);
+                                    setPopupPatient({
+                                        id: selected?.client_profile_id ?? selected?.id,
+                                        name: `${selected?.first_name ?? ''} ${selected?.last_name ?? ''}`.trim(),
+                                        profile_photo_url: selected?.profile_photo_url ?? null,
+                                        cover_photo_url: selected?.cover_photo_url ?? null,
+                                        gender: selected?.gender ?? null,
+                                    });
+                                }}>
                                 <i className="ti ti-user" aria-hidden="true" />
                                 View patient profile
                             </div>
@@ -231,6 +243,13 @@ export default function InquiriesPage() {
                     {chatContent}
                 </div>,
                 document.body
+            )}
+
+            {popupPatient && (
+                <PatientProfilePopup
+                    patient={popupPatient}
+                    onClose={() => setPopupPatient(null)}
+                />
             )}
         </>
     );

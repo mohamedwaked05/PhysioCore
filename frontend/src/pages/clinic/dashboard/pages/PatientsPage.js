@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getClinicProfile, getClinicAccessRequests, getPatientProfile } from '../../../../api/clinic';
 import { getPatientRehabPlan } from '../../../../api/rehabPlans';
@@ -36,16 +36,54 @@ function toPatient(r) {
     };
 }
 
-function ChatModal({ patient, clinicId, onClose }) {
+function ChatModal({ patient, clinicId, onClose, onViewProfile }) {
+    const [dotsOpen, setDotsOpen] = useState(false);
+    const dotsRef = useRef(null);
+
+    useEffect(() => {
+        const handler = (e) => {
+            if (dotsRef.current && !dotsRef.current.contains(e.target)) setDotsOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const isOnline = (() => {
+        const now = new Date();
+        const day = now.getDay();
+        const hour = now.getHours();
+        return day >= 1 && day <= 6 && hour >= 8 && hour < 20;
+    })();
+
     return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={onClose}>
-            <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', width: '100%', maxWidth: 460, boxShadow: 'var(--shadow-lg)', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem' }}>
-                    <div>
-                        <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)', marginBottom: '0.1rem' }}>{patient.name}</p>
-                        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{patient.condition}</p>
+            <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', width: '100%', maxWidth: 460, boxShadow: 'var(--shadow-lg)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+                <div className="cld-inquiries-chat-header">
+                    <div className="cld-inq-header-av-wrap">
+                        {patient?.profile_photo_url?.trim()
+                            ? <img src={patient.profile_photo_url} alt={patient.name} className="cld-inq-header-av" />
+                            : <GenderAvatar gender={patient?.gender} size={40} />
+                        }
+                        <span className={`cld-inq-online-dot ${isOnline ? 'cld-inq-online-dot--on' : 'cld-inq-online-dot--off'}`} />
                     </div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex' }}>
+                    <div className="cld-inq-header-meta">
+                        <div className="cld-inq-header-name">{patient.name}</div>
+                        <div className={`cld-inq-header-status${isOnline ? ' cld-inq-header-status--on' : ''}`}>
+                            {isOnline ? '● Online' : '● Offline'}
+                        </div>
+                    </div>
+                    <div className="cld-inq-dots-btn" ref={dotsRef} onClick={() => setDotsOpen(v => !v)}>
+                        <i className="ti ti-dots-vertical" aria-hidden="true" />
+                        {dotsOpen && (
+                            <div className="cld-inq-dots-menu">
+                                <div className="cld-inq-dots-item" onClick={(e) => { e.stopPropagation(); setDotsOpen(false); onViewProfile?.(patient); }}>
+                                    <i className="ti ti-user" aria-hidden="true" />
+                                    View patient profile
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', marginLeft: '0.25rem', flexShrink: 0 }}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                         </svg>
@@ -269,6 +307,7 @@ export default function PatientsPage() {
                     patient={chatPatient}
                     clinicId={clinicId}
                     onClose={() => setChatPatient(null)}
+                    onViewProfile={(p) => openPatientPopup(p)}
                 />
             )}
         </div>
