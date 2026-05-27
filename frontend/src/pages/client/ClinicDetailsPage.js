@@ -21,14 +21,6 @@ function parseList(str) {
     return str.split(',').map(s => s.trim()).filter(Boolean);
 }
 
-function getInitials(name) {
-    return (name || '?')
-        .trim()
-        .split(/\s+/)
-        .slice(0, 2)
-        .map(w => w[0]?.toUpperCase() ?? '')
-        .join('');
-}
 
 function getPriceLevel(min, max) {
     const ref = min ?? max;
@@ -163,7 +155,6 @@ export default function ClinicDetailsPage() {
     }
 
     const name       = clinic.commercial_name || clinic.legal_name;
-    const initials   = getInitials(name);
     const services   = parseList(clinic.services);
     const priceInfo  = getPriceLevel(clinic.min_price, clinic.max_price);
     const priceRange = formatPriceRange(clinic.min_price, clinic.max_price);

@@ -12,10 +12,6 @@ import '../../styles/ui.css';
 import '../../styles/client.css';
 import '../../styles/guest.css';
 
-const getInitials = (name) => {
-    if (!name) return 'PC';
-    return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-};
 
 const getSpecialtyTags = (clinic) => {
     const text = clinic.specialty_text || clinic.services || '';

@@ -72,7 +72,7 @@ export default function PatientsPage() {
     const [planLoadingId, setPlanLoadingId] = useState(null);
     const [chatPatient,    setChatPatient]    = useState(null);
     const [popupPatient,   setPopupPatient]   = useState(null);
-    const [popupLoading,   setPopupLoading]   = useState(false);
+    const [,               setPopupLoading]   = useState(false);
 
     useEffect(() => {
         Promise.all([getClinicProfile(), getClinicAccessRequests()])
