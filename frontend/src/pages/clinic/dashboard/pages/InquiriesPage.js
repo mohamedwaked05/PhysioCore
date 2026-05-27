@@ -50,7 +50,14 @@ export default function InquiriesPage() {
             const other = msg.sender_id === clinicUserId ? msg.receiver : msg.sender;
             if (!other) return;
             if (!map.has(other.id)) {
-                map.set(other.id, { ...other, lastMessage: msg.content });
+                map.set(other.id, {
+                    ...other,
+                    lastMessage:       msg.content,
+                    profile_photo_url: other.client_profile?.profile_photo_url ?? null,
+                    gender:            other.client_profile?.gender ?? other.gender ?? null,
+                    cover_photo_url:   other.cover_photo_url ?? null,
+                    client_profile_id: other.client_profile?.id ?? null,
+                });
             } else {
                 map.get(other.id).lastMessage = msg.content;
             }

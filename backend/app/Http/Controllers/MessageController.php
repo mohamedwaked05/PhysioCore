@@ -30,7 +30,12 @@ class MessageController extends Controller
                 $inner->where('sender_id', $request->with_user_id)
                       ->orWhere('receiver_id', $request->with_user_id);
             }))
-            ->with(['sender:id,first_name,last_name', 'receiver:id,first_name,last_name'])
+            ->with([
+                    'sender:id,first_name,last_name,gender,cover_photo_url',
+                    'sender.clientProfile:id,user_id,profile_photo_url,gender',
+                    'receiver:id,first_name,last_name,gender,cover_photo_url',
+                    'receiver.clientProfile:id,user_id,profile_photo_url,gender',
+                ])
             ->latest()
             ->take(50)
             ->get()
