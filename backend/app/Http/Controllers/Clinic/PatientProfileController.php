@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Clinic;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccessRequest;
+use App\Models\AiInsight;
 use App\Models\ClientProfile;
 use App\Models\RehabPlan;
 use App\Models\SessionFeedback;
@@ -48,11 +49,11 @@ class PatientProfileController extends Controller
             ->limit(10)
             ->avg('pain_level');
 
-        // Active safety flags
-        $activeFlags = SessionFeedback::where('client_profile_id', $clientProfileId)
+        // Active safety flags (stored in ai_insights, not session_feedbacks)
+        $activeFlags = AiInsight::where('client_profile_id', $clientProfileId)
             ->where('clinic_id', $clinic->id)
             ->where('safety_flag', true)
-            ->where('resolved', false)
+            ->whereNull('resolved_at')
             ->count();
 
         // Latest plan title
