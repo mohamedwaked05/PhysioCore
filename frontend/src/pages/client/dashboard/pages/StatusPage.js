@@ -179,6 +179,13 @@ export default function StatusPage() {
     // AI insight derived values
     const adherence      = aiInsight?.adherence_score ?? 0;
     const recoveryStatus = aiInsight?.recovery_status ?? '';
+    const recoveryFill = recoveryStatus === 'good' ? 1
+        : recoveryStatus === 'moderate' ? 0.6
+        : recoveryStatus === 'poor' ? 0.25
+        : 0.6;
+    const recoveryColor = recoveryStatus === 'good' ? '#22c55e'
+        : recoveryStatus === 'poor' ? '#ef4444'
+        : '#f59e0b';
 
     // Milestone cards — derived from existing tracking data, no extra API call
     const toNum = v => { const n = parseInt(v, 10); return isNaN(n) ? null : n; };
@@ -302,17 +309,14 @@ export default function StatusPage() {
                                     <rect x="25" y="8" width="20" height="78" rx="8" fill="var(--border)"/>
                                     <rect
                                         x="25"
-                                        y={8 + 78 * (1 - (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.25 : 0.6))}
+                                        y={5 + 65 * (1 - recoveryFill)}
                                         width="20"
-                                        height={78 * (recoveryStatus === 'good' ? 1 : recoveryStatus === 'poor' ? 0.25 : 0.6)}
+                                        height={65 * recoveryFill}
                                         rx="8"
-                                        fill={recoveryStatus === 'good' ? '#22c55e' : recoveryStatus === 'poor' ? '#ef4444' : '#f59e0b'}
+                                        fill={recoveryColor}
                                     />
-                                    <text x="35" y="52" textAnchor="middle" fontSize="8" fontWeight="700" fill="#fff">
-                                        {recoveryStatus === 'good' ? '100%' : recoveryStatus === 'poor' ? '25%' : '60%'}
-                                    </text>
                                 </svg>
-                                <div className="cd-insight-card-sub" style={{ color: recoveryStatus === 'good' ? '#22c55e' : recoveryStatus === 'poor' ? '#ef4444' : '#f59e0b' }}>
+                                <div className="cd-insight-card-sub" style={{ color: recoveryColor }}>
                                     {recoveryStatus ? recoveryStatus.charAt(0).toUpperCase() + recoveryStatus.slice(1) : '—'}
                                 </div>
                             </div>
