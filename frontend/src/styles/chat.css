@@ -932,3 +932,136 @@
   filter: brightness(1.08);
   box-shadow: none;
 }
+
+/* ============================================================
+   Clinic Inquiries — enhanced header + card input bar
+   ============================================================ */
+
+/* Header avatar wrap */
+.cld-inq-header-av-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+.cld-inq-header-av {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+.cld-inq-online-dot {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+}
+.cld-inq-online-dot--on  { background: #22c55e; }
+.cld-inq-online-dot--off { background: #9ca3af; }
+
+/* Header meta */
+.cld-inq-header-meta { flex: 1; min-width: 0; }
+.cld-inq-header-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.cld-inq-header-status {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+.cld-inq-header-status--on { color: #22c55e; }
+
+/* Three-dot button */
+.cld-inq-dots-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: var(--surface-dim);
+    border: .5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--text-muted);
+    position: relative;
+    flex-shrink: 0;
+    user-select: none;
+}
+.cld-inq-dots-menu {
+    position: absolute;
+    top: 36px;
+    right: 0;
+    background: var(--surface);
+    border: .5px solid var(--border);
+    border-radius: 10px;
+    padding: .3rem;
+    min-width: 180px;
+    z-index: 50;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+.cld-inq-dots-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: .5rem .7rem;
+    font-size: 13px;
+    color: var(--text);
+    border-radius: 7px;
+    cursor: pointer;
+}
+.cld-inq-dots-item:hover { background: var(--surface-dim); }
+
+/* Card-style input bar — scoped to clinic inquiries panels */
+.cld-inquiries-chat .chat-input-area,
+.cld-inquiries-mobile-overlay .chat-input-area {
+    padding: .65rem 1rem;
+}
+.cld-inquiries-chat .chat-input-row,
+.cld-inquiries-mobile-overlay .chat-input-row {
+    background: var(--surface-dim);
+    border: .5px solid var(--border);
+    border-radius: 12px;
+    padding: 6px 8px;
+    gap: 8px;
+}
+.cld-inquiries-chat .chat-input-area textarea,
+.cld-inquiries-mobile-overlay .chat-input-area textarea {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 4px 2px;
+    min-height: 32px;
+}
+.cld-inquiries-chat .chat-input-area textarea:focus,
+.cld-inquiries-mobile-overlay .chat-input-area textarea:focus { border-color: transparent; }
+.cld-inquiries-chat .chat-attach-btn,
+.cld-inquiries-mobile-overlay .chat-attach-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    border-radius: 7px;
+    background: var(--surface);
+    border: .5px solid var(--border);
+}
+.cld-inquiries-chat .chat-send-btn,
+.cld-inquiries-mobile-overlay .chat-send-btn {
+    width: 32px;
+    height: 32px;
+    background: #06b6d4;
+    color: #0a0d1a;
+    box-shadow: none;
+}
+.cld-inquiries-chat .chat-send-btn:hover:not(:disabled),
+.cld-inquiries-mobile-overlay .chat-send-btn:hover:not(:disabled) {
+    filter: brightness(1.08);
+    box-shadow: none;
+}

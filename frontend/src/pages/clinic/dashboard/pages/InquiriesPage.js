@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../../context/AuthContext';
 import { getClinicProfile } from '../../../../api/clinic';
@@ -24,6 +24,23 @@ export default function InquiriesPage() {
     const [selected, setSelected]         = useState(null);
     const [loading, setLoading]           = useState(true);
     const [mobileChatOpen, setMobileChatOpen] = useState(false);
+    const [dotsOpen, setDotsOpen]         = useState(false);
+    const dotsRef                         = useRef(null);
+
+    useEffect(() => {
+        const handler = (e) => {
+            if (dotsRef.current && !dotsRef.current.contains(e.target)) setDotsOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    const isOnline = (() => {
+        const now = new Date();
+        const day = now.getDay();
+        const hour = now.getHours();
+        return day >= 1 && day <= 6 && hour >= 8 && hour < 20;
+    })();
 
     const buildThreads = useCallback((messages, clinicUserId) => {
         const map = new Map();
@@ -127,13 +144,29 @@ export default function InquiriesPage() {
                 >
                     <BackArrowIcon />
                 </button>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                    <p style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)' }}>
-                        {selected.first_name} {selected.last_name}
-                    </p>
-                    <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
-                        Inquiry · Pre-treatment
-                    </p>
+                <div className="cld-inq-header-av-wrap">
+                    {selected?.profile_photo_url?.trim()
+                        ? <img src={selected.profile_photo_url} alt={`${selected.first_name} ${selected.last_name}`} className="cld-inq-header-av" />
+                        : <GenderAvatar gender={selected?.gender} size={40} />
+                    }
+                    <span className={`cld-inq-online-dot ${isOnline ? 'cld-inq-online-dot--on' : 'cld-inq-online-dot--off'}`} />
+                </div>
+                <div className="cld-inq-header-meta">
+                    <div className="cld-inq-header-name">{selected.first_name} {selected.last_name}</div>
+                    <div className={`cld-inq-header-status${isOnline ? ' cld-inq-header-status--on' : ''}`}>
+                        {isOnline ? '● Online' : '● Offline'}
+                    </div>
+                </div>
+                <div className="cld-inq-dots-btn" ref={dotsRef} onClick={() => setDotsOpen(v => !v)}>
+                    <i className="ti ti-dots-vertical" aria-hidden="true" />
+                    {dotsOpen && (
+                        <div className="cld-inq-dots-menu">
+                            <div className="cld-inq-dots-item" onClick={(e) => { e.stopPropagation(); setDotsOpen(false); }}>
+                                <i className="ti ti-user" aria-hidden="true" />
+                                View patient profile
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
             <ChatBox
