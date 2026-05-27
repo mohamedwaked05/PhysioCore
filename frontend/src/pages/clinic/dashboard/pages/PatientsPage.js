@@ -6,6 +6,7 @@ import CreatePlanModal from '../components/CreatePlanModal';
 import PatientProfilePopup from '../components/PatientProfilePopup';
 import ChatBox from '../../../../components/chat/ChatBox';
 import Skeleton from '../../../../components/ui/Skeleton';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 import '../../../../styles/chat.css';
 
 function initials(first, last) {
@@ -182,7 +183,7 @@ export default function PatientsPage() {
                                             alt={p.name}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                                           />
-                                        : (popupLoading ? '…' : p.initials)
+                                        : <GenderAvatar gender={p.gender} size={38} />
                                     }
                                 </div>
 

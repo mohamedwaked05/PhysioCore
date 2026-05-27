@@ -8,6 +8,7 @@ import { useToast } from '../../context/ToastContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 import GuestLayout from '../../components/GuestLayout';
 import Skeleton from '../../components/ui/Skeleton';
+import GenderAvatar from '../../components/ui/GenderAvatar';
 import ChatBox from '../../components/chat/ChatBox';
 import '../../styles/ui.css';
 import '../../styles/client.css';
@@ -207,7 +208,7 @@ export default function ClinicDetailsPage() {
                         <div className="cd-banner-avatar">
                             {clinic.profile_photo_url
                                 ? <img src={clinic.profile_photo_url} alt={name} />
-                                : <span>{initials}</span>}
+                                : <GenderAvatar gender={undefined} size={48} style={{ borderRadius: '9px' }} />}
                         </div>
                         <div className="cd-banner-meta">
                             <div className="cd-banner-name">{name}</div>

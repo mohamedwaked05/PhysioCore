@@ -7,6 +7,7 @@ import { useToast } from '../../context/ToastContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 import GuestLayout from '../../components/GuestLayout';
 import Skeleton from '../../components/ui/Skeleton';
+import GenderAvatar from '../../components/ui/GenderAvatar';
 import '../../styles/ui.css';
 import '../../styles/client.css';
 import '../../styles/guest.css';
@@ -297,7 +298,7 @@ export default function ClinicListingPage() {
                                             {clinic.profile_photo_url ? (
                                                 <img src={clinic.profile_photo_url} alt={name} />
                                             ) : (
-                                                <span>{getInitials(name)}</span>
+                                                <GenderAvatar gender={undefined} size={56} style={{ borderRadius: '14px' }} />
                                             )}
                                         </div>
                                     </div>

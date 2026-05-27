@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAccessRequests, getClinic } from '../../../../api/client';
 import ChatBox from '../../../../components/chat/ChatBox';
 import Skeleton from '../../../../components/ui/Skeleton';
+import GenderAvatar from '../../../../components/ui/GenderAvatar';
 import '../../../../styles/chat.css';
 
 function ChatIcon() {
@@ -169,9 +170,7 @@ export default function MessagesPage() {
                                             alt={clinicName(selected)}
                                             className="cd-chat-header-av"
                                           />
-                                        : <div className="cd-chat-header-av cd-chat-header-av--initials">
-                                            {(clinicName(selected) || '?').charAt(0).toUpperCase()}
-                                          </div>
+                                        : <GenderAvatar gender={undefined} size={40} />
                                     }
                                     <span className={`cd-chat-online-dot ${isOnline ? 'cd-chat-online-dot--on' : 'cd-chat-online-dot--off'}`} />
                                 </div>
