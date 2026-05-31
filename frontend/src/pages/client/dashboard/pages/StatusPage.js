@@ -182,10 +182,11 @@ export default function StatusPage() {
     const recoveryFill = recoveryStatus === 'good' ? 1
         : recoveryStatus === 'moderate' ? 0.6
         : recoveryStatus === 'poor' ? 0.25
-        : 0.6;
+        : 0;
     const recoveryColor = recoveryStatus === 'good' ? '#22c55e'
         : recoveryStatus === 'poor' ? '#ef4444'
-        : '#f59e0b';
+        : recoveryStatus === 'moderate' ? '#f59e0b'
+        : 'var(--border)';
 
     // Milestone cards — derived from existing tracking data, no extra API call
     const toNum = v => { const n = parseInt(v, 10); return isNaN(n) ? null : n; };
