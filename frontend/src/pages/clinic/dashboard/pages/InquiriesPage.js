@@ -34,12 +34,7 @@ export default function InquiriesPage() {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    const isOnline = (() => {
-        const now = new Date();
-        const day = now.getDay();
-        const hour = now.getHours();
-        return day >= 1 && day <= 6 && hour >= 8 && hour < 20;
-    })();
+    const isOnline = true;
 
     useEffect(() => {
         let cancelled = false;

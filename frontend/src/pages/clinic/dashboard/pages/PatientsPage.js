@@ -48,12 +48,7 @@ function ChatModal({ patient, clinicId, onClose, onViewProfile }) {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    const isOnline = (() => {
-        const now = new Date();
-        const day = now.getDay();
-        const hour = now.getHours();
-        return day >= 1 && day <= 6 && hour >= 8 && hour < 20;
-    })();
+    const isOnline = true;
 
     return (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={onClose}>
