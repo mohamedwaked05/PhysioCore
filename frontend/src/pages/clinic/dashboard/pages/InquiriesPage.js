@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useAuth } from '../../../../context/AuthContext';
 import { getClinicThreads } from '../../../../api/messages';
 import ChatBox from '../../../../components/chat/ChatBox';
 import PatientProfilePopup from '../components/PatientProfilePopup';
@@ -18,7 +17,6 @@ function BackArrowIcon() {
 }
 
 export default function InquiriesPage() {
-    const { user }                        = useAuth();
     const [clinicId, setClinicId]         = useState(null);
     const [threads, setThreads]           = useState([]); // unique clients
     const [selected, setSelected]         = useState(null);
