@@ -1,8 +1,7 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../../context/AuthContext';
-import { getClinicProfile } from '../../../../api/clinic';
-import { getMessages } from '../../../../api/messages';
+import { getClinicThreads } from '../../../../api/messages';
 import ChatBox from '../../../../components/chat/ChatBox';
 import PatientProfilePopup from '../components/PatientProfilePopup';
 import Skeleton from '../../../../components/ui/Skeleton';
@@ -20,7 +19,7 @@ function BackArrowIcon() {
 
 export default function InquiriesPage() {
     const { user }                        = useAuth();
-    const [clinic, setClinic]             = useState(null);
+    const [clinicId, setClinicId]         = useState(null);
     const [threads, setThreads]           = useState([]); // unique clients
     const [selected, setSelected]         = useState(null);
     const [loading, setLoading]           = useState(true);
@@ -44,44 +43,16 @@ export default function InquiriesPage() {
         return day >= 1 && day <= 6 && hour >= 8 && hour < 20;
     })();
 
-    const buildThreads = useCallback((messages, clinicUserId) => {
-        const map = new Map();
-        messages.forEach(msg => {
-            const other = msg.sender_id === clinicUserId ? msg.receiver : msg.sender;
-            if (!other) return;
-            if (!map.has(other.id)) {
-                map.set(other.id, {
-                    ...other,
-                    lastMessage:       msg.content,
-                    profile_photo_url: other.client_profile?.profile_photo_url ?? null,
-                    gender:            other.client_profile?.gender ?? other.gender ?? null,
-                    cover_photo_url:   other.cover_photo_url ?? null,
-                    client_profile_id: other.client_profile?.id ?? null,
-                });
-            } else {
-                map.get(other.id).lastMessage = msg.content;
-            }
-        });
-        return Array.from(map.values());
-    }, []);
-
     useEffect(() => {
         let cancelled = false;
         async function load() {
             try {
-                const profileRes = await getClinicProfile();
-                const c = profileRes.data;
+                const res = await getClinicThreads();
                 if (cancelled) return;
-                setClinic(c);
-
-                const msgRes = await getMessages({ context: 'inquiry', reference_id: c.id });
-                if (cancelled) return;
-                const unique = buildThreads(msgRes.data, user.id);
-                setThreads(unique);
-                // Don't auto-select on mount — on mobile the user picks a thread first
-                if (unique.length > 0 && window.innerWidth > 768) {
-                    setSelected(unique[0]);
-                }
+                const { threads: t, clinic_id } = res.data;
+                setClinicId(clinic_id);
+                setThreads(t);
+                if (t.length > 0 && window.innerWidth > 768) setSelected(t[0]);
             } catch {
                 // leave empty state
             } finally {
@@ -90,7 +61,7 @@ export default function InquiriesPage() {
         }
         load();
         return () => { cancelled = true; };
-    }, [user, buildThreads]);
+    }, []);
 
     const openThread = (client) => {
         setSelected(client);
@@ -145,7 +116,7 @@ export default function InquiriesPage() {
     }
 
     // Shared chat panel content (used both in desktop inline and mobile portal)
-    const chatContent = selected && clinic ? (
+    const chatContent = selected && clinicId ? (
         <>
             <div className="cld-inquiries-chat-header">
                 <button
@@ -195,7 +166,7 @@ export default function InquiriesPage() {
             </div>
             <ChatBox
                 context="inquiry"
-                referenceId={clinic.id}
+                referenceId={clinicId}
                 receiverId={selected.id}
                 withUserId={selected.id}
             />
@@ -250,7 +221,7 @@ export default function InquiriesPage() {
             {/* Mobile fullscreen chat — portalled to body to escape the animated
                 .cld-page container whose transform:translateY(0) fill-mode would
                 otherwise create a containing block and break position:fixed. */}
-            {mobileChatOpen && selected && clinic && createPortal(
+            {mobileChatOpen && selected && clinicId && createPortal(
                 <div className="cld-inquiries-mobile-overlay">
                     {chatContent}
                 </div>,

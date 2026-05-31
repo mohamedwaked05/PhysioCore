@@ -193,6 +193,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('messages')->group(
     Route::post('/notifications/read',   [MessageController::class, 'markAllRead']);
     Route::post('/delivered',            [MessageController::class, 'markDelivered']);
     Route::post('/seen',                 [MessageController::class, 'markSeen']);
+    Route::get('/threads',               [MessageController::class, 'threads']);
     // /{id} routes must come after all static paths to avoid shadowing them
     Route::get('/{id}',                  [MessageController::class, 'show']);
     Route::patch('/{id}/read',           [MessageController::class, 'markOneRead']);

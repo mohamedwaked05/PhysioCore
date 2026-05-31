@@ -11,6 +11,7 @@ use App\Models\Message;
 use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MessageController extends Controller
 {
@@ -51,6 +52,61 @@ class MessageController extends Controller
             ->update(['is_read' => true]);
 
         return response()->json($messages);
+    }
+
+    public function threads(Request $request)
+    {
+        $user   = $request->user();
+        $userId = $user->id;
+
+        // One MAX(id) per conversation partner — works on MySQL and PostgreSQL
+        $rows = DB::select(
+            'SELECT MAX(id) as id
+             FROM messages
+             WHERE (sender_id = ? OR receiver_id = ?)
+               AND context = ?
+             GROUP BY CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END',
+            [$userId, $userId, 'inquiry', $userId]
+        );
+
+        $ids = array_column($rows, 'id');
+
+        if (empty($ids)) {
+            return response()->json(['threads' => [], 'clinic_id' => $user->clinic?->id]);
+        }
+
+        $messages = Message::whereIn('id', $ids)
+            ->with([
+                'sender:id,first_name,last_name,gender,cover_photo_url',
+                'sender.clientProfile:id,user_id,profile_photo_url,gender',
+                'receiver:id,first_name,last_name,gender,cover_photo_url',
+                'receiver.clientProfile:id,user_id,profile_photo_url,gender',
+            ])
+            ->latest()
+            ->get();
+
+        $clinicId = $user->clinic?->id;
+
+        $threads = $messages->map(function (Message $msg) use ($userId) {
+            $other = $msg->sender_id === $userId ? $msg->receiver : $msg->sender;
+            if (!$other) return null;
+            return [
+                'id'                => $other->id,
+                'first_name'        => $other->first_name,
+                'last_name'         => $other->last_name,
+                'gender'            => $other->clientProfile?->gender ?? $other->gender,
+                'profile_photo_url' => $other->clientProfile?->profile_photo_url,
+                'cover_photo_url'   => $other->cover_photo_url,
+                'client_profile_id' => $other->clientProfile?->id,
+                'lastMessage'       => $msg->content,
+                'last_message_at'   => $msg->created_at,
+            ];
+        })->filter()->values();
+
+        return response()->json([
+            'threads'   => $threads,
+            'clinic_id' => $clinicId,
+        ]);
     }
 
     public function store(SendMessageRequest $request)
