@@ -48,6 +48,8 @@ return [
 
     'groq' => [
         'api_key' => env('GROQ_API_KEY', ''),
+        // Free-tier text + vision model. No paid fallback or billing setup.
+        'model' => env('GROQ_MODEL', 'qwen/qwen3.8-27b'),
     ],
 
 ];

@@ -215,7 +215,7 @@ export default function Chatbot({ embedded = false }) {
         if (inputRef.current) inputRef.current.style.height = 'auto';
 
         try {
-            const apiPayload = nextMsgs.map(({ role, content, image }) => ({
+            const apiPayload = nextMsgs.filter(msg => !msg.error).map(({ role, content, image }) => ({
                 role,
                 content,
                 ...(image ? { image } : {}),
@@ -231,15 +231,22 @@ export default function Chatbot({ embedded = false }) {
             };
             setMessages(prev => [...prev, botMsg]);
 
-            if (clinics.length > 0 || text.toLowerCase().includes('physiocore')) {
+            if (data.assessment_done || clinics.length > 0) {
                 setAssessmentDone(true);
             }
-        } catch {
+        } catch (error) {
+            const retryAfter = Number(error.response?.data?.retry_after || error.response?.headers?.['retry-after']);
+            const errorText = error.response?.status === 429
+                ? `The assessment service is busy. Please try again in ${Number.isFinite(retryAfter) && retryAfter > 0 ? Math.ceil(retryAfter) : 60} seconds. Your message is ready to resend.`
+                : "The assessment service couldn't connect or complete your request. Please try again in a moment. Your message is ready to resend.";
+            setInput(text);
+            setSelectedImage(userMsg.image || null);
             setMessages(prev => [
-                ...prev,
+                ...prev.filter(msg => msg !== userMsg),
                 {
                     role:    'assistant',
-                    content: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
+                    content: errorText,
+                    error:   true,
                     time:    new Date(),
                 },
             ]);
