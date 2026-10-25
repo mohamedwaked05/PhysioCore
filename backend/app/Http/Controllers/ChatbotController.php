@@ -100,6 +100,18 @@ OUTPUT: Return only a JSON object with two fields: "status" ("question", "assess
                     ],
                 ];
             } else {
+                if ($role === 'assistant') {
+                    // Keep history in the same JSON format requested for new replies.
+                    // Plain-text assistant turns can make Groq reject JSON-mode generation.
+                    $lowerContent = strtolower($content);
+                    $historyStatus = match (true) {
+                        str_contains($lowerContent, 'emergency care') => 'emergency',
+                        str_contains($content, '?') => 'question',
+                        str_contains($lowerContent, 'severity:') => 'assessment',
+                        default => 'off_topic', // Includes the initial welcome message.
+                    };
+                    $content = json_encode(['status' => $historyStatus, 'message' => $content]);
+                }
                 $groqMessages[] = ['role' => $role, 'content' => $content];
             }
         }

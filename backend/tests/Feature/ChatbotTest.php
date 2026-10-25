@@ -128,8 +128,25 @@ class ChatbotTest extends TestCase
             ['role' => 'user', 'content' => 'Outer ankle'],
         ])->assertOk();
         Http::assertSent(fn (Request $r) => $r['messages'][1]['content'][0]['image_url']['url'] === $image
-            && $r['messages'][2]['content'] === 'Where is the pain?'
+            && json_decode($r['messages'][2]['content'], true) === ['status' => 'question', 'message' => 'Where is the pain?']
             && $r['messages'][3]['content'] === 'Outer ankle');
+    }
+
+    public function test_multi_turn_assistant_history_uses_json_mode_without_changing_user_answers(): void
+    {
+        Http::fake(['*' => Http::response($this->reply('question', 'How did it happen?'))]);
+        $this->assess([
+            ['role' => 'assistant', 'content' => 'Welcome to PhysioCore.'],
+            ['role' => 'user', 'content' => 'I have an injury.'],
+            ['role' => 'assistant', 'content' => 'Where exactly is the pain?'],
+            ['role' => 'user', 'content' => 'My right knee.'],
+        ])->assertOk();
+        Http::assertSent(fn (Request $r) =>
+            json_decode($r['messages'][1]['content'], true) === ['status' => 'off_topic', 'message' => 'Welcome to PhysioCore.']
+            && $r['messages'][2]['content'] === 'I have an injury.'
+            && json_decode($r['messages'][3]['content'], true) === ['status' => 'question', 'message' => 'Where exactly is the pain?']
+            && $r['messages'][4]['content'] === 'My right knee.'
+            && str_contains($r['messages'][0]['content'], 'Questions remaining: 2.'));
     }
 
     public function test_more_than_three_photos_or_remote_image_urls_are_rejected_before_provider_call(): void

@@ -35,6 +35,9 @@ existing matching rules; matching does not rank by location, price or availabili
 - Groq returns a JSON object containing `status` and `message`; the backend
   validates it and returns the existing patient-facing `message`/clinic-block
   protocol, plus `assessment_done`. The frontend still renders the same cards.
+  Previous assistant turns are re-encoded in that same JSON format before being
+  sent to Groq. Plain-text assistant history can otherwise cause Groq to reject
+  subsequent turns with `json_validate_failed`; user answers remain plain text.
 - Only backend database results can create clinic cards. Model-generated clinic
   fields are ignored and responses containing clinic-block delimiters are rejected.
 - The backend counts questions in assistant history, includes the remaining budget
@@ -118,7 +121,7 @@ It cannot certify production clinic contents, hosting configuration or network
 conditions. The existing keyword matching is a basic referral aid, and generated
 clinical assessments still require professional clinical validation.
 
-Recorded results: 29 backend tests (90 assertions) passed; all seven frontend
+Recorded automated results: 30 backend tests (92 assertions) passed; all seven frontend
 tests across both test suites passed; the production frontend build compiled successfully. Live requests
 through the Laravel HTTP kernel and the real Groq API passed text assessment
 with an approved database clinic, multimodal input, and emergency handling. The
