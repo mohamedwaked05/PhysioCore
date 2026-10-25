@@ -5,6 +5,7 @@ import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthModalProvider } from './context/AuthModalContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import PublicLayout from './components/PublicLayout';
 
 // Auth pages
 import LoginPage from './pages/LoginPage';
@@ -63,13 +64,16 @@ function App() {
             <AuthModalProvider>
                 <Routes>
                     {/* Landing page — guest entry point (auth-aware, redirects by role) */}
+                    <Route element={<PublicLayout />}>
                     <Route path="/" element={<LandingPage />} />
 
                     {/* Public clinic browsing — no login required */}
                     <Route path="/clinics"     element={<ClinicListingPage />} />
                     <Route path="/clinics/:id" element={<ClinicDetailsPage />} />
+                    </Route>
 
                     {/* Auth routes */}
+                    <Route element={<PublicLayout authPage />}>
                     <Route path="/login"    element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
                     <Route path="/verify-email/:id/:hash" element={<VerifyEmailPage />} />
@@ -78,6 +82,7 @@ function App() {
                     <Route path="/auth/google/complete"   element={<GoogleCompleteRegistrationPage />} />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="/reset-password"  element={<ResetPasswordPage />} />
+                    </Route>
 
                     {/* Client protected routes — dashboard with nested sub-pages */}
                     <Route path="/client/dashboard" element={

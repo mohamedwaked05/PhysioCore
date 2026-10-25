@@ -1,0 +1,184 @@
+/* Public route framing. Signed-in clinic pages retain their existing layout. */
+.public-layout,
+.public-layout__content {
+    display: contents;
+}
+
+.public-layout--footer {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100svh;
+    min-width: 0;
+    background: var(--bg);
+}
+
+.public-layout--footer > .public-layout__content {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Let the document grow around the footer; preserve the chat's own scroll area. */
+.public-layout--footer .landing-page {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    flex: 1;
+}
+
+.public-layout--footer .lp-chat-embed { flex-shrink: 0; }
+
+.public-layout--footer .guest-shell,
+.public-layout--footer .login-page {
+    min-height: 0;
+    flex: 1;
+}
+
+/* Email verification and OAuth status pages use inline viewport-height shells. */
+.public-layout--auth > .public-layout__content > div[style] {
+    min-height: 0 !important;
+    flex: 1;
+}
+
+.site-footer {
+    flex-shrink: 0;
+    min-width: 0;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8125rem;
+    line-height: 1.65;
+    padding: 2rem max(1.25rem, env(safe-area-inset-right)) max(1.125rem, env(safe-area-inset-bottom)) max(1.25rem, env(safe-area-inset-left));
+}
+
+.site-footer__inner {
+    max-width: 1160px;
+    margin-inline: auto;
+}
+
+.site-footer__main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 1.5rem 3rem;
+    padding-bottom: 1.5rem;
+}
+
+.site-footer__brand { min-width: 0; }
+
+.site-footer__logo {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+}
+
+.site-footer__description {
+    max-width: 370px;
+    margin: 0.5rem 0 0;
+    overflow-wrap: break-word;
+}
+
+.site-footer__heading {
+    margin: 0.5rem 0 0.25rem;
+    color: var(--text);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.site-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+}
+
+.site-footer__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    min-width: 44px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+}
+
+.site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.875rem;
+    font-size: 0.75rem;
+}
+
+.site-footer__copyright,
+.site-footer__credit { margin: 0; }
+
+.site-footer__credit { margin-left: auto; }
+.site-footer__credit span { color: var(--text); font-weight: 500; }
+
+.site-footer__socials {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.site-footer__socials a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.site-footer a:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 4px;
+}
+
+@media (hover: hover) {
+    .site-footer__links a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 4px; }
+    .site-footer__socials a:hover { color: var(--text); background: var(--surface-dim); border-color: var(--border-strong); }
+}
+
+/* Auth forms own their theme locally. Follow that class without changing auth. */
+.public-layout--auth:has(.login-page:not(.dark)) .site-footer {
+    --surface: #ffffff;
+    --surface-dim: #f5f7ff;
+    --text: #0f1629;
+    --text-secondary: #5a6380;
+    --border: #dde3f0;
+    --border-strong: #c5ceea;
+    --primary: #2d4fd4;
+}
+
+.public-layout--auth:has(.login-page.dark) .site-footer {
+    --surface: #111628;
+    --surface-dim: #161d33;
+    --text: #e8ecf8;
+    --text-secondary: #8892b0;
+    --border: #1e2540;
+    --border-strong: #303b61;
+    --primary: #a5b4fc;
+}
+
+@media (max-width: 600px) {
+    .site-footer { padding-top: 1.5rem; }
+    .site-footer__main { grid-template-columns: minmax(0, 1fr); gap: 1rem; padding-bottom: 1rem; }
+    .site-footer__heading { margin-top: 0; }
+    .site-footer__bottom { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.75rem 0.875rem; }
+    .site-footer__copyright { grid-column: 1 / -1; }
+    .site-footer__credit { margin-left: 0; overflow-wrap: break-word; }
+}
