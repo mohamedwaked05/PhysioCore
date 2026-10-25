@@ -47,6 +47,7 @@
     min-width: 0;
     border-top: 1px solid var(--border);
     background: var(--surface);
+    background: color-mix(in srgb, var(--surface) 45%, transparent);
     color: var(--text-secondary);
     font-family: 'Inter', sans-serif;
     font-size: 0.8125rem;
@@ -154,6 +155,9 @@
 }
 
 /* Auth forms own their theme locally. Follow that class without changing auth. */
+.public-layout--auth:has(.login-page:not(.dark)) { --bg: #eef2ff; }
+.public-layout--auth:has(.login-page.dark) { --bg: #07090f; }
+
 .public-layout--auth:has(.login-page:not(.dark)) .site-footer {
     --surface: #ffffff;
     --surface-dim: #f5f7ff;

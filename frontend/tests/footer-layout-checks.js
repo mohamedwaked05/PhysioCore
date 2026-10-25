@@ -32,13 +32,24 @@ module.exports = function checkFooterLayout() {
         const messages = chat.querySelector('.cb-messages');
         if (!messages || messages.clientHeight <= 0 || !['auto', 'scroll'].includes(getComputedStyle(messages).overflowY)) problems.push('Chat lost its internal scrolling area');
     }
-    const rgb = color => color.match(/[\d.]+/g).slice(0, 3).map(Number).map(n => {
-        const s = n / 255; return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-    });
-    const luminance = color => rgb(color).reduce((sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i], 0);
-    const bg = luminance(getComputedStyle(footer).backgroundColor);
+    // color-mix() can compute to color(srgb ... / alpha). Composite translucent
+    // backgrounds over their ancestors before calculating text contrast.
+    const rgba = color => {
+        const values = color.match(/[\d.]+/g).map(Number);
+        const scale = color.startsWith('color(srgb ') ? 1 : 255;
+        return [...values.slice(0, 3).map(value => value / scale), values[3] ?? 1];
+    };
+    const over = (foreground, background) => foreground.slice(0, 3).map((value, i) =>
+        value * foreground[3] + background[i] * (1 - foreground[3]));
+    const ancestors = [];
+    for (let element = footer; element; element = element.parentElement) ancestors.unshift(element);
+    const background = ancestors.reduce((color, element) =>
+        over(rgba(getComputedStyle(element).backgroundColor), color), [1, 1, 1]);
+    const luminance = color => color.map(s => s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4)
+        .reduce((sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i], 0);
+    const bg = luminance(background);
     for (const element of footer.querySelectorAll('p, .site-footer__links a, .site-footer__socials a')) {
-        const fg = luminance(getComputedStyle(element).color);
+        const fg = luminance(over(rgba(getComputedStyle(element).color), background));
         const contrast = (Math.max(bg, fg) + 0.05) / (Math.min(bg, fg) + 0.05);
         if (contrast < 4.5) problems.push(`Footer text/icon contrast below 4.5: ${contrast.toFixed(2)}`);
     }
