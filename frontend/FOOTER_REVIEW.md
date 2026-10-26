@@ -38,7 +38,10 @@ not receive this layout at all.
 
 - Existing PhysioCore ECG logo, Inter body text, Syne brand text, blue/cyan palette,
   theme tokens, thin borders and 1160px content width.
-- The footer uses a 15% surface tint (85% transparency) with fully opaque content.
+- The footer uses a 25% surface tint (75% transparency). Its content, including
+  the logo, text and social icons, has 80% opacity (20% transparency) applied once
+  to the inner container. Link hover and keyboard focus restore full content
+  opacity. Footer-local text colors preserve contrast after compositing.
   Its public wrapper is transparent so the existing body/root gradients show
   through, rather than being masked by a flat background. Authentication forms
   receive the same app gradients with their local light/dark background color.

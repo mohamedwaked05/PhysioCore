@@ -44,12 +44,13 @@
 }
 
 .site-footer {
+    --text-secondary: #3e4961;
     flex-shrink: 0;
     min-width: 0;
     border-top: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
-    /* Tint the backdrop only; text, links and icons retain full opacity. */
+    /* Background and content transparency are controlled independently. */
     background: transparent;
-    background: color-mix(in srgb, var(--surface) 15%, transparent);
+    background: color-mix(in srgb, var(--surface) 25%, transparent);
     color: var(--text-secondary);
     font-family: 'Inter', sans-serif;
     font-size: 0.8125rem;
@@ -60,7 +61,14 @@
 .site-footer__inner {
     max-width: 1160px;
     margin-inline: auto;
+    opacity: 0.8;
 }
+
+/* Keep interactive states crisp without fading the footer background. */
+.site-footer__inner:has(a:hover),
+.site-footer__inner:focus-within { opacity: 1; }
+
+[data-theme="dark"] .site-footer { --text-secondary: #9aa4bf; }
 
 .site-footer__main {
     display: grid;
@@ -178,7 +186,7 @@
     --surface: #ffffff;
     --surface-dim: #f5f7ff;
     --text: #0f1629;
-    --text-secondary: #5a6380;
+    --text-secondary: #3e4961;
     --border: #dde3f0;
     --border-strong: #c5ceea;
     --primary: #2d4fd4;
@@ -188,7 +196,7 @@
     --surface: #111628;
     --surface-dim: #161d33;
     --text: #e8ecf8;
-    --text-secondary: #8892b0;
+    --text-secondary: #9aa4bf;
     --border: #1e2540;
     --border-strong: #303b61;
     --primary: #a5b4fc;
