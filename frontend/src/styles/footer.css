@@ -10,7 +10,8 @@
     min-height: 100vh;
     min-height: 100svh;
     min-width: 0;
-    background: var(--bg);
+    /* Expose the existing body/#root gradients behind the footer. */
+    background: transparent;
 }
 
 .public-layout--footer > .public-layout__content {
@@ -45,9 +46,10 @@
 .site-footer {
     flex-shrink: 0;
     min-width: 0;
-    border-top: 1px solid var(--border);
-    background: var(--surface);
-    background: color-mix(in srgb, var(--surface) 45%, transparent);
+    border-top: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+    /* Tint the backdrop only; text, links and icons retain full opacity. */
+    background: transparent;
+    background: color-mix(in srgb, var(--surface) 15%, transparent);
     color: var(--text-secondary);
     font-family: 'Inter', sans-serif;
     font-size: 0.8125rem;
@@ -114,7 +116,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem 1.5rem;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
     padding-top: 0.875rem;
     font-size: 0.75rem;
 }
@@ -138,7 +140,7 @@
     width: 44px;
     height: 44px;
     flex-shrink: 0;
-    border: 1px solid var(--border);
+    border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
     border-radius: var(--radius-md);
     color: var(--text-secondary);
     text-decoration: none;
@@ -151,12 +153,26 @@
 
 @media (hover: hover) {
     .site-footer__links a:hover { color: var(--primary); text-decoration: underline; text-underline-offset: 4px; }
-    .site-footer__socials a:hover { color: var(--text); background: var(--surface-dim); border-color: var(--border-strong); }
+    .site-footer__socials a:hover { color: var(--text); background: color-mix(in srgb, var(--surface-dim) 20%, transparent); border-color: var(--border-strong); }
 }
 
 /* Auth forms own their theme locally. Follow that class without changing auth. */
-.public-layout--auth:has(.login-page:not(.dark)) { --bg: #eef2ff; }
-.public-layout--auth:has(.login-page.dark) { --bg: #07090f; }
+/* Match the existing app backdrop even when the form and global theme differ. */
+.public-layout--auth:has(.login-page:not(.dark)) {
+    --bg: #eef2ff;
+    background: var(--bg);
+    background-image:
+        radial-gradient(ellipse at 15% 50%, rgba(6, 182, 212, 0.06) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 15%, rgba(45, 79, 212, 0.07) 0%, transparent 50%);
+}
+
+.public-layout--auth:has(.login-page.dark) {
+    --bg: #07090f;
+    background: var(--bg);
+    background-image:
+        radial-gradient(ellipse at 20% 80%, rgba(79, 114, 245, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(34, 211, 238, 0.06) 0%, transparent 50%);
+}
 
 .public-layout--auth:has(.login-page:not(.dark)) .site-footer {
     --surface: #ffffff;

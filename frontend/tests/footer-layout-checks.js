@@ -39,10 +39,23 @@ module.exports = function checkFooterLayout() {
         const scale = color.startsWith('color(srgb ') ? 1 : 255;
         return [...values.slice(0, 3).map(value => value / scale), values[3] ?? 1];
     };
+    const footerStyle = getComputedStyle(footer);
+    const footerAlpha = rgba(footerStyle.backgroundColor)[3];
+    if (Math.abs(footerAlpha - 0.15) > 0.01) problems.push('Footer tint must remain 85% transparent');
+    if (footerStyle.backgroundImage !== 'none') problems.push('An overlay hides the footer backdrop');
+    for (const element of [footer, ...footer.querySelectorAll('*')]) {
+        if (Number(getComputedStyle(element).opacity) !== 1) problems.push('Footer content must remain fully opaque');
+    }
+    const layout = footer.closest('.public-layout--footer');
+    if (layout && !layout.classList.contains('public-layout--auth') && rgba(getComputedStyle(layout).backgroundColor)[3] > 0) {
+        problems.push('Public wrapper masks the existing page backdrop');
+    }
     const over = (foreground, background) => foreground.slice(0, 3).map((value, i) =>
         value * foreground[3] + background[i] * (1 - foreground[3]));
     const ancestors = [];
     for (let element = footer; element; element = element.parentElement) ancestors.unshift(element);
+    if (ancestors.some(element => Number(getComputedStyle(element).opacity) !== 1)) problems.push('An ancestor fades footer content');
+    if (!ancestors.some(element => getComputedStyle(element).backgroundImage !== 'none')) problems.push('The footer backdrop lost its theme gradients');
     const background = ancestors.reduce((color, element) =>
         over(rgba(getComputedStyle(element).backgroundColor), color), [1, 1, 1]);
     const luminance = color => color.map(s => s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4)
@@ -54,5 +67,5 @@ module.exports = function checkFooterLayout() {
         if (contrast < 4.5) problems.push(`Footer text/icon contrast below 4.5: ${contrast.toFixed(2)}`);
     }
     if (problems.length) throw new Error(problems.join('; '));
-    return { viewport, footerHeight: Math.round(rect.height), touchTargets: boxes.length, horizontalOverflow: false, contentOverlap: false, chatHeight: chat ? Math.round(chat.getBoundingClientRect().height) : null, contrast: 'pass' };
+    return { viewport, footerHeight: Math.round(rect.height), footerAlpha, touchTargets: boxes.length, horizontalOverflow: false, contentOverlap: false, chatHeight: chat ? Math.round(chat.getBoundingClientRect().height) : null, contrast: 'pass (base colors; inspect gradient backdrop visually)' };
 };

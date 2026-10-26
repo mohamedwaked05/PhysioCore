@@ -38,6 +38,11 @@ not receive this layout at all.
 
 - Existing PhysioCore ECG logo, Inter body text, Syne brand text, blue/cyan palette,
   theme tokens, thin borders and 1160px content width.
+- The footer uses a 15% surface tint (85% transparency) with fully opaque content.
+  Its public wrapper is transparent so the existing body/root gradients show
+  through, rather than being masked by a flat background. Authentication forms
+  receive the same app gradients with their local light/dark background color.
+  Dividers and social-button borders use softer tints; the fallback is transparent.
 - Two columns above 600px: brand/description and navigation. Copyright, developer
   credit and social links form a restrained bottom row that can wrap on tablets.
 - At 600px and below: stacked brand/navigation, full-width copyright, then credit
@@ -86,7 +91,9 @@ guest reload, actual app route wiring, and the existing chatbot behavior.
 `tests/footer-layout-checks.js` is a dependency-free real-browser assertion helper.
 It can be passed to a browser runner's `page.evaluate(checkFooterLayout)` and
 checks actual layout geometry, 44px targets, contrast, content/link overlap,
-horizontal overflow and the embedded chat's size/scroll container. jsdom cannot
+horizontal overflow, the embedded chat's size/scroll container, computed footer
+alpha, content opacity and public-wrapper transparency. Contrast calculations use
+composited base colors; gradient backdrops still require visual inspection. jsdom cannot
 validate those geometric properties.
 
 Required browser matrix (both themes): 320x568, 375x812, 430x932,
